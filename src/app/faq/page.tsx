@@ -1,19 +1,21 @@
-const faqs = [
-  "Can you guarantee visa approval?",
-  "Do you help with Netherlands and Schengen applications?",
-  "Do you provide paid 1-on-1 consultations?",
-  "What is your refund or cancellation policy?",
-];
+import { faqs } from "@/lib/site-content";
 
 export default function FAQPage() {
   return (
-    <section className="stack">
-      <h1>Frequently Asked Questions</h1>
-      <ul>
+    <section className="stack-lg">
+      <section className="stack">
+        <h1>Frequently Asked Questions</h1>
+        <p>Answers to the most common questions about process, timelines, and support scope.</p>
+      </section>
+
+      <div className="stack">
         {faqs.map((faq) => (
-          <li key={faq}>{faq}</li>
+          <article key={faq.question} className="card stack">
+            <h2>{faq.question}</h2>
+            <p>{faq.answer}</p>
+          </article>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }
