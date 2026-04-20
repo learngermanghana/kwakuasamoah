@@ -1,4 +1,44 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+
+type SubmitState = "idle" | "loading" | "success" | "error";
+
 export default function BookConsultationPage() {
+  const [state, setState] = useState<SubmitState>("idle");
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setState("loading");
+    setMessage("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch("/api/consultation", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = (await response.json()) as { ok: boolean; error?: string };
+
+      if (!response.ok || !result.ok) {
+        setState("error");
+        setMessage(result.error ?? "Unable to submit your request right now.");
+        return;
+      }
+
+      setState("success");
+      setMessage("Thanks! Your consultation request has been submitted successfully.");
+      form.reset();
+    } catch {
+      setState("error");
+      setMessage("Network issue detected. Please try again.");
+    }
+  }
+
   return (
     <section className="stack-lg">
       <section className="stack">
@@ -8,7 +48,7 @@ export default function BookConsultationPage() {
         </p>
       </section>
 
-      <form className="stack form card">
+      <form className="stack form card" onSubmit={handleSubmit}>
         <label>
           Full name
           <input type="text" name="name" required />
@@ -41,9 +81,14 @@ export default function BookConsultationPage() {
           Message
           <textarea name="message" rows={5} placeholder="Tell us your goals and main challenges." />
         </label>
-        <button type="submit" className="button">
-          Submit Inquiry
+        <button type="submit" className="button" disabled={state === "loading"}>
+          {state === "loading" ? "Submitting..." : "Submit Inquiry"}
         </button>
+        {message && (
+          <p className={state === "success" ? "status success" : "status error"} role="status">
+            {message}
+          </p>
+        )}
       </form>
     </section>
   );
