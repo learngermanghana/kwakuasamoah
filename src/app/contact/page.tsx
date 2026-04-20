@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { siteSettings } from "@/lib/site-settings";
 
 export default function ContactPage() {
   return (
@@ -10,13 +11,13 @@ export default function ContactPage() {
 
       <section className="card stack">
         <p>
-          <strong>Email:</strong> hello@kwakutravels.com
+          <strong>Email:</strong> {siteSettings.supportEmail}
         </p>
         <p>
-          <strong>WhatsApp:</strong> +31 600 000 000
+          <strong>WhatsApp:</strong> {siteSettings.whatsappDisplay}
         </p>
         <p>
-          <strong>Hours:</strong> Monday - Saturday, 09:00 - 18:00 CET
+          <strong>Hours:</strong> Monday - Saturday, 09:00 - 18:00 {siteSettings.timezone}
         </p>
         <Link className="button" href="/book-consultation">
           Book Consultation
