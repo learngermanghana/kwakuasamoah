@@ -8,7 +8,7 @@ export function Footer() {
         <div>
           <h3 className="text-lg font-bold text-emerald-700">{siteConfig.name}</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Trusted travel guidance, relocation support, and consultation for Europe.
+            Trusted travel guidance and relocation consultation for Europe, Canada, and the USA (Asia excluded).
           </p>
         </div>
         <div>

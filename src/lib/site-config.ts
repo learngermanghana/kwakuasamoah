@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Kwaku Lottery Travel & Relocation",
-  description: "Travel guidance, Europe relocation support, study route consultation, and booking services.",
+  description: "Travel guidance and relocation support for Europe, Canada, and the USA, with Asia excluded.",
   url: "https://example.com",
   phone: "+233000000000",
   whatsapp: "233000000000",

@@ -1,6 +1,6 @@
 const faqs = [
   { q: "Do you guarantee visa approval?", a: "No. Guidance improves preparation, but no genuine service can guarantee approval." },
-  { q: "Do you help with Netherlands relocation?", a: "Yes, especially for study route and travel guidance." },
+  { q: "Which destinations do you support?", a: "Europe, Canada, and the USA. At the moment, Asia is excluded." },
   { q: "Can I book through WhatsApp?", a: "Yes. WhatsApp is one of the fastest support channels on this site." }
 ];
 

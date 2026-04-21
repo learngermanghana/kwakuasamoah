@@ -14,10 +14,10 @@ export default async function HomePage() {
               Travel, Relocation and Study Abroad Support
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-              From Ghana to Holland, helping you travel and relocate smarter.
+              From Ghana to Europe, Canada, and the USA — helping you travel and relocate smarter.
             </h1>
             <p className="mt-5 text-lg text-slate-600">
-              Get trusted Europe travel updates, relocation guidance, visa support, and one-on-one consultation.
+              Get trusted travel updates, relocation guidance, visa support, and one-on-one consultation for destinations outside Asia.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link href="/book" className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white">

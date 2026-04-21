@@ -1,9 +1,9 @@
 const services = [
   "Study abroad guidance",
   "Visa document review",
-  "Europe travel planning",
-  "Schengen visa preparation",
-  "Netherlands relocation support",
+  "Europe, Canada, and USA travel planning",
+  "Schengen and visitor visa preparation",
+  "Relocation support (excluding Asia)",
   "Interview preparation",
   "Flight and hotel guidance",
   "Custom itinerary planning"
