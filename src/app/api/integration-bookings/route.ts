@@ -9,7 +9,45 @@ type BookingPayload = {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
+  website?: string;
+  attributes?: Record<string, unknown>;
 };
+
+type RateLimitEntry = {
+  count: number;
+  resetAt: number;
+};
+
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+function getClientIp(req: Request) {
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() || "unknown";
+  }
+
+  return req.headers.get("x-real-ip") || "unknown";
+}
+
+function exceedsRateLimit(clientIp: string) {
+  const now = Date.now();
+  const entry = rateLimitStore.get(clientIp);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitStore.set(clientIp, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return true;
+  }
+
+  entry.count += 1;
+  rateLimitStore.set(clientIp, entry);
+  return false;
+}
 
 export async function POST(req: Request) {
   const baseUrl = process.env.SEDIFEX_API_BASE_URL;
@@ -21,6 +59,14 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { ok: false, error: "Sedifex integration is not configured." },
       { status: 500 }
+    );
+  }
+
+  const clientIp = getClientIp(req);
+  if (exceedsRateLimit(clientIp)) {
+    return NextResponse.json(
+      { ok: false, error: "too-many-requests", message: "Too many booking attempts. Please try again shortly." },
+      { status: 429 }
     );
   }
 
@@ -36,15 +82,27 @@ export async function POST(req: Request) {
     }
 
     const booking = body as BookingPayload;
+
+    if (booking.website && String(booking.website).trim()) {
+      return NextResponse.json({ ok: false, error: "invalid-request", message: "Booking could not be created." }, { status: 400 });
+    }
+
     const customerName = booking.customerName || (body.name as string | undefined);
     const customerPhone = booking.customerPhone || (body.phone as string | undefined);
     const customerEmail = booking.customerEmail || (body.email as string | undefined);
     const bookingDate = booking.bookingDate || (body.travelDates as string | undefined);
     const notes = booking.notes || (body.message as string | undefined);
 
-    if (!customerName && !customerPhone && !customerEmail) {
+    if (!customerName) {
       return NextResponse.json(
-        { ok: false, error: "At least one customer contact field is required." },
+        { ok: false, error: "missing-name", message: "Please provide your full name." },
+        { status: 400 }
+      );
+    }
+
+    if (!customerPhone && !customerEmail) {
+      return NextResponse.json(
+        { ok: false, error: "missing-contact", message: "Please provide an email or phone number." },
         { status: 400 }
       );
     }
@@ -64,7 +122,8 @@ export async function POST(req: Request) {
       bookingTime: booking.bookingTime,
       serviceName: booking.serviceName,
       attributes: {
-        source: "website_booking_form"
+        source: "website_booking_form",
+        ...(booking.attributes || {})
       }
     };
 
