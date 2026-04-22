@@ -11,7 +11,9 @@ export function PackageCard({ item }: { item: ServiceItem }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <img src={item.image} alt={item.serviceName} className="h-56 w-full object-cover" />
+      <div className="bg-slate-50 p-3">
+        <img src={item.image} alt={item.serviceName} className="h-56 w-full rounded-xl object-contain" />
+      </div>
       <div className="p-5">
         <p className="text-sm font-semibold text-emerald-700">{item.category}</p>
         <h3 className="mt-1 text-xl font-bold">{item.serviceName}</h3>
