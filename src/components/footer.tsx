@@ -3,10 +3,10 @@ import { siteConfig } from "@/lib/site-config";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-slate-50">
+    <footer className="border-t border-[#d8d6cf] bg-[#f8f4ea]">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
         <div>
-          <h3 className="text-lg font-bold text-emerald-700">{siteConfig.name}</h3>
+          <h3 className="text-lg font-bold text-[#0b2d4f]">{siteConfig.name}</h3>
           <p className="mt-2 text-sm text-slate-600">
             Trusted travel guidance and relocation consultation for Europe, Canada, and the USA (Asia excluded).
           </p>

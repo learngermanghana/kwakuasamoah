@@ -10,23 +10,35 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="bg-gradient-to-br from-emerald-50 to-white">
-        <div className="mx-auto max-w-7xl px-4 py-20">
-          <div className="max-w-3xl">
-            <p className="mb-3 inline-block rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
+      <section
+        className="relative overflow-hidden bg-[#0b2d4f]"
+        style={{
+          backgroundImage:
+            "linear-gradient(120deg, rgba(7, 33, 58, 0.9), rgba(11, 45, 79, 0.65)), url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80')",
+          backgroundPosition: "center",
+          backgroundSize: "cover"
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-4 py-24 md:py-28">
+          <div className="max-w-3xl text-white">
+            <p className="mb-3 inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">
               Travel, Relocation and Study Abroad Support
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-              From Ghana to Europe, Canada, and the USA — helping you travel and relocate smarter.
+              From Africa to Europe, Canada, and the USA — helping you travel and relocate smarter.
             </h1>
-            <p className="mt-5 text-lg text-slate-600">
+            <p className="mt-5 text-lg text-[#f4f1e6]">
               Get trusted travel updates, relocation guidance, visa support, and one-on-one consultation for destinations outside Asia.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Link href="/book" className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white">
+              <Link href="/book" className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f]">
                 Book Consultation
               </Link>
-              <a href={getWhatsAppLink("Hello, I want travel or relocation support.")} target="_blank" className="rounded-2xl border px-6 py-3 font-semibold">
+              <a
+                href={getWhatsAppLink("Hello, I want travel or relocation support.")}
+                target="_blank"
+                className="rounded-2xl border border-[#e9ddc3] px-6 py-3 font-semibold text-[#f4f1e6] transition hover:bg-white/10"
+              >
                 Chat on WhatsApp
               </a>
             </div>
@@ -36,14 +48,14 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold">Featured Services</h2>
+          <h2 className="text-3xl font-bold text-[#0b2d4f]">Featured Services</h2>
           <p className="mt-2 text-slate-600">Popular services for travel, study, and relocation support.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {featuredServices.map((item) => <PackageCard key={item.id} item={item} />)}
         </div>
         <div className="mt-8">
-          <Link href="/services" className="text-sm font-semibold text-emerald-700">
+          <Link href="/services" className="text-sm font-semibold text-[#0d6f73]">
             View more services
           </Link>
         </div>
@@ -72,7 +84,7 @@ export default async function HomePage() {
             <h2 className="text-3xl font-bold">Latest Videos</h2>
             <p className="mt-2 text-slate-600">Fresh updates from the Kwaku Lottery YouTube channel.</p>
           </div>
-          <a href="https://www.youtube.com/@kwakulotteryy" target="_blank" className="text-sm font-semibold text-emerald-700">
+          <a href="https://www.youtube.com/@kwakulotteryy" target="_blank" className="text-sm font-semibold text-[#0d6f73]">
             View channel
           </a>
         </div>
@@ -91,30 +103,30 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-slate-50">
+      <section className="bg-[#f8f4ea]">
         <div className="mx-auto max-w-7xl px-4 py-16">
-          <h2 className="text-3xl font-bold">Why people choose Kwaku</h2>
+          <h2 className="text-3xl font-bold text-[#0b2d4f]">Why people choose Kwaku</h2>
           <div className="mt-6 flex flex-wrap gap-3">
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">Response within 24h</span>
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">One-on-one guidance</span>
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">Transparent next steps</span>
+            <span className="rounded-full border border-[#4fb6b2]/30 bg-[#d8f2f1] px-3 py-1 text-sm font-semibold text-[#0d6f73]">Response within 24h</span>
+            <span className="rounded-full border border-[#4fb6b2]/30 bg-[#d8f2f1] px-3 py-1 text-sm font-semibold text-[#0d6f73]">One-on-one guidance</span>
+            <span className="rounded-full border border-[#4fb6b2]/30 bg-[#d8f2f1] px-3 py-1 text-sm font-semibold text-[#0d6f73]">Transparent next steps</span>
           </div>
           <div className="mt-8 grid gap-6 rounded-2xl border bg-white p-6 md:grid-cols-3">
             <div>
-              <p className="text-3xl font-bold text-emerald-700">500+</p>
+              <p className="text-3xl font-bold text-[#0b2d4f]">500+</p>
               <p className="mt-1 text-sm text-slate-600">Consultations and travel guidance sessions completed.</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-emerald-700">15+</p>
+              <p className="text-3xl font-bold text-[#0b2d4f]">15+</p>
               <p className="mt-1 text-sm text-slate-600">Visa and relocation routes supported across Europe, Canada, and the USA.</p>
             </div>
             <div>
-              <p className="text-3xl font-bold text-emerald-700">24h</p>
+              <p className="text-3xl font-bold text-[#0b2d4f]">24h</p>
               <p className="mt-1 text-sm text-slate-600">Typical first-response window for new inquiries.</p>
             </div>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Real Experience</h3><p className="mt-2 text-slate-600">Built from a real migration journey from Ghana to the Netherlands through studies.</p></div>
+            <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Real Experience</h3><p className="mt-2 text-slate-600">Built from real migration journeys from Africa to Europe through studies and relocation.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Clear Guidance</h3><p className="mt-2 text-slate-600">Simple travel and relocation advice tailored for beginners and first-time applicants.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Fast Support</h3><p className="mt-2 text-slate-600">Quick consultation and WhatsApp support for urgent travel questions.</p></div>
           </div>

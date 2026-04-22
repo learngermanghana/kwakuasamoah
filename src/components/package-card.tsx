@@ -17,15 +17,15 @@ export function PackageCard({ item }: { item: ServiceItem }) {
 
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <div className="bg-slate-50 p-3">
+      <div className="bg-[#f8f4ea] p-3">
         <img src={item.image} alt={item.serviceName} className="h-56 w-full rounded-xl object-contain" />
       </div>
       <div className="p-5">
-        {item.category ? <p className="text-sm font-semibold text-emerald-700">{item.category}</p> : null}
+        {item.category ? <p className="text-sm font-semibold text-[#0d6f73]">{item.category}</p> : null}
         <h3 className="mt-1 text-xl font-bold">{item.serviceName}</h3>
         {description ? isLongDescription ? (
           <details className="mt-2 text-sm text-slate-600">
-            <summary className="cursor-pointer list-none font-medium text-emerald-700">{shortDescription} Read more</summary>
+            <summary className="cursor-pointer list-none font-medium text-[#0d6f73]">{shortDescription} Read more</summary>
             <p className="mt-2 whitespace-pre-line">{description}</p>
           </details>
         ) : (
@@ -42,7 +42,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
           </a>
           <Link
             href={`/book?serviceName=${encodeURIComponent(item.serviceName)}`}
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white"
+            className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0a5b5f]"
           >
             Book
           </Link>
