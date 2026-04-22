@@ -345,7 +345,7 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
       ) : null}
 
       <button type="submit" className="rounded-2xl bg-emerald-600 px-6 py-3 font-semibold text-white disabled:opacity-60" disabled={isSubmitting}>
-        {isSubmitting ? "Submitting..." : "Book on Sedifex"}
+        {isSubmitting ? "Submitting..." : "Book"}
       </button>
     </form>
   );

@@ -9,7 +9,7 @@ export function Footer() {
           <h3 className="text-lg font-bold text-[#0b2d4f]">{siteConfig.name}</h3>
           <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-[#0d6f73]">{siteConfig.tagline}</p>
           <p className="mt-2 text-sm text-slate-600">
-            Trusted travel guidance and relocation consultation for Europe, Canada, and the USA (Asia excluded).
+            Trusted travel guidance and relocation consultation for Europe, Canada, and the USA.
           </p>
         </div>
         <div>
