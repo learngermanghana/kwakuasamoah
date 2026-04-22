@@ -4,6 +4,7 @@ import { PackageCard } from "@/components/package-card";
 
 export default async function HomePage() {
   const services = await getServiceData();
+  const featuredServices = services.slice(0, 3);
   const gallery = await getGalleryData();
   const videos = await getYouTubeVideos();
 
@@ -39,7 +40,12 @@ export default async function HomePage() {
           <p className="mt-2 text-slate-600">Popular services for travel, study, and relocation support.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {services.map((item) => <PackageCard key={item.id} item={item} />)}
+          {featuredServices.map((item) => <PackageCard key={item.id} item={item} />)}
+        </div>
+        <div className="mt-8">
+          <Link href="/services" className="text-sm font-semibold text-emerald-700">
+            View more services
+          </Link>
         </div>
       </section>
 
@@ -53,8 +59,8 @@ export default async function HomePage() {
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
           {gallery.map((photo) => (
             <figure key={photo.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              {photo.caption ? <h3 className="px-3 pt-3 text-base font-semibold">{photo.caption}</h3> : null}
               <img src={photo.url} alt={photo.alt} className="h-48 w-full object-cover" />
-              {photo.caption ? <figcaption className="p-3 text-sm text-slate-600">{photo.caption}</figcaption> : null}
             </figure>
           ))}
         </div>
