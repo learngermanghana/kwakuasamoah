@@ -40,7 +40,7 @@ type SedifexGalleryResponse = {
 
 export type ServiceItem = {
   id: string;
-  title: string;
+  serviceName: string;
   category: string;
   description: string;
   priceLabel: string;
@@ -57,7 +57,7 @@ export type GalleryItem = {
 
 const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   id: pkg.slug,
-  title: pkg.title,
+  serviceName: pkg.title,
   category: pkg.destination,
   description: pkg.summary,
   priceLabel: pkg.priceFrom,
@@ -69,7 +69,7 @@ const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) 
   id: service.id,
   url: service.image,
   alt: service.imageAlt,
-  caption: service.title
+  caption: service.serviceName
 }));
 
 function getSedifexConfig() {
@@ -83,7 +83,7 @@ function getSedifexConfig() {
 function mapSedifexItem(item: SedifexItem): ServiceItem {
   return {
     id: item.id,
-    title: item.name,
+    serviceName: item.name,
     category: item.category || "Service",
     description: item.description || "Professional support tailored to your travel and relocation goals.",
     priceLabel: typeof item.price === "number" ? `From ${item.price}` : "Contact for price",
