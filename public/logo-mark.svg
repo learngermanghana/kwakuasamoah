@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Kwaku Lottery Logo</title>
+  <desc id="desc">Circular green logo with a white K monogram.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="url(#bg)"/>
+  <circle cx="256" cy="256" r="168" fill="#34d399" opacity="0.4"/>
+  <rect x="172" y="128" width="56" height="256" rx="20" fill="#ffffff"/>
+  <path d="M236 256L356 128L396 168L292 272L396 376L356 416L236 292Z" fill="#ffffff"/>
+</svg>
