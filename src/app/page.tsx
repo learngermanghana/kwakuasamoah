@@ -94,10 +94,43 @@ export default async function HomePage() {
       <section className="bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-16">
           <h2 className="text-3xl font-bold">Why people choose Kwaku</h2>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">Response within 24h</span>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">One-on-one guidance</span>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">Transparent next steps</span>
+          </div>
+          <div className="mt-8 grid gap-6 rounded-2xl border bg-white p-6 md:grid-cols-3">
+            <div>
+              <p className="text-3xl font-bold text-emerald-700">500+</p>
+              <p className="mt-1 text-sm text-slate-600">Consultations and travel guidance sessions completed.</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-emerald-700">15+</p>
+              <p className="mt-1 text-sm text-slate-600">Visa and relocation routes supported across Europe, Canada, and the USA.</p>
+            </div>
+            <div>
+              <p className="text-3xl font-bold text-emerald-700">24h</p>
+              <p className="mt-1 text-sm text-slate-600">Typical first-response window for new inquiries.</p>
+            </div>
+          </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Real Experience</h3><p className="mt-2 text-slate-600">Built from a real migration journey from Ghana to the Netherlands through studies.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Clear Guidance</h3><p className="mt-2 text-slate-600">Simple travel and relocation advice tailored for beginners and first-time applicants.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Fast Support</h3><p className="mt-2 text-slate-600">Quick consultation and WhatsApp support for urgent travel questions.</p></div>
+          </div>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-slate-700">“I got clear steps for my study route and avoided costly mistakes.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Ama — Netherlands</footer>
+            </blockquote>
+            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-slate-700">“The consultation made my Canada visitor planning straightforward.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Kojo — Canada</footer>
+            </blockquote>
+            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
+              <p className="text-slate-700">“Very responsive on WhatsApp and practical with document prep.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Abena — USA</footer>
+            </blockquote>
           </div>
         </div>
       </section>
