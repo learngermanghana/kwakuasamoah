@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
+import type { GalleryItem } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 import { siteConfig } from "@/lib/site-config";
 
 export default async function HomePage() {
   const services = await getServiceData();
   const featuredServices = services.slice(0, 3);
-  const gallery = await getGalleryData();
+  const gallery: GalleryItem[] = await getGalleryData();
   const videos = await getYouTubeVideos();
 
   return (
