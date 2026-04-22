@@ -27,7 +27,12 @@ type SedifexProductsResponse = {
 
 type SedifexGalleryItem = {
   id: string;
-  url: string;
+  url?: string;
+  imageUrl?: string;
+  image?: string;
+  media?: {
+    url?: string;
+  };
   alt?: string;
   caption?: string;
   sortOrder?: number;
@@ -113,12 +118,18 @@ function normalizeServiceDescription(description?: string) {
 }
 
 function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
+  const imageUrl = getSedifexGalleryImageUrl(item);
+
   return {
     id: item.id,
-    url: item.url,
+    url: imageUrl,
     alt: item.alt || item.caption || "Store gallery image",
     caption: item.caption || ""
   };
+}
+
+function getSedifexGalleryImageUrl(item: SedifexGalleryItem) {
+  return item.url || item.imageUrl || item.image || item.media?.url || "";
 }
 
 export async function getServiceData() {
@@ -168,34 +179,40 @@ export async function getGalleryData() {
     return defaultGallery;
   }
 
-  const endpoint = new URL("/integrationGallery", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
+  const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
 
-  try {
-    const response = await fetch(endpoint, {
-      headers: {
-        Accept: "application/json"
-      },
-      next: { revalidate: 60 }
-    });
+  for (const path of galleryEndpoints) {
+    const endpoint = new URL(path, baseUrl);
+    endpoint.searchParams.set("storeId", storeId);
 
-    if (!response.ok) {
-      return defaultGallery;
+    try {
+      const response = await fetch(endpoint, {
+        headers: {
+          Accept: "application/json"
+        },
+        next: { revalidate: 60 }
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const payload = (await response.json()) as SedifexGalleryResponse;
+      const galleryItems = (payload.gallery || [])
+        .filter((item) => item.isPublished !== false && Boolean(getSedifexGalleryImageUrl(item)))
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+      if (!galleryItems.length) {
+        continue;
+      }
+
+      return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
+    } catch {
+      continue;
     }
-
-    const payload = (await response.json()) as SedifexGalleryResponse;
-    const galleryItems = (payload.gallery || [])
-      .filter((item) => item.isPublished !== false)
-      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-
-    if (!galleryItems.length) {
-      return defaultGallery;
-    }
-
-    return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
-  } catch {
-    return defaultGallery;
   }
+
+  return defaultGallery;
 }
 
 export type YouTubeVideo = {

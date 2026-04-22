@@ -23,13 +23,22 @@ type GalleryPayload = {
   storeId: string;
   gallery: Array<{
     id: string;
-    url: string;
+    url?: string;
+    imageUrl?: string;
+    image?: string;
+    media?: {
+      url?: string;
+    };
     alt?: string | null;
     caption?: string | null;
     sortOrder?: number;
     isPublished?: boolean;
   }>;
 };
+
+function getGalleryImageUrl(item: GalleryPayload["gallery"][number]) {
+  return item.url ?? item.imageUrl ?? item.image ?? item.media?.url ?? "";
+}
 
 export async function fetchPromoAndGallery() {
   if (!STORE_ID) {
@@ -46,26 +55,42 @@ export async function fetchPromoAndGallery() {
     Accept: "application/json"
   };
 
-  const [promoRes, galleryRes] = await Promise.all([
-    fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    }),
-    fetch(`${BASE_URL}/integrationGallery?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    })
-  ]);
+  const promoRes = await fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
+    headers,
+    next: { revalidate: 60 }
+  });
 
   if (!promoRes.ok) throw new Error(`Promo request failed: ${promoRes.status}`);
-  if (!galleryRes.ok) throw new Error(`Gallery request failed: ${galleryRes.status}`);
 
   const promoJson = (await promoRes.json()) as PromoPayload;
-  const galleryJson = (await galleryRes.json()) as GalleryPayload;
 
-  const publishedGallery = (galleryJson.gallery ?? [])
-    .filter((item) => item?.isPublished !== false && item?.url)
-    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
+  let publishedGallery: GalleryPayload["gallery"] = [];
+
+  for (const endpoint of galleryEndpoints) {
+    const galleryRes = await fetch(`${BASE_URL}${endpoint}?storeId=${encodeURIComponent(STORE_ID)}`, {
+      headers,
+      next: { revalidate: 60 }
+    });
+
+    if (!galleryRes.ok) {
+      continue;
+    }
+
+    const galleryJson = (await galleryRes.json()) as GalleryPayload;
+    const normalizedGallery = (galleryJson.gallery ?? [])
+      .filter((item) => item?.isPublished !== false && Boolean(getGalleryImageUrl(item)))
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((item) => ({
+        ...item,
+        url: getGalleryImageUrl(item)
+      }));
+
+    if (normalizedGallery.length) {
+      publishedGallery = normalizedGallery;
+      break;
+    }
+  }
 
   return { promo: promoJson.promo, gallery: publishedGallery };
 }
