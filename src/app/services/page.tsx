@@ -1,27 +1,16 @@
-const services = [
-  "Study abroad guidance",
-  "Visa document review",
-  "Europe, Canada, and USA travel planning",
-  "Schengen and visitor visa preparation",
-  "Relocation support (excluding Asia)",
-  "Interview preparation",
-  "Flight and hotel guidance",
-  "Custom itinerary planning"
-];
+import { getServiceData } from "@/lib/data";
+import { PackageCard } from "@/components/package-card";
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const services = await getServiceData();
   return (
-    <section className="mx-auto max-w-6xl px-4 py-16">
+    <section className="mx-auto max-w-7xl px-4 py-16">
       <h1 className="text-4xl font-bold">Services</h1>
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        {services.map((service) => (
-          <div key={service} className="rounded-2xl border p-5">
-            <h2 className="text-xl font-semibold">{service}</h2>
-            <p className="mt-2 text-slate-600">
-              Professional support tailored to travelers, students, and relocation clients.
-            </p>
-          </div>
-        ))}
+      <p className="mt-3 text-slate-600">
+        Services are pulled from Sedifex integration products with item type set to service.
+      </p>
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {services.map((service) => <PackageCard key={service.id} item={service} />)}
       </div>
     </section>
   );

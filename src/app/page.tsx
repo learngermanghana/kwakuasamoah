@@ -1,9 +1,10 @@
 ﻿import Link from "next/link";
-import { getPackageData, getWhatsAppLink } from "@/lib/data";
+import { getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 
 export default async function HomePage() {
-  const items = await getPackageData();
+  const services = await getServiceData();
+  const videos = await getYouTubeVideos();
 
   return (
     <div>
@@ -33,11 +34,36 @@ export default async function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold">Featured Packages</h2>
+          <h2 className="text-3xl font-bold">Featured Services</h2>
           <p className="mt-2 text-slate-600">Popular services for travel, study, and relocation support.</p>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {items.map((item) => <PackageCard key={item.slug} item={item} />)}
+          {services.map((item) => <PackageCard key={item.id} item={item} />)}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold">Latest Videos</h2>
+            <p className="mt-2 text-slate-600">Fresh updates from the Kwaku Lottery YouTube channel.</p>
+          </div>
+          <a href="https://www.youtube.com/@kwakulotteryy" target="_blank" className="text-sm font-semibold text-emerald-700">
+            View channel
+          </a>
+        </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {videos.length ? videos.map((video) => (
+            <a key={video.id} href={video.link} target="_blank" className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              <img src={video.thumbnail} alt={video.title} className="h-48 w-full object-cover" />
+              <div className="p-4">
+                <h3 className="line-clamp-2 font-semibold">{video.title}</h3>
+                <p className="mt-2 text-xs text-slate-500">{video.published ? new Date(video.published).toLocaleDateString() : ""}</p>
+              </div>
+            </a>
+          )) : (
+            <p className="text-slate-600">Videos will appear here shortly.</p>
+          )}
         </div>
       </section>
 
