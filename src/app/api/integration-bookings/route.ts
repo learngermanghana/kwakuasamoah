@@ -13,7 +13,7 @@ type BookingPayload = {
 
 export async function POST(req: Request) {
   const baseUrl = process.env.SEDIFEX_API_BASE_URL;
-  const apiKey = process.env.SEDIFEX_API_KEY;
+  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
   const storeId = process.env.SEDIFEX_STORE_ID;
   const defaultServiceId = process.env.BOOKING_DEFAULT_SERVICE_ID;
 
@@ -72,7 +72,9 @@ export async function POST(req: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
+        "x-api-key": apiKey,
+        "X-Sedifex-Contract-Version": "2026-04-13",
+        Accept: "application/json"
       },
       body: JSON.stringify(payload),
       cache: "no-store"
