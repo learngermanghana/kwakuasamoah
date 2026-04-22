@@ -1,4 +1,5 @@
 import 'server-only';
+import { normalizePublishedGallery } from "./gallery-utils";
 
 const BASE_URL = process.env.SEDIFEX_API_BASE_URL ?? "https://us-central1-sedifex-web.cloudfunctions.net";
 const STORE_ID = process.env.SEDIFEX_STORE_ID ?? "";
@@ -35,10 +36,6 @@ type GalleryPayload = {
     isPublished?: boolean;
   }>;
 };
-
-function getGalleryImageUrl(item: GalleryPayload["gallery"][number]) {
-  return item.url ?? item.imageUrl ?? item.image ?? item.media?.url ?? "";
-}
 
 export async function fetchPromoAndGallery() {
   if (!STORE_ID) {
@@ -78,13 +75,7 @@ export async function fetchPromoAndGallery() {
     }
 
     const galleryJson = (await galleryRes.json()) as GalleryPayload;
-    const normalizedGallery = (galleryJson.gallery ?? [])
-      .filter((item) => item?.isPublished !== false && Boolean(getGalleryImageUrl(item)))
-      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-      .map((item) => ({
-        ...item,
-        url: getGalleryImageUrl(item)
-      }));
+    const normalizedGallery = normalizePublishedGallery(galleryJson.gallery as GalleryPayload["gallery"]);
 
     if (normalizedGallery.length) {
       publishedGallery = normalizedGallery;

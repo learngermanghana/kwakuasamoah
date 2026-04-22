@@ -1,5 +1,6 @@
 import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
+import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils";
 
 const SEDIFEX_CONTRACT_VERSION = "2026-04-13";
 
@@ -118,7 +119,7 @@ function normalizeServiceDescription(description?: string) {
 }
 
 function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
-  const imageUrl = getSedifexGalleryImageUrl(item);
+  const imageUrl = getGalleryImageUrl(item);
 
   return {
     id: item.id,
@@ -126,10 +127,6 @@ function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
     alt: item.alt || item.caption || "Store gallery image",
     caption: item.caption || ""
   };
-}
-
-function getSedifexGalleryImageUrl(item: SedifexGalleryItem) {
-  return item.url || item.imageUrl || item.image || item.media?.url || "";
 }
 
 export async function getServiceData() {
@@ -173,9 +170,9 @@ export async function getServiceData() {
 }
 
 export async function getGalleryData() {
-  const { baseUrl, storeId } = getSedifexConfig();
+  const { baseUrl, apiKey, storeId } = getSedifexConfig();
 
-  if (!baseUrl || !storeId) {
+  if (!baseUrl || !apiKey || !storeId) {
     return defaultGallery;
   }
 
@@ -188,6 +185,8 @@ export async function getGalleryData() {
     try {
       const response = await fetch(endpoint, {
         headers: {
+          "x-api-key": apiKey,
+          "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
           Accept: "application/json"
         },
         next: { revalidate: 60 }
@@ -198,9 +197,7 @@ export async function getGalleryData() {
       }
 
       const payload = (await response.json()) as SedifexGalleryResponse;
-      const galleryItems = (payload.gallery || [])
-        .filter((item) => item.isPublished !== false && Boolean(getSedifexGalleryImageUrl(item)))
-        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+      const galleryItems = normalizePublishedGallery(payload.gallery as SedifexGalleryItem[] | undefined);
 
       if (!galleryItems.length) {
         continue;
