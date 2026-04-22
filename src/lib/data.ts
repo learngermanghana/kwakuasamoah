@@ -41,9 +41,9 @@ type SedifexGalleryResponse = {
 export type ServiceItem = {
   id: string;
   serviceName: string;
-  category: string;
-  description: string;
-  priceLabel: string;
+  category?: string;
+  description?: string;
+  priceLabel?: string;
   image: string;
   imageAlt: string;
 };
@@ -81,15 +81,35 @@ function getSedifexConfig() {
 }
 
 function mapSedifexItem(item: SedifexItem): ServiceItem {
+  const normalizedCategory =
+    item.category && item.category.toLowerCase() !== "not provided" ? item.category : undefined;
+
+  const normalizedDescription = normalizeServiceDescription(item.description);
+
   return {
     id: item.id,
     serviceName: item.name,
-    category: item.category || "Service",
-    description: item.description || "Professional support tailored to your travel and relocation goals.",
+    category: normalizedCategory,
+    description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
     priceLabel: typeof item.price === "number" ? `From ${item.price}` : "Contact for price",
     image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
     imageAlt: item.imageAlt || item.name
   };
+}
+
+function normalizeServiceDescription(description?: string) {
+  if (!description) return "";
+
+  const lines = description
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^\*\*(Product Name|Item Type|Category):\*\*/i.test(line))
+    .map((line) => line.replace(/\*\*/g, ""))
+    .map((line) => line.replace(/\s+,/g, ","))
+    .filter((line) => line.toLowerCase() !== "not provided");
+
+  return lines.join("\n");
 }
 
 function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
