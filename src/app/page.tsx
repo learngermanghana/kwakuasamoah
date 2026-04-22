@@ -1,9 +1,10 @@
 ﻿import Link from "next/link";
-import { getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
+import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 
 export default async function HomePage() {
   const services = await getServiceData();
+  const gallery = await getGalleryData();
   const videos = await getYouTubeVideos();
 
   return (
@@ -39,6 +40,23 @@ export default async function HomePage() {
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {services.map((item) => <PackageCard key={item.id} item={item} />)}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mb-8 flex items-end justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold">Gallery</h2>
+            <p className="mt-2 text-slate-600">Photos synced from Sedifex integration gallery.</p>
+          </div>
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+          {gallery.map((photo) => (
+            <figure key={photo.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              <img src={photo.url} alt={photo.alt} className="h-48 w-full object-cover" />
+              {photo.caption ? <figcaption className="p-3 text-sm text-slate-600">{photo.caption}</figcaption> : null}
+            </figure>
+          ))}
         </div>
       </section>
 

@@ -1,6 +1,8 @@
 import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
 
+const SEDIFEX_CONTRACT_VERSION = "2026-04-13";
+
 export async function getPackageData() {
   return packages;
 }
@@ -19,7 +21,21 @@ type SedifexItem = {
 
 type SedifexProductsResponse = {
   products?: SedifexItem[];
+  publicProducts?: SedifexItem[];
   publicServices?: SedifexItem[];
+};
+
+type SedifexGalleryItem = {
+  id: string;
+  url: string;
+  alt?: string;
+  caption?: string;
+  sortOrder?: number;
+  isPublished?: boolean;
+};
+
+type SedifexGalleryResponse = {
+  gallery?: SedifexGalleryItem[];
 };
 
 export type ServiceItem = {
@@ -32,6 +48,13 @@ export type ServiceItem = {
   imageAlt: string;
 };
 
+export type GalleryItem = {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
+};
+
 const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   id: pkg.slug,
   title: pkg.title,
@@ -41,6 +64,21 @@ const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   image: pkg.image,
   imageAlt: pkg.title
 }));
+
+const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) => ({
+  id: service.id,
+  url: service.image,
+  alt: service.imageAlt,
+  caption: service.title
+}));
+
+function getSedifexConfig() {
+  const baseUrl = process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
+  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
+  const storeId = process.env.SEDIFEX_STORE_ID;
+
+  return { baseUrl, apiKey, storeId };
+}
 
 function mapSedifexItem(item: SedifexItem): ServiceItem {
   return {
@@ -54,10 +92,17 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
   };
 }
 
+function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
+  return {
+    id: item.id,
+    url: item.url,
+    alt: item.alt || item.caption || "Store gallery image",
+    caption: item.caption || ""
+  };
+}
+
 export async function getServiceData() {
-  const baseUrl = process.env.SEDIFEX_API_BASE_URL;
-  const apiKey = process.env.SEDIFEX_API_KEY;
-  const storeId = process.env.SEDIFEX_STORE_ID;
+  const { baseUrl, apiKey, storeId } = getSedifexConfig();
 
   if (!baseUrl || !apiKey || !storeId) {
     return defaultServices;
@@ -69,9 +114,11 @@ export async function getServiceData() {
   try {
     const response = await fetch(endpoint, {
       headers: {
-        Authorization: `Bearer ${apiKey}`
+        "x-api-key": apiKey,
+        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
+        Accept: "application/json"
       },
-      cache: "no-store"
+      next: { revalidate: 30 }
     });
 
     if (!response.ok) {
@@ -91,6 +138,43 @@ export async function getServiceData() {
     return items.map(mapSedifexItem);
   } catch {
     return defaultServices;
+  }
+}
+
+export async function getGalleryData() {
+  const { baseUrl, storeId } = getSedifexConfig();
+
+  if (!baseUrl || !storeId) {
+    return defaultGallery;
+  }
+
+  const endpoint = new URL("/integrationGallery", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        Accept: "application/json"
+      },
+      next: { revalidate: 60 }
+    });
+
+    if (!response.ok) {
+      return defaultGallery;
+    }
+
+    const payload = (await response.json()) as SedifexGalleryResponse;
+    const galleryItems = (payload.gallery || [])
+      .filter((item) => item.isPublished !== false)
+      .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+
+    if (!galleryItems.length) {
+      return defaultGallery;
+    }
+
+    return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
+  } catch {
+    return defaultGallery;
   }
 }
 
