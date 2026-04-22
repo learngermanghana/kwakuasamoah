@@ -15,9 +15,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#d8d6cf] bg-[#fffdf8]/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-3 text-lg font-bold text-[#0b2d4f]">
+        <Link href="/" className="flex items-center gap-3 text-[#0b2d4f]">
           <Image src="/logo-mark.svg" alt="Kwaku Lottery logo" width={36} height={36} priority />
-          <span>{siteConfig.name}</span>
+          <span className="leading-tight">
+            <span className="block text-lg font-bold">{siteConfig.name}</span>
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-[#0d6f73]">
+              {siteConfig.tagline}
+            </span>
+          </span>
         </Link>
         <nav className="hidden gap-6 md:flex">
           {nav.map((item) => (

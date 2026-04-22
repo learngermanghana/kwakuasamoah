@@ -1,6 +1,7 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
+import { siteConfig } from "@/lib/site-config";
 
 export default async function HomePage() {
   const services = await getServiceData();
@@ -22,7 +23,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-24 md:py-28">
           <div className="max-w-3xl text-white">
             <p className="mb-3 inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">
-              Travel, Relocation and Study Abroad Support
+              {siteConfig.tagline} • Europe, Canada, USA
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
               From Africa to Europe, Canada, and the USA — helping you travel and relocate smarter.
