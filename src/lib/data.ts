@@ -186,25 +186,17 @@ export type YouTubeVideo = {
   thumbnail: string;
 };
 
-export async function getYouTubeVideos() {
-  const fallback: YouTubeVideo[] = [];
+const YOUTUBE_REQUEST_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (compatible; KwakuLotteryBot/1.0; +https://www.youtube.com/@kwakulotteryy)",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9"
+};
 
-  try {
-    const channelPage = await fetch(siteConfig.socials.youtube, { cache: "no-store" });
-    if (!channelPage.ok) return fallback;
+function parseYouTubeFeed(xml: string) {
+  const entries = xml.split("<entry>").slice(1, 7);
 
-    const html = await channelPage.text();
-    const channelIdMatch = html.match(/"channelId":"(UC[^"]+)"/);
-    if (!channelIdMatch) return fallback;
-
-    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelIdMatch[1]}`;
-    const feedResponse = await fetch(feedUrl, { cache: "no-store" });
-    if (!feedResponse.ok) return fallback;
-
-    const xml = await feedResponse.text();
-    const entries = xml.split("<entry>").slice(1, 7);
-
-    return entries.map((entry) => {
+  return entries
+    .map((entry) => {
       const id = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1] || "";
       const title = entry.match(/<title>([^<]+)<\/title>/)?.[1] || "YouTube video";
       const published = entry.match(/<published>([^<]+)<\/published>/)?.[1] || "";
@@ -215,7 +207,50 @@ export async function getYouTubeVideos() {
         published,
         thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
       };
-    }).filter((entry) => Boolean(entry.id));
+    })
+    .filter((entry) => Boolean(entry.id));
+}
+
+function findChannelId(html: string) {
+  const matchers = [
+    /"channelId":"(UC[^"]+)"/,
+    /\\"channelId\\":\\"(UC[^\\"]+)\\"/,
+    /"externalId":"(UC[^"]+)"/
+  ];
+
+  for (const matcher of matchers) {
+    const result = html.match(matcher);
+    if (result?.[1]) return result[1];
+  }
+
+  return "";
+}
+
+export async function getYouTubeVideos() {
+  const fallback: YouTubeVideo[] = [];
+
+  try {
+    const videosUrl = `${siteConfig.socials.youtube.replace(/\/$/, "")}/videos`;
+    const channelPage = await fetch(videosUrl, {
+      cache: "no-store",
+      headers: YOUTUBE_REQUEST_HEADERS
+    });
+
+    if (!channelPage.ok) return fallback;
+
+    const html = await channelPage.text();
+    const channelId = findChannelId(html);
+    if (!channelId) return fallback;
+
+    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+    const feedResponse = await fetch(feedUrl, {
+      cache: "no-store",
+      headers: YOUTUBE_REQUEST_HEADERS
+    });
+    if (!feedResponse.ok) return fallback;
+
+    const xml = await feedResponse.text();
+    return parseYouTubeFeed(xml);
   } catch {
     return fallback;
   }
