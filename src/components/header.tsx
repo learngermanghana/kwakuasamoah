@@ -24,6 +24,7 @@ export function Header() {
             </span>
           </span>
         </Link>
+
         <nav className="hidden gap-6 md:flex">
           {nav.map((item) => (
             <Link key={item.href} href={item.href} className="text-sm font-medium text-slate-700 transition hover:text-[#0d6f73]">
@@ -31,6 +32,24 @@ export function Header() {
             </Link>
           ))}
         </nav>
+
+        <details className="group relative md:hidden">
+          <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md border border-[#d8d6cf] bg-white px-3 py-2 text-sm font-medium text-slate-700">
+            <span aria-hidden="true" className="text-lg leading-none">☰</span>
+            <span>Menu</span>
+          </summary>
+          <nav className="absolute right-0 mt-2 flex min-w-[10rem] flex-col rounded-md border border-[#d8d6cf] bg-white p-2 shadow-lg">
+            {nav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-[#f5f7f8] hover:text-[#0d6f73]"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+        </details>
       </div>
     </header>
   );
