@@ -24,10 +24,10 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-24 md:py-28">
           <div className="max-w-3xl text-white">
             <p className="mb-3 inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">
-              {siteConfig.tagline} • Europe, Canada, USA
+              {siteConfig.tagline}
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-              From Africa to Europe, Canada, and the USA — helping you travel and relocate smarter.
+              Travel to Europe, Canada, and the USA.
             </h1>
             <p className="mt-5 text-lg text-[#f4f1e6]">
               Get trusted travel updates, relocation guidance, visa support, and one-on-one consultation for destinations outside Asia.
@@ -128,7 +128,7 @@ export default async function HomePage() {
             </div>
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Real Experience</h3><p className="mt-2 text-slate-600">Built from real migration journeys from Africa to Europe through studies and relocation.</p></div>
+            <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Real Experience</h3><p className="mt-2 text-slate-600">Built from real migration journeys focused on travel and relocation support.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Clear Guidance</h3><p className="mt-2 text-slate-600">Simple travel and relocation advice tailored for beginners and first-time applicants.</p></div>
             <div className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="font-bold">Fast Support</h3><p className="mt-2 text-slate-600">Quick consultation and WhatsApp support for urgent travel questions.</p></div>
           </div>
