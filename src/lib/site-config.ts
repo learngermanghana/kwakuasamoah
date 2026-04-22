@@ -1,11 +1,11 @@
 export const siteConfig = {
   name: "Kwaku Lottery",
-  tagline: "Travel & Relocation Advisory",
+  tagline: "Travel to Europe, Canada, and the USA",
   description:
-    "Trusted travel guidance and relocation support for Europe, Canada, and the USA through clear, practical consultation.",
+    "Travel guidance and relocation support for Europe, Canada, and the USA.",
   url: "https://www.kwakulotteryy.com",
-  phone: "+31685118017",
-  whatsapp: "31685118017",
+  phone: "+44 7424 047530",
+  whatsapp: "447424047530",
   email: "kwakulotteryy@gmail.com",
   socials: {
     tiktok: "https://www.tiktok.com/@kwakulotteryy",
