@@ -22,7 +22,7 @@ export default async function PromoPage() {
           <ul className="mt-4 grid gap-6 sm:grid-cols-2">
             {gallery.map((item) => (
               <li key={item.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-                <img src={item.url} alt={item.alt ?? "Gallery image"} className="h-56 w-full object-cover" />
+                <img src={item.url} alt={item.alt ?? "Gallery image"} className="h-56 w-full object-contain bg-slate-50" />
                 {item.caption ? <p className="p-4 text-sm text-slate-700">{item.caption}</p> : null}
               </li>
             ))}
