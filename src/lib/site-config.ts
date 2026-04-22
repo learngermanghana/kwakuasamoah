@@ -1,5 +1,6 @@
 export const siteConfig = {
   name: "Kwaku Lottery",
+  tagline: "Travel & Relocation Advisory",
   description:
     "Trusted travel guidance and relocation support for Europe, Canada, and the USA through clear, practical consultation.",
   url: "https://www.kwakulotteryy.com",
