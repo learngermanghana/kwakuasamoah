@@ -86,7 +86,7 @@ export default async function HomePage() {
             <h2 className="text-3xl font-bold">Latest Videos</h2>
             <p className="mt-2 text-slate-600">Fresh updates from the Kwaku Lottery YouTube channel.</p>
           </div>
-          <a href="https://www.youtube.com/@kwakulottery" target="_blank" className="text-sm font-semibold text-[#0d6f73]">
+          <a href="https://www.youtube.com/@kwakulotteryy" target="_blank" className="text-sm font-semibold text-[#0d6f73]">
             View channel
           </a>
         </div>

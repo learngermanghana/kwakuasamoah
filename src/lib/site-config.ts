@@ -1,16 +1,16 @@
 export const siteConfig = {
-  name: "Kwaku Lottery",
+  name: "Kwakulottery",
   tagline: "Travel to Europe, Canada, and the USA",
   description:
     "Travel guidance and relocation support for Europe, Canada, and the USA.",
-  url: "https://www.kwakulottery.com",
+  url: "https://www.kwakulotteryy.com",
   phone: "+44 7424 047530",
   whatsapp: "447424047530",
-  email: "kwakulottery@gmail.com",
+  email: "kwakulotteryy@gmail.com",
   socials: {
-    tiktok: "https://www.tiktok.com/@kwakulottery",
-    instagram: "https://www.instagram.com/kwakulottery",
-    youtube: "https://www.youtube.com/@kwakulottery",
-    facebook: "https://web.facebook.com/kwakulottery?_rdc=1&_rdr"
+    tiktok: "https://www.tiktok.com/@kwakulotteryy",
+    instagram: "https://www.instagram.com/kwakulotteryy",
+    youtube: "https://www.youtube.com/@kwakulotteryy",
+    facebook: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr"
   }
 };
