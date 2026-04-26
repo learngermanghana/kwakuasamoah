@@ -69,6 +69,9 @@ export default async function HomePage() {
             <h2 className="text-3xl font-bold">Gallery</h2>
             <p className="mt-2 text-slate-600">Photos synced from Sedifex integration gallery.</p>
           </div>
+          <Link href="/promo" className="text-sm font-semibold text-[#0d6f73]">
+            Explore gallery
+          </Link>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
           {gallery.map((photo) => (
