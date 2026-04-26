@@ -10,11 +10,6 @@ export function PackageCard({ item }: { item: ServiceItem }) {
     ? `${description.slice(0, MAX_DESCRIPTION_LENGTH).trimEnd()}...`
     : description;
 
-  const showPrice = Boolean(item.priceLabel && item.priceLabel.toLowerCase() !== "not provided");
-  const priceText = item.priceLabel?.toLowerCase().startsWith("contact")
-    ? item.priceLabel
-    : `Starting from ${item.priceLabel}`;
-
   return (
     <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
       <div className="bg-[#f8f4ea] p-3">
@@ -31,7 +26,6 @@ export function PackageCard({ item }: { item: ServiceItem }) {
         ) : (
           <p className="mt-2 whitespace-pre-line text-sm text-slate-600">{shortDescription}</p>
         ) : null}
-        {showPrice ? <p className="mt-3 text-sm text-slate-500">{priceText}</p> : null}
         <div className="mt-4 flex gap-3">
           <a
             href={getWhatsAppLink(`Hello, I want to ask about ${item.serviceName}.`)}
