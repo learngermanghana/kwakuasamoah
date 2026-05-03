@@ -137,16 +137,16 @@ export default async function HomePage() {
           </div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">“I got clear steps for my study route and avoided costly mistakes.”</p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">Ama — Netherlands</footer>
+              <p className="text-slate-700">“I got a clear step-by-step study route, and it helped me avoid expensive mistakes in my first application.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Ama O. — Netherlands (Master&apos;s applicant)</footer>
             </blockquote>
             <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">“The consultation made my Canada visitor planning straightforward.”</p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">Kojo — Canada</footer>
+              <p className="text-slate-700">“The consultation broke down my Canada visitor plan into simple actions, from documents to interview prep.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Kojo A. — Canada visitor applicant</footer>
             </blockquote>
             <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">“Very responsive on WhatsApp and practical with document prep.”</p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">Abena — USA</footer>
+              <p className="text-slate-700">“They were very responsive on WhatsApp and practical with my document preparation timeline.”</p>
+              <footer className="mt-3 text-sm font-semibold text-slate-600">Abena K. — USA relocation applicant</footer>
             </blockquote>
           </div>
         </div>
