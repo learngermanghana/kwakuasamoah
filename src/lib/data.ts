@@ -105,10 +105,32 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
   };
 }
 
+const preferredServiceOrder = [
+  "Schengen Travel Assistance",
+  "Visa Application Support",
+  "Interview Preparation",
+  "Document Review Service",
+  "Study Abroad Guidance",
+  "Flight And Hotel Reservation Support"
+] as const;
+
 function sortSedifexServices(items: SedifexItem[]) {
   return items
     .map((item, index) => ({ item, index }))
     .sort((a, b) => {
+      const aPreferredIndex = preferredServiceOrder.indexOf(a.item.name as (typeof preferredServiceOrder)[number]);
+      const bPreferredIndex = preferredServiceOrder.indexOf(b.item.name as (typeof preferredServiceOrder)[number]);
+      const aHasPreferredOrder = aPreferredIndex !== -1;
+      const bHasPreferredOrder = bPreferredIndex !== -1;
+
+      if (aHasPreferredOrder && bHasPreferredOrder && aPreferredIndex !== bPreferredIndex) {
+        return aPreferredIndex - bPreferredIndex;
+      }
+
+      if (aHasPreferredOrder !== bHasPreferredOrder) {
+        return aHasPreferredOrder ? -1 : 1;
+      }
+
       const aOrder = a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
       const bOrder = b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
 
