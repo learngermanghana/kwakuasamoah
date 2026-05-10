@@ -3,6 +3,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
+import { MailingListCta } from "@/components/mailing-list-cta";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -59,6 +60,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <main>{children}</main>
         <Footer />
         <WhatsAppFloat />
+        <MailingListCta />
       </body>
     </html>
   );
