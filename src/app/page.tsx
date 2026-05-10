@@ -51,6 +51,21 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="mx-auto grid max-w-7xl gap-10 px-4 py-16 md:grid-cols-[1.3fr_0.7fr] md:items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-[#0b2d4f]">Meet Kwaku</h2>
+          <p className="mt-3 text-slate-600">
+            Kwaku shares practical guidance from real travel and relocation experience, helping you understand each step with clarity before you submit.
+          </p>
+          <p className="mt-3 text-slate-600">
+            From document readiness checks to interview strategy, every consultation is focused on reducing errors and improving confidence.
+          </p>
+        </div>
+        <figure className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-[#d8d6cf] bg-white shadow-md">
+          <img src="/image.jpeg" alt="Kwaku portrait" className="block h-auto w-full object-cover" />
+        </figure>
+      </section>
+
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-[#0b2d4f]">Featured Services</h2>
