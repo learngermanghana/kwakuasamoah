@@ -11,6 +11,12 @@ type BookingPayload = {
   customerEmail?: string;
   website?: string;
   attributes?: Record<string, unknown>;
+  paymentMethod?: string;
+  paymentAmount?: number | string;
+  depositAmount?: number | string;
+  paymentConfirmed?: boolean | string;
+  paymentScreenshotUrl?: string;
+  paymentReference?: string;
 };
 
 type SedifexCheckoutResponse = {
@@ -23,6 +29,48 @@ type SedifexCheckoutResponse = {
   message?: string;
 };
 
+type CheckoutEnvelope = {
+  ok?: boolean;
+  data?: SedifexCheckoutResponse | Record<string, unknown>;
+  checkout?: SedifexCheckoutResponse | Record<string, unknown>;
+  authorizationUrl?: string;
+  authorization_url?: string;
+  reference?: string;
+  expiresAt?: string;
+  expires_at?: string;
+  error?: string;
+  message?: string;
+};
+
+function resolveCheckoutResponse(payload: CheckoutEnvelope | SedifexCheckoutResponse | null) {
+  if (!payload) return null;
+  const source = (payload as CheckoutEnvelope).data || (payload as CheckoutEnvelope).checkout || payload;
+  const record = source as Record<string, unknown>;
+
+  const authorizationUrl =
+    (record.authorizationUrl as string | undefined) ||
+    (record.authorization_url as string | undefined) ||
+    ((payload as CheckoutEnvelope).authorizationUrl as string | undefined) ||
+    ((payload as CheckoutEnvelope).authorization_url as string | undefined);
+
+  const reference =
+    (record.reference as string | undefined) || ((payload as CheckoutEnvelope).reference as string | undefined);
+
+  return {
+    ok: Boolean((record.ok as boolean | undefined) ?? (payload as CheckoutEnvelope).ok ?? true),
+    reference,
+    sedifexOrderId: (record.sedifexOrderId as string | undefined) || (record.sedifex_order_id as string | undefined),
+    authorizationUrl,
+    expiresAt:
+      (record.expiresAt as string | undefined) ||
+      (record.expires_at as string | undefined) ||
+      ((payload as CheckoutEnvelope).expiresAt as string | undefined) ||
+      ((payload as CheckoutEnvelope).expires_at as string | undefined),
+    error: (record.error as string | undefined) || (payload as CheckoutEnvelope).error,
+    message: (record.message as string | undefined) || (payload as CheckoutEnvelope).message
+  } satisfies SedifexCheckoutResponse;
+}
+
 type RateLimitEntry = {
   count: number;
   resetAt: number;
@@ -31,6 +79,32 @@ type RateLimitEntry = {
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const rateLimitStore = new Map<string, RateLimitEntry>();
+
+
+function toNumber(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return undefined;
+}
+
+function toBoolean(value: unknown) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  return undefined;
+}
 
 function getClientIp(req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for");
@@ -106,6 +180,14 @@ export async function POST(req: Request) {
     const bookingDate = booking.bookingDate || (body.travelDates as string | undefined);
     const notes = booking.notes || (body.message as string | undefined);
 
+    const paymentMethod = booking.paymentMethod || (body.paymentMethod as string | undefined);
+    const paymentAmount = toNumber(booking.paymentAmount ?? body.paymentAmount);
+    const depositAmount = toNumber(booking.depositAmount ?? body.depositAmount);
+    const paymentConfirmed = toBoolean(booking.paymentConfirmed ?? body.paymentConfirmed);
+    const paymentScreenshotUrl =
+      booking.paymentScreenshotUrl || (body.paymentScreenshotUrl as string | undefined);
+    const paymentReference = booking.paymentReference || (body.paymentReference as string | undefined);
+
     if (!customerName) {
       return NextResponse.json(
         { ok: false, error: "missing-name", message: "Please provide your full name." },
@@ -134,6 +216,14 @@ export async function POST(req: Request) {
       bookingDate,
       bookingTime: booking.bookingTime,
       serviceName: booking.serviceName,
+      payment: {
+        method: paymentMethod,
+        amount: paymentAmount,
+        depositAmount,
+        confirmed: paymentConfirmed,
+        screenshotUrl: paymentScreenshotUrl,
+        reference: paymentReference
+      },
       attributes: {
         source: "website_booking_form",
         ...(booking.attributes || {})
@@ -165,7 +255,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!checkoutAmount || !checkoutReturnUrl) {
+    if (paymentConfirmed || !checkoutAmount || !checkoutReturnUrl) {
       return NextResponse.json({ ok: true, message: "Booking created.", data: responseData });
     }
 
@@ -215,7 +305,11 @@ export async function POST(req: Request) {
       cache: "no-store"
     });
 
-    const checkoutData = (await checkoutResponse.json().catch(() => null)) as SedifexCheckoutResponse | null;
+    const checkoutPayloadResponse = (await checkoutResponse.json().catch(() => null)) as
+      | CheckoutEnvelope
+      | SedifexCheckoutResponse
+      | null;
+    const checkoutData = resolveCheckoutResponse(checkoutPayloadResponse);
 
     if (!checkoutResponse.ok || !checkoutData?.ok || !checkoutData.authorizationUrl || !checkoutData.reference) {
       return NextResponse.json(
