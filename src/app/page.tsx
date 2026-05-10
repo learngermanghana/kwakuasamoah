@@ -4,6 +4,7 @@ import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } fro
 import type { GalleryItem } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 import { siteConfig } from "@/lib/site-config";
+import kwakuPortrait from "../../public/image.jpeg";
 
 export default async function HomePage() {
   const services = await getServiceData();
@@ -63,7 +64,7 @@ export default async function HomePage() {
           </p>
         </div>
         <figure className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-[#d8d6cf] bg-white shadow-md">
-          <Image src="/image.jpeg" alt="Kwaku portrait" width={640} height={800} className="h-full w-full object-cover" />
+          <Image src={kwakuPortrait} alt="Kwaku portrait" width={640} height={800} className="h-full w-full object-cover" />
         </figure>
       </section>
 
