@@ -1,6 +1,6 @@
 export const siteConfig = {
   name: "Kwaku Lotteryy",
-  tagline: "Travel to Europe, Canada, and the USA",
+  tagline: "Turning travel dreams into reality. ",
   description:
     "Travel guidance and relocation support for Europe, Canada, and the USA.",
   url: "https://www.kwakulotteryy.com",
