@@ -48,13 +48,17 @@ export default function AboutPage() {
           <div>
             <h2 className="text-2xl font-bold text-[#0b2d4f]">The Story</h2>
             <p className="mt-4 leading-8 text-slate-600">
-              This brand started from a personal journey from Ghana to Europe through studies. Along the way, one
-              truth became obvious: many people miss opportunities because they lack access to reliable and practical
-              guidance.
+              This brand started from a personal journey from Ghana to the world. Along the way, one truth became
+              clear: many people miss life-changing opportunities simply because they lack access to reliable,
+              practical guidance.
             </p>
             <p className="mt-4 leading-8 text-slate-600">
-              Today, Kwaku Lottery combines social content, one-on-one consultation, and structured services to help
-              people make smarter decisions about travel, visa planning, and relocation.
+              Today, Kwaku Lottery brings together engaging content, one-on-one consultations, and structured,
+              trusted services to help people make smarter decisions about travel, visa planning, and relocation.
+            </p>
+            <p className="mt-4 leading-8 text-slate-600">
+              I have combined real experience, proven strategies, and clear direction in my journey. Hi, I&apos;m
+              Kwaku. I&apos;ve gone through this journey myself, and now I help others avoid mistakes.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link
