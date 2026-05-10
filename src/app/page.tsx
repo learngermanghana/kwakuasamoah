@@ -27,7 +27,10 @@ export default async function HomePage() {
               {siteConfig.tagline}
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-              Travel
+              <span className="inline-flex items-center gap-3 rounded-2xl border border-white/25 bg-white/10 px-4 py-2 shadow-lg backdrop-blur-sm">
+                <span className="bg-gradient-to-r from-[#d9f7f5] via-white to-[#f4f1e6] bg-clip-text text-transparent">Travel</span>
+                <span aria-hidden="true" className="text-3xl md:text-4xl">✈️</span>
+              </span>
             </h1>
             <p className="mt-5 text-lg text-[#f4f1e6]">
               Get trusted travel updates, visa support services, right documents guidance, relocation guidance, and one-on-one consultation for destinations worldwide.
