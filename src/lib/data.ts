@@ -15,6 +15,8 @@ type SedifexItem = {
   description?: string;
   price?: number;
   itemType?: string;
+  sortOrder?: number;
+  order?: number;
   imageUrl?: string;
   imageUrls?: string[];
   imageAlt?: string;
@@ -103,6 +105,22 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
   };
 }
 
+function sortSedifexServices(items: SedifexItem[]) {
+  return items
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const aOrder = a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
+      const bOrder = b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
+
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
+
 function normalizeServiceDescription(description?: string) {
   if (!description) return "";
 
@@ -163,7 +181,7 @@ export async function getServiceData() {
       return defaultServices;
     }
 
-    return items.map(mapSedifexItem);
+    return sortSedifexServices(items).map(mapSedifexItem);
   } catch {
     return defaultServices;
   }
