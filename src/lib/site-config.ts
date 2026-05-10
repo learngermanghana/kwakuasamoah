@@ -11,6 +11,7 @@ export const siteConfig = {
     tiktok: "https://www.tiktok.com/@kwakulotteryy",
     instagram: "https://www.instagram.com/kwakulotteryy",
     youtube: "https://www.youtube.com/@kwakulotteryy",
-    facebook: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr"
+    facebook: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr",
+    x: "https://x.com/kwakulotteryy"
   }
 };

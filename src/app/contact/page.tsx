@@ -27,7 +27,8 @@ const socialLinks = [
   { label: "TikTok", href: siteConfig.socials.tiktok },
   { label: "Instagram", href: siteConfig.socials.instagram },
   { label: "Facebook", href: siteConfig.socials.facebook },
-  { label: "YouTube", href: siteConfig.socials.youtube }
+  { label: "YouTube", href: siteConfig.socials.youtube },
+  { label: "X", href: siteConfig.socials.x }
 ];
 
 export default function ContactPage() {
