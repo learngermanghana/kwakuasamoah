@@ -150,7 +150,12 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
       });
 
       const data = (await response.json().catch(() => null)) as
-        | { ok?: boolean; error?: string; message?: string }
+        | {
+            ok?: boolean;
+            error?: string;
+            message?: string;
+            checkout?: { authorizationUrl?: string };
+          }
         | null;
 
       if (!response.ok || !data?.ok) {
@@ -168,6 +173,12 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
         kind: "success",
         text: data.message || "Thanks! Your booking request has been received."
       });
+
+      if (data.checkout?.authorizationUrl) {
+        window.location.assign(data.checkout.authorizationUrl);
+        return;
+      }
+
       setFormState((previous) => ({
         ...previous,
         customerName: "",
