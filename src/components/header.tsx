@@ -33,13 +33,6 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <Image
-            src="/image.jpeg"
-            alt="Travel profile"
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-full object-cover"
-          />
         </nav>
 
         <details className="group relative md:hidden">
