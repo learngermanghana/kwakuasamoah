@@ -30,7 +30,7 @@ export default async function HomePage() {
               Travel
             </h1>
             <p className="mt-5 text-lg text-[#f4f1e6]">
-              Get trusted travel updates, relocation guidance, visa support, and one-on-one consultation for destinations outside Asia.
+              Get trusted travel updates, visa support services, right documents guidance, relocation guidance, and one-on-one consultation for destinations worldwide.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Link href="/book" className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f]">
