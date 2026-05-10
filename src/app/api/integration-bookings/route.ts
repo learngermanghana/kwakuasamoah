@@ -13,6 +13,16 @@ type BookingPayload = {
   attributes?: Record<string, unknown>;
 };
 
+type SedifexCheckoutResponse = {
+  ok?: boolean;
+  reference?: string;
+  sedifexOrderId?: string;
+  authorizationUrl?: string;
+  expiresAt?: string;
+  error?: string;
+  message?: string;
+};
+
 type RateLimitEntry = {
   count: number;
   resetAt: number;
@@ -54,6 +64,9 @@ export async function POST(req: Request) {
   const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
   const storeId = process.env.SEDIFEX_STORE_ID;
   const defaultServiceId = process.env.BOOKING_DEFAULT_SERVICE_ID;
+  const checkoutAmount = Number(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
+  const checkoutCurrency = process.env.BOOKING_CHECKOUT_CURRENCY || "GHS";
+  const checkoutReturnUrl = process.env.BOOKING_CHECKOUT_RETURN_URL;
 
   if (!baseUrl || !apiKey || !storeId) {
     return NextResponse.json(
@@ -152,7 +165,81 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ ok: true, message: "Booking created.", data: responseData });
+    if (!checkoutAmount || !checkoutReturnUrl) {
+      return NextResponse.json({ ok: true, message: "Booking created.", data: responseData });
+    }
+
+    const bookingRecord = responseData?.data || responseData;
+    const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
+    const resolvedClientOrderId =
+      bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
+    const checkoutPayload = {
+      storeId,
+      clientOrderId: resolvedClientOrderId,
+      orderType: "service",
+      currency: checkoutCurrency,
+      items: [
+        {
+          id: booking.serviceId || defaultServiceId || "service",
+          name: booking.serviceName || "Service booking",
+          unitPrice: checkoutAmount,
+          qty: 1
+        }
+      ],
+      amount: checkoutAmount,
+      customer: {
+        email: customerEmail,
+        phone: customerPhone,
+        name: customerName
+      },
+      returnUrl: checkoutReturnUrl,
+      metadata: {
+        channel: "client-website",
+        bookingId: sedifexOrderId,
+        sedifexOrderId,
+        clientOrderId: resolvedClientOrderId
+      }
+    };
+
+    const checkoutResponse = await fetch(checkoutEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "X-Sedifex-Contract-Version": "2026-04-13",
+        Accept: "application/json"
+      },
+      body: JSON.stringify(checkoutPayload),
+      cache: "no-store"
+    });
+
+    const checkoutData = (await checkoutResponse.json().catch(() => null)) as SedifexCheckoutResponse | null;
+
+    if (!checkoutResponse.ok || !checkoutData?.ok || !checkoutData.authorizationUrl || !checkoutData.reference) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: checkoutData?.error || "checkout-create-failed",
+          message: checkoutData?.message || "Booking was created but checkout could not be initialized."
+        },
+        { status: checkoutResponse.status || 502 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      message: "Booking created. Redirecting to secure checkout.",
+      data: responseData,
+      checkout: {
+        reference: checkoutData.reference,
+        sedifexOrderId: checkoutData.sedifexOrderId || sedifexOrderId,
+        clientOrderId: resolvedClientOrderId,
+        authorizationUrl: checkoutData.authorizationUrl,
+        expiresAt: checkoutData.expiresAt
+      }
+    });
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request payload." }, { status: 400 });
   }

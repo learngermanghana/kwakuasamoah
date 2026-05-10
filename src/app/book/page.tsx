@@ -17,7 +17,7 @@ export default async function BookPage({
   return (
     <section className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="text-4xl font-bold">Book a Consultation</h1>
-      <p className="mt-3 text-zinc-600">Share your details and we&apos;ll confirm next steps quickly.</p>
+      <p className="mt-3 text-zinc-600">Share your details to reserve your slot, then complete secure checkout.</p>
       <BookingForm serviceOptions={serviceOptions} prefilledServiceName={params.serviceName} />
     </section>
   );
