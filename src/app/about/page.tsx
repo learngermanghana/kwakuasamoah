@@ -21,8 +21,8 @@ const values = [
 const journeyMilestones = [
   "Started by sharing firsthand relocation lessons from Ghana to Europe.",
   "Expanded into consultation support for study, visit, and relocation routes.",
-  "Built a trusted audience across TikTok, YouTube, Instagram, and Facebook.",
-  "Now supports travel planning for Europe, Canada, and the USA."
+  "Built a trusted audience across TikTok, YouTube, Instagram, and Facebook,X",
+  "Now supports travel planning worldwide"
 ];
 
 export default function AboutPage() {
@@ -34,7 +34,7 @@ export default function AboutPage() {
             About Kwaku Lottery
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-tight text-white md:text-5xl">
-            Trusted travel and relocation guidance built from real experience.
+            Trusted travel  guidance built from real experience.
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#f4f1e6]">
             Kwaku helps people who wants to visit, study or join family abroad. The mission is
