@@ -37,7 +37,7 @@ export default function AboutPage() {
             Trusted travel and relocation guidance built from real experience.
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#f4f1e6]">
-            Kwaku helps people who want to study, visit, or relocate to Europe, Canada, and the USA. The mission is
+            Kwaku helps people who wants to visit, study or join family abroad. The mission is
             simple: turn confusing migration information into clear, practical action plans.
           </p>
         </div>

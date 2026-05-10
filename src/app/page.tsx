@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
 import type { GalleryItem } from "@/lib/data";
@@ -62,7 +63,7 @@ export default async function HomePage() {
           </p>
         </div>
         <figure className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-[#d8d6cf] bg-white shadow-md">
-          <img src="/image.jpeg" alt="Kwaku portrait" className="block h-auto w-full object-cover" />
+          <Image src="/image.jpeg" alt="Kwaku portrait" width={640} height={800} className="h-full w-full object-cover" />
         </figure>
       </section>
 

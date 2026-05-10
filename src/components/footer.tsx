@@ -29,6 +29,7 @@ export function Footer() {
             <a href={siteConfig.socials.tiktok} target="_blank" rel="noreferrer">TikTok</a>
             <a href={siteConfig.socials.instagram} target="_blank" rel="noreferrer">Instagram</a>
             <a href={siteConfig.socials.facebook} target="_blank" rel="noreferrer">Facebook</a>
+            <a href={siteConfig.socials.x} target="_blank" rel="noreferrer">X</a>
           </div>
         </div>
       </div>
