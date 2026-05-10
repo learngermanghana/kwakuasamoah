@@ -174,8 +174,12 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
         text: data.message || "Thanks! Your booking request has been received."
       });
 
-      if (data.checkout?.authorizationUrl) {
-        window.location.assign(data.checkout.authorizationUrl);
+      const checkoutUrl =
+        data.checkout?.authorizationUrl ||
+        (data.checkout as { authorization_url?: string } | undefined)?.authorization_url;
+
+      if (checkoutUrl) {
+        window.location.assign(checkoutUrl);
         return;
       }
 
