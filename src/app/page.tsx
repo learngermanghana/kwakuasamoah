@@ -21,7 +21,7 @@ export default async function HomePage() {
           backgroundSize: "cover"
         }}
       >
-        <div className="mx-auto max-w-7xl px-4 py-24 md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-24 md:grid-cols-[1.1fr_0.9fr] md:items-center md:py-28">
           <div className="max-w-3xl text-white">
             <p className="mb-3 inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">
               {siteConfig.tagline}
@@ -44,6 +44,15 @@ export default async function HomePage() {
                 Chat on WhatsApp
               </a>
             </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-xl">
+            <img
+              src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80"
+              alt="Aeroplane flying above the clouds"
+              className="h-64 w-full rounded-3xl border border-white/20 object-cover shadow-2xl md:h-[26rem]"
+            />
+            <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-tr from-[#0b2d4f]/10 via-transparent to-[#d9f7f5]/20" />
           </div>
         </div>
       </section>
