@@ -27,12 +27,19 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden gap-6 md:flex">
+        <nav className="hidden items-center gap-6 md:flex">
           {nav.map((item) => (
             <Link key={item.href} href={item.href} className="text-sm font-medium text-slate-700 transition hover:text-[#0d6f73]">
               {item.label}
             </Link>
           ))}
+          <Image
+            src="/image.jpeg"
+            alt="Travel profile"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-full object-cover"
+          />
         </nav>
 
         <details className="group relative md:hidden">
