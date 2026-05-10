@@ -27,15 +27,24 @@ export function Header() {
           </span>
         </Link>
 
-        <nav className="hidden gap-6 md:flex">
-          {nav.map((item) => (
-            <Link key={item.href} href={item.href} className="text-sm font-medium text-slate-700 transition hover:text-[#0d6f73]">
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="flex items-center gap-3">
+          <nav className="hidden items-center gap-6 md:flex">
+            {nav.map((item) => (
+              <Link key={item.href} href={item.href} className="text-sm font-medium text-slate-700 transition hover:text-[#0d6f73]">
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <Image
+            src="/image.jpeg"
+            alt="Kwaku profile"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full border border-[#d8d6cf] object-cover"
+            priority
+          />
 
-        <details className="group relative md:hidden">
+          <details className="group relative md:hidden">
           <summary className="flex cursor-pointer list-none items-center gap-2 rounded-md border border-[#d8d6cf] bg-white px-3 py-2 text-sm font-medium text-slate-700">
             <span aria-hidden="true" className="text-lg leading-none">☰</span>
             <span>Menu</span>
@@ -51,7 +60,8 @@ export function Header() {
               </Link>
             ))}
           </nav>
-        </details>
+          </details>
+        </div>
       </div>
     </header>
   );
