@@ -4,7 +4,7 @@ import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } fro
 import type { GalleryItem } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 import { siteConfig } from "@/lib/site-config";
-import kwakuPortrait from "../../public/image.jpeg";
+import kwakuPortrait from "../../public/image.png";
 
 export default async function HomePage() {
   const services = await getServiceData();
