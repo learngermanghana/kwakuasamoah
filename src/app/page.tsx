@@ -27,7 +27,7 @@ export default async function HomePage() {
               {siteConfig.tagline}
             </p>
             <h1 className="text-4xl font-bold leading-tight md:text-6xl">
-              Turning travel dreams into reality.
+              Travel
             </h1>
             <p className="mt-5 text-lg text-[#f4f1e6]">
               Get trusted travel updates, relocation guidance, visa support, and one-on-one consultation for destinations outside Asia.
