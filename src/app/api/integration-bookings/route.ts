@@ -231,6 +231,22 @@ export async function POST(req: Request) {
     const endpoint = new URL("/v1IntegrationBookings", baseUrl);
     endpoint.searchParams.set("storeId", storeId);
 
+    const checkoutAmount =
+      (await resolveServiceCheckoutAmount({
+        baseUrl,
+        apiKey,
+        storeId,
+        serviceId: booking.serviceId || defaultServiceId,
+        serviceName: booking.serviceName
+      })) || Number(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
+
+    if (!checkoutAmount || checkoutAmount <= 0) {
+      return NextResponse.json(
+        { ok: false, error: "missing-checkout-amount", message: "Booking could not be created because service price could not be resolved." },
+        { status: 502 }
+      );
+    }
+
     const syncRequestedAt = new Date().toISOString();
 
     const payload = {
@@ -247,9 +263,12 @@ export async function POST(req: Request) {
       bookingStatus: BOOKING_STATUS,
       paymentCollectionMode: PAYMENT_COLLECTION_MODE,
       paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
+      paymentMethod,
       syncStatus: "pending",
       syncRequestedAt,
+      paymentAmount: checkoutAmount,
       payment: {
+        amount: checkoutAmount,
         method: paymentMethod,
         confirmed: paymentConfirmed,
         status: PAYMENT_STATUS_CHECKOUT_CREATED,
@@ -260,6 +279,8 @@ export async function POST(req: Request) {
         bookingStatus: BOOKING_STATUS,
         paymentCollectionMode: PAYMENT_COLLECTION_MODE,
         paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
+        paymentMethod,
+        paymentAmount: checkoutAmount,
         syncStatus: "pending",
         syncRequestedAt,
         ...(booking.attributes || {})
@@ -296,22 +317,6 @@ export async function POST(req: Request) {
     const bookingId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
     const resolvedClientOrderId =
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
-    const checkoutAmount =
-      (await resolveServiceCheckoutAmount({
-        baseUrl,
-        apiKey,
-        storeId,
-        serviceId: booking.serviceId || defaultServiceId,
-        serviceName: booking.serviceName
-      })) || Number(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
-
-    if (!checkoutAmount || checkoutAmount <= 0) {
-      return NextResponse.json(
-        { ok: false, error: "missing-checkout-amount", message: "Booking was created but service price could not be resolved for checkout." },
-        { status: 502 }
-      );
-    }
 
     const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
     checkoutEndpoint.searchParams.set("storeId", storeId);
