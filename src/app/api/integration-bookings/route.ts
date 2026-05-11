@@ -227,6 +227,8 @@ export async function POST(req: Request) {
     const endpoint = new URL("/v1IntegrationBookings", baseUrl);
     endpoint.searchParams.set("storeId", storeId);
 
+    const syncRequestedAt = new Date().toISOString();
+
     const payload = {
       serviceId: booking.serviceId || defaultServiceId,
       customer: {
@@ -238,12 +240,16 @@ export async function POST(req: Request) {
       bookingDate,
       bookingTime: booking.bookingTime,
       serviceName: booking.serviceName,
+      syncStatus: "pending",
+      syncRequestedAt,
       payment: {
         method: paymentMethod,
         confirmed: paymentConfirmed
       },
       attributes: {
         source: "website_booking_form",
+        syncStatus: "pending",
+        syncRequestedAt,
         ...(booking.attributes || {})
       }
     };
