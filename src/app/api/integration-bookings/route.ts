@@ -42,6 +42,18 @@ type CheckoutEnvelope = {
   message?: string;
 };
 
+type SedifexServiceItem = {
+  id?: string;
+  name?: string;
+  price?: number;
+};
+
+type SedifexProductsPayload = {
+  products?: SedifexServiceItem[];
+  publicProducts?: SedifexServiceItem[];
+  publicServices?: SedifexServiceItem[];
+};
+
 function resolveCheckoutResponse(payload: CheckoutEnvelope | SedifexCheckoutResponse | null) {
   if (!payload) return null;
   const source = (payload as CheckoutEnvelope).data || (payload as CheckoutEnvelope).checkout || payload;
@@ -69,6 +81,51 @@ function resolveCheckoutResponse(payload: CheckoutEnvelope | SedifexCheckoutResp
     error: (record.error as string | undefined) || (payload as CheckoutEnvelope).error,
     message: (record.message as string | undefined) || (payload as CheckoutEnvelope).message
   } satisfies SedifexCheckoutResponse;
+}
+
+function resolveRuntimeReturnUrl(req: Request) {
+  return new URL("/payment/return", req.url).toString();
+}
+
+async function resolveServiceCheckoutAmount({
+  baseUrl,
+  apiKey,
+  storeId,
+  serviceId,
+  serviceName
+}: {
+  baseUrl: string;
+  apiKey: string;
+  storeId: string;
+  serviceId?: string;
+  serviceName?: string;
+}) {
+  const endpoint = new URL("/v1IntegrationProducts", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      "x-api-key": apiKey,
+      "X-Sedifex-Contract-Version": "2026-04-13",
+      Accept: "application/json"
+    },
+    cache: "no-store"
+  });
+
+  if (!response.ok) return undefined;
+
+  const payload = (await response.json()) as SedifexProductsPayload;
+  const services = payload.publicServices || payload.publicProducts || payload.products || [];
+
+  const matched =
+    services.find((item) => item.id && serviceId && item.id === serviceId) ||
+    services.find((item) => item.name && serviceName && item.name === serviceName);
+
+  if (typeof matched?.price === "number" && Number.isFinite(matched.price) && matched.price > 0) {
+    return matched.price;
+  }
+
+  return undefined;
 }
 
 type RateLimitEntry = {
@@ -138,9 +195,7 @@ export async function POST(req: Request) {
   const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
   const storeId = process.env.SEDIFEX_STORE_ID;
   const defaultServiceId = process.env.BOOKING_DEFAULT_SERVICE_ID;
-  const checkoutAmount = Number(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
   const checkoutCurrency = process.env.BOOKING_CHECKOUT_CURRENCY || "GHS";
-  const checkoutReturnUrl = process.env.BOOKING_CHECKOUT_RETURN_URL;
 
   if (!baseUrl || !apiKey || !storeId) {
     return NextResponse.json(
@@ -255,7 +310,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (paymentConfirmed || !checkoutAmount || !checkoutReturnUrl) {
+    if (paymentConfirmed) {
       return NextResponse.json({ ok: true, message: "Booking created.", data: responseData });
     }
 
@@ -263,6 +318,22 @@ export async function POST(req: Request) {
     const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
     const resolvedClientOrderId =
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const checkoutAmount =
+      (await resolveServiceCheckoutAmount({
+        baseUrl,
+        apiKey,
+        storeId,
+        serviceId: booking.serviceId || defaultServiceId,
+        serviceName: booking.serviceName
+      })) || Number(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
+
+    if (!checkoutAmount || checkoutAmount <= 0) {
+      return NextResponse.json(
+        { ok: false, error: "missing-checkout-amount", message: "Booking was created but service price could not be resolved for checkout." },
+        { status: 502 }
+      );
+    }
 
     const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
     const checkoutPayload = {
@@ -284,7 +355,7 @@ export async function POST(req: Request) {
         phone: customerPhone,
         name: customerName
       },
-      returnUrl: checkoutReturnUrl,
+      returnUrl: resolveRuntimeReturnUrl(req),
       metadata: {
         channel: "client-website",
         bookingId: sedifexOrderId,

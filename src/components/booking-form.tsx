@@ -108,7 +108,7 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
       serviceName: selectedService?.name || formState.serviceName,
       paymentMethod,
       paymentAmount: formState.paymentOption === "manual" ? formState.manualPaymentAmount : undefined,
-      paymentConfirmed: formState.paymentOption === "manual",
+      paymentConfirmed: false,
       attributes: {
         source: "website_booking_form",
         pageUrl: window.location.href,
