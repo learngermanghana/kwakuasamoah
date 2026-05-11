@@ -324,6 +324,18 @@ export async function POST(req: Request) {
       }
     };
 
+    const safeCheckoutPayload = {
+      ...checkoutPayload,
+      customer: {
+        ...checkoutPayload.customer,
+        email: checkoutPayload.customer.email ? "[REDACTED]" : checkoutPayload.customer.email,
+        phone: checkoutPayload.customer.phone ? "[REDACTED]" : checkoutPayload.customer.phone,
+        name: checkoutPayload.customer.name ? "[REDACTED]" : checkoutPayload.customer.name
+      }
+    };
+
+    console.log("checkout payload sent:", safeCheckoutPayload);
+
     const checkoutResponse = await fetch(checkoutEndpoint, {
       method: "POST",
       headers: {
@@ -336,15 +348,20 @@ export async function POST(req: Request) {
       cache: "no-store"
     });
 
-    const checkoutPayloadResponse = (await checkoutResponse.json().catch(() => null)) as
-      | CheckoutEnvelope
-      | SedifexCheckoutResponse
-      | null;
-    const checkoutData = resolveCheckoutResponse(checkoutPayloadResponse);
-
-    console.log("checkout payload sent:", checkoutPayload);
     console.log("checkout status:", checkoutResponse.status, checkoutResponse.statusText);
-    console.log("checkout raw payload:", checkoutPayloadResponse);
+
+    const checkoutRawText = await checkoutResponse.text();
+    console.log("checkout raw response text:", checkoutRawText);
+
+    let checkoutPayloadResponse: CheckoutEnvelope | SedifexCheckoutResponse | null = null;
+    try {
+      checkoutPayloadResponse = JSON.parse(checkoutRawText) as CheckoutEnvelope | SedifexCheckoutResponse;
+      console.log("checkout parsed JSON:", checkoutPayloadResponse);
+    } catch {
+      console.log("checkout parsed JSON:", null);
+    }
+
+    const checkoutData = resolveCheckoutResponse(checkoutPayloadResponse);
     console.log("checkout normalized:", checkoutData);
 
     if (!checkoutResponse.ok || !checkoutData?.ok || !checkoutData.authorizationUrl || !checkoutData.reference) {
