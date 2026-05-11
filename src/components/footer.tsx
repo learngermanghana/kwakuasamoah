@@ -18,6 +18,8 @@ export function Footer() {
             <Link href="/about">About</Link>
             <Link href="/services">Services</Link>
             <Link href="/book">Book Consultation</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
           </div>
         </div>
         <div>
