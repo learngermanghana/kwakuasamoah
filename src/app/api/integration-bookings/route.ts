@@ -16,6 +16,10 @@ type BookingPayload = {
   paymentConfirmed?: boolean | string;
 };
 
+const BOOKING_STATUS = "booked";
+const PAYMENT_COLLECTION_MODE = "online_checkout";
+const PAYMENT_STATUS_CHECKOUT_CREATED = "checkout_created";
+
 type SedifexCheckoutResponse = {
   ok?: boolean;
   reference?: string;
@@ -240,14 +244,22 @@ export async function POST(req: Request) {
       bookingDate,
       bookingTime: booking.bookingTime,
       serviceName: booking.serviceName,
+      bookingStatus: BOOKING_STATUS,
+      paymentCollectionMode: PAYMENT_COLLECTION_MODE,
+      paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
       syncStatus: "pending",
       syncRequestedAt,
       payment: {
         method: paymentMethod,
-        confirmed: paymentConfirmed
+        confirmed: paymentConfirmed,
+        status: PAYMENT_STATUS_CHECKOUT_CREATED,
+        collectionMode: PAYMENT_COLLECTION_MODE
       },
       attributes: {
         source: "website_booking_form",
+        bookingStatus: BOOKING_STATUS,
+        paymentCollectionMode: PAYMENT_COLLECTION_MODE,
+        paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
         syncStatus: "pending",
         syncRequestedAt,
         ...(booking.attributes || {})
@@ -281,7 +293,7 @@ export async function POST(req: Request) {
 
 
     const bookingRecord = responseData?.data || responseData;
-    const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
+    const bookingId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
     const resolvedClientOrderId =
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -325,8 +337,7 @@ export async function POST(req: Request) {
       returnUrl: resolveRuntimeReturnUrl(req),
       metadata: {
         channel: "client-website",
-        bookingId: sedifexOrderId,
-        sedifexOrderId,
+        bookingId,
         clientOrderId: resolvedClientOrderId
       }
     };
@@ -388,7 +399,8 @@ export async function POST(req: Request) {
       data: responseData,
       checkout: {
         reference: checkoutData.reference,
-        sedifexOrderId: checkoutData.sedifexOrderId || sedifexOrderId,
+        sedifexOrderId: checkoutData.sedifexOrderId,
+        bookingId,
         clientOrderId: resolvedClientOrderId,
         authorizationUrl: checkoutData.authorizationUrl,
         expiresAt: checkoutData.expiresAt
