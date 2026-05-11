@@ -296,6 +296,7 @@ export async function POST(req: Request) {
     }
 
     const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
+    checkoutEndpoint.searchParams.set("storeId", storeId);
     const checkoutPayload = {
       storeId,
       clientOrderId: resolvedClientOrderId,
