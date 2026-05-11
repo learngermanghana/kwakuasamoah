@@ -84,6 +84,20 @@ function resolveRuntimeReturnUrl(req: Request) {
   return new URL("/payment/return", req.url).toString();
 }
 
+function buildBookingContext(booking: BookingPayload, defaultServiceId?: string) {
+  return {
+    serviceId: booking.serviceId || defaultServiceId,
+    serviceName: booking.serviceName,
+    bookingDate: booking.bookingDate,
+    bookingTime: booking.bookingTime,
+    notes: booking.notes,
+    attributes: {
+      source: "website_booking_form",
+      ...(booking.attributes || {})
+    }
+  };
+}
+
 async function resolveServiceCheckoutAmount({
   baseUrl,
   apiKey,
@@ -268,15 +282,14 @@ export async function POST(req: Request) {
         channel: "client-website",
         paymentMethod,
         paymentConfirmed,
-        serviceId: booking.serviceId || defaultServiceId,
-        serviceName: booking.serviceName,
-        bookingDate,
-        bookingTime: booking.bookingTime,
-        notes,
-        attributes: {
-          source: "website_booking_form",
-          ...(booking.attributes || {})
-        },
+        clientOrderId: resolvedClientOrderId,
+        booking: buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId)
+      },
+      booking: buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId),
+      attributes: {
+        source: "website_booking_form",
+        paymentMethod,
+        paymentConfirmed,
         clientOrderId: resolvedClientOrderId
       }
     };
