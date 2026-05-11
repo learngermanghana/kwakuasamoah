@@ -143,7 +143,7 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="text-3xl font-bold text-[#0b2d4f]">15+</p>
-              <p className="mt-1 text-sm text-slate-600">Visa and relocation routes supported across Europe, Canada, and the USA.</p>
+              <p className="mt-1 text-sm text-slate-600">Visa and relocation routes supported worldwide.</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-[#0b2d4f]">24h</p>

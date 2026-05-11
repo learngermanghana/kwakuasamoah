@@ -2,7 +2,7 @@ export const siteConfig = {
   name: "Kwaku Lotteryy",
   tagline: "Turning travel dreams into reality. ",
   description:
-    "Travel guidance and relocation support for Europe, Canada, and the USA.",
+    "Travel guidance and relocation support worldwide.",
   url: "https://www.kwakulotteryy.com",
   phone: "+44 7424 047530",
   whatsapp: "447424047530",
