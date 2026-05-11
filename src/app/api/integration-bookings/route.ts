@@ -293,7 +293,7 @@ export async function POST(req: Request) {
 
 
     const bookingRecord = responseData?.data || responseData;
-    const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
+    const bookingId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
     const resolvedClientOrderId =
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -337,8 +337,7 @@ export async function POST(req: Request) {
       returnUrl: resolveRuntimeReturnUrl(req),
       metadata: {
         channel: "client-website",
-        bookingId: sedifexOrderId,
-        sedifexOrderId,
+        bookingId,
         clientOrderId: resolvedClientOrderId
       }
     };
@@ -400,7 +399,8 @@ export async function POST(req: Request) {
       data: responseData,
       checkout: {
         reference: checkoutData.reference,
-        sedifexOrderId: checkoutData.sedifexOrderId || sedifexOrderId,
+        sedifexOrderId: checkoutData.sedifexOrderId,
+        bookingId,
         clientOrderId: resolvedClientOrderId,
         authorizationUrl: checkoutData.authorizationUrl,
         expiresAt: checkoutData.expiresAt
