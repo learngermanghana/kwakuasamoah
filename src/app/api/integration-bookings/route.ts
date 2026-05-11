@@ -16,6 +16,10 @@ type BookingPayload = {
   paymentConfirmed?: boolean | string;
 };
 
+const BOOKING_STATUS = "booked";
+const PAYMENT_COLLECTION_MODE = "online_checkout";
+const PAYMENT_STATUS_CHECKOUT_CREATED = "checkout_created";
+
 type SedifexCheckoutResponse = {
   ok?: boolean;
   reference?: string;
@@ -240,14 +244,22 @@ export async function POST(req: Request) {
       bookingDate,
       bookingTime: booking.bookingTime,
       serviceName: booking.serviceName,
+      bookingStatus: BOOKING_STATUS,
+      paymentCollectionMode: PAYMENT_COLLECTION_MODE,
+      paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
       syncStatus: "pending",
       syncRequestedAt,
       payment: {
         method: paymentMethod,
-        confirmed: paymentConfirmed
+        confirmed: paymentConfirmed,
+        status: PAYMENT_STATUS_CHECKOUT_CREATED,
+        collectionMode: PAYMENT_COLLECTION_MODE
       },
       attributes: {
         source: "website_booking_form",
+        bookingStatus: BOOKING_STATUS,
+        paymentCollectionMode: PAYMENT_COLLECTION_MODE,
+        paymentStatus: PAYMENT_STATUS_CHECKOUT_CREATED,
         syncStatus: "pending",
         syncRequestedAt,
         ...(booking.attributes || {})
