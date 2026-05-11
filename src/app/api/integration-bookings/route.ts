@@ -12,11 +12,8 @@ type BookingPayload = {
   website?: string;
   attributes?: Record<string, unknown>;
   paymentMethod?: string;
-  paymentAmount?: number | string;
-  depositAmount?: number | string;
+  paymentCollectionMode?: string;
   paymentConfirmed?: boolean | string;
-  paymentScreenshotUrl?: string;
-  paymentReference?: string;
 };
 
 type SedifexCheckoutResponse = {
@@ -138,31 +135,6 @@ const RATE_LIMIT_MAX_REQUESTS = 5;
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 
-function toNumber(value: unknown) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string" && value.trim()) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return undefined;
-}
-
-function toBoolean(value: unknown) {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    if (normalized === "true") return true;
-    if (normalized === "false") return false;
-  }
-  return undefined;
-}
-
 function getClientIp(req: Request) {
   const forwardedFor = req.headers.get("x-forwarded-for");
   if (forwardedFor) {
@@ -235,13 +207,8 @@ export async function POST(req: Request) {
     const bookingDate = booking.bookingDate || (body.travelDates as string | undefined);
     const notes = booking.notes || (body.message as string | undefined);
 
-    const paymentMethod = booking.paymentMethod || (body.paymentMethod as string | undefined);
-    const paymentAmount = toNumber(booking.paymentAmount ?? body.paymentAmount);
-    const depositAmount = toNumber(booking.depositAmount ?? body.depositAmount);
-    const paymentConfirmed = toBoolean(booking.paymentConfirmed ?? body.paymentConfirmed);
-    const paymentScreenshotUrl =
-      booking.paymentScreenshotUrl || (body.paymentScreenshotUrl as string | undefined);
-    const paymentReference = booking.paymentReference || (body.paymentReference as string | undefined);
+    const paymentMethod = "paystack_checkout";
+    const paymentConfirmed = false;
 
     if (!customerName) {
       return NextResponse.json(
@@ -273,11 +240,7 @@ export async function POST(req: Request) {
       serviceName: booking.serviceName,
       payment: {
         method: paymentMethod,
-        amount: paymentAmount,
-        depositAmount,
-        confirmed: paymentConfirmed,
-        screenshotUrl: paymentScreenshotUrl,
-        reference: paymentReference
+        confirmed: paymentConfirmed
       },
       attributes: {
         source: "website_booking_form",
@@ -310,9 +273,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (paymentConfirmed) {
-      return NextResponse.json({ ok: true, message: "Booking created.", data: responseData });
-    }
 
     const bookingRecord = responseData?.data || responseData;
     const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
