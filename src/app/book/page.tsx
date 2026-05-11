@@ -17,7 +17,7 @@ export default async function BookPage({
   return (
     <section className="mx-auto max-w-3xl px-4 py-16">
       <h1 className="text-4xl font-bold">Book a Consultation</h1>
-      <p className="mt-3 text-zinc-600">Choose to pay immediately via secure checkout or submit a manual payment booking request.</p>
+      <p className="mt-3 text-zinc-600">For enquiries, please use WhatsApp or email. Booking is a paid service and payment is used to secure your consultation and provide further information on your selected service. Please read our Terms and Conditions and Privacy Policy before booking.</p>
       <BookingForm serviceOptions={serviceOptions} prefilledServiceName={params.serviceName} />
     </section>
   );
