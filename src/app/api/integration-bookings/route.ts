@@ -342,12 +342,17 @@ export async function POST(req: Request) {
       | null;
     const checkoutData = resolveCheckoutResponse(checkoutPayloadResponse);
 
+    console.log("checkout payload sent:", checkoutPayload);
+    console.log("checkout status:", checkoutResponse.status, checkoutResponse.statusText);
+    console.log("checkout raw payload:", checkoutPayloadResponse);
+    console.log("checkout normalized:", checkoutData);
+
     if (!checkoutResponse.ok || !checkoutData?.ok || !checkoutData.authorizationUrl || !checkoutData.reference) {
       return NextResponse.json(
         {
           ok: false,
-          error: checkoutData?.error || "checkout-create-failed",
-          message: checkoutData?.message || "Booking was created but checkout could not be initialized."
+          error: checkoutData?.error || checkoutData?.message || "checkout-create-failed",
+          message: checkoutData?.message || checkoutData?.error || "checkout-create-failed"
         },
         { status: checkoutResponse.status || 502 }
       );
