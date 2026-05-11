@@ -224,60 +224,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const endpoint = new URL("/v1IntegrationBookings", baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
-
-    const payload = {
-      serviceId: booking.serviceId || defaultServiceId,
-      customer: {
-        name: customerName,
-        phone: customerPhone,
-        email: customerEmail
-      },
-      notes,
-      bookingDate,
-      bookingTime: booking.bookingTime,
-      serviceName: booking.serviceName,
-      payment: {
-        method: paymentMethod,
-        confirmed: paymentConfirmed
-      },
-      attributes: {
-        source: "website_booking_form",
-        ...(booking.attributes || {})
-      }
-    };
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "X-Sedifex-Contract-Version": "2026-04-13",
-        Accept: "application/json"
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store"
-    });
-
-    const responseData = await response.json().catch(() => null);
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: responseData?.error || "booking-request-failed",
-          message: responseData?.message || "Booking could not be created."
-        },
-        { status: response.status }
-      );
-    }
-
-
-    const bookingRecord = responseData?.data || responseData;
-    const sedifexOrderId = bookingRecord?.id || bookingRecord?.bookingId || bookingRecord?.orderId;
-    const resolvedClientOrderId =
-      bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const resolvedClientOrderId = `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const checkoutAmount =
       (await resolveServiceCheckoutAmount({
@@ -319,8 +266,17 @@ export async function POST(req: Request) {
       returnUrl: resolveRuntimeReturnUrl(req),
       metadata: {
         channel: "client-website",
-        bookingId: sedifexOrderId,
-        sedifexOrderId,
+        paymentMethod,
+        paymentConfirmed,
+        serviceId: booking.serviceId || defaultServiceId,
+        serviceName: booking.serviceName,
+        bookingDate,
+        bookingTime: booking.bookingTime,
+        notes,
+        attributes: {
+          source: "website_booking_form",
+          ...(booking.attributes || {})
+        },
         clientOrderId: resolvedClientOrderId
       }
     };
@@ -378,11 +334,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       ok: true,
-      message: "Booking created. Redirecting to secure checkout.",
-      data: responseData,
+      message: "Redirecting to secure checkout.",
       checkout: {
         reference: checkoutData.reference,
-        sedifexOrderId: checkoutData.sedifexOrderId || sedifexOrderId,
+        sedifexOrderId: checkoutData.sedifexOrderId,
         clientOrderId: resolvedClientOrderId,
         authorizationUrl: checkoutData.authorizationUrl,
         expiresAt: checkoutData.expiresAt
