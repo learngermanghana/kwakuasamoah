@@ -31,6 +31,14 @@ type ValidationErrors = Partial<Record<keyof FormState, string>>;
 const PHONE_PATTERN = /^[+0-9()\-\s]{7,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+
+const TIME_OPTIONS = Array.from({ length: 24 * 2 }, (_, index) => {
+  const hours = Math.floor(index / 2);
+  const minutes = index % 2 === 0 ? "00" : "30";
+  const label = `${String(hours).padStart(2, "0")}:${minutes}`;
+  return { value: label, label };
+});
+
 function getSelectedService(serviceOptions: ServiceOption[], serviceId: string) {
   return serviceOptions.find((option) => option.id === serviceId);
 }
@@ -133,7 +141,21 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
     <div className="space-y-1"><label htmlFor="customerEmail" className="block text-sm font-medium text-zinc-900">Email</label><input id="customerEmail" name="customerEmail" type="email" value={formState.customerEmail} onChange={(event) => setFormState((previous) => ({ ...previous, customerEmail: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
     <div className="space-y-1"><label htmlFor="customerPhone" className="block text-sm font-medium text-zinc-900">Phone / WhatsApp</label><input id="customerPhone" name="customerPhone" value={formState.customerPhone} onChange={(event) => setFormState((previous) => ({ ...previous, customerPhone: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
     <div className="space-y-1"><label htmlFor="serviceId" className="block text-sm font-medium text-zinc-900">Service *</label><select id="serviceId" name="serviceId" value={formState.serviceId} onChange={(event) => { const selected = getSelectedService(serviceOptions, event.target.value); setFormState((previous) => ({ ...previous, serviceId: event.target.value, serviceName: selected?.name || "" })); }} className="w-full rounded-xl border px-4 py-3"><option value="">Select a service</option>{serviceOptions.map((service) => (<option key={service.id} value={service.id}>{service.name}</option>))}</select></div>
-    <div className="grid gap-4 md:grid-cols-2"><input id="bookingDate" name="bookingDate" type="date" min={minimumDate} value={formState.bookingDate} onChange={(event) => setFormState((previous) => ({ ...previous, bookingDate: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /><input id="bookingTime" name="bookingTime" type="time" value={formState.bookingTime} onChange={(event) => setFormState((previous) => ({ ...previous, bookingTime: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-1">
+        <label htmlFor="bookingDate" className="block text-sm font-medium text-zinc-900">Preferred date *</label>
+        <input id="bookingDate" name="bookingDate" type="date" min={minimumDate} value={formState.bookingDate} onChange={(event) => setFormState((previous) => ({ ...previous, bookingDate: event.target.value }))} className="w-full rounded-xl border px-4 py-3" />
+        {errors.bookingDate ? <p className="text-sm text-red-700">{errors.bookingDate}</p> : null}
+      </div>
+      <div className="space-y-1">
+        <label htmlFor="bookingTime" className="block text-sm font-medium text-zinc-900">Preferred time (24-hour) *</label>
+        <select id="bookingTime" name="bookingTime" value={formState.bookingTime} onChange={(event) => setFormState((previous) => ({ ...previous, bookingTime: event.target.value }))} className="w-full rounded-xl border px-4 py-3">
+          <option value="">Select time</option>
+          {TIME_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+        </select>
+        {errors.bookingTime ? <p className="text-sm text-red-700">{errors.bookingTime}</p> : null}
+      </div>
+    </div>
     <div className="space-y-1"><label htmlFor="notes" className="block text-sm font-medium text-zinc-900">How can we help? *</label><textarea id="notes" name="notes" value={formState.notes} onChange={(event) => setFormState((previous) => ({ ...previous, notes: event.target.value }))} className="min-h-40 w-full rounded-xl border px-4 py-3" maxLength={1000} /></div>
     <label className="flex items-start gap-2 text-sm text-zinc-700" htmlFor="consent"><input id="consent" name="consent" type="checkbox" checked={formState.consent} onChange={(event) => setFormState((previous) => ({ ...previous, consent: event.target.checked }))} className="mt-1" /><span>I consent to being contacted about this booking and payment details.</span></label>
     {errors.consent ? <p className="text-sm text-red-700">{errors.consent}</p> : null}
