@@ -84,6 +84,12 @@ function resolveRuntimeReturnUrl(req: Request) {
   return new URL("/payment/return", req.url).toString();
 }
 
+function resolvePaymentConfirmed(value: BookingPayload["paymentConfirmed"]) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") return value.trim().toLowerCase() === "true";
+  return false;
+}
+
 function buildBookingContext(booking: BookingPayload, defaultServiceId?: string) {
   return {
     serviceId: booking.serviceId || defaultServiceId,
@@ -221,8 +227,8 @@ export async function POST(req: Request) {
     const bookingDate = booking.bookingDate || (body.travelDates as string | undefined);
     const notes = booking.notes || (body.message as string | undefined);
 
-    const paymentMethod = "paystack_checkout";
-    const paymentConfirmed = false;
+    const paymentMethod = booking.paymentMethod || "paystack_checkout";
+    const paymentConfirmed = resolvePaymentConfirmed(booking.paymentConfirmed);
 
     if (!customerName) {
       return NextResponse.json(
@@ -258,6 +264,18 @@ export async function POST(req: Request) {
 
     const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
     checkoutEndpoint.searchParams.set("storeId", storeId);
+
+    const sedifexBookingMap = {
+      bookingId: resolvedClientOrderId,
+      customerName,
+      customerEmail,
+      bookingDate,
+      bookingTime: booking.bookingTime,
+      serviceName: booking.serviceName || "Service booking",
+      paymentMethod,
+      paymentConfirmed
+    };
+
     const checkoutPayload = {
       storeId,
       clientOrderId: resolvedClientOrderId,
@@ -283,9 +301,13 @@ export async function POST(req: Request) {
         paymentMethod,
         paymentConfirmed,
         clientOrderId: resolvedClientOrderId,
-        booking: buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId)
+        booking: buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId),
+        sedifexBookingMap
       },
-      booking: buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId),
+      booking: {
+        ...buildBookingContext({ ...booking, bookingDate, notes }, defaultServiceId),
+        ...sedifexBookingMap
+      },
       attributes: {
         source: "website_booking_form",
         paymentMethod,
