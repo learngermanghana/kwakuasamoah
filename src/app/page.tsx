@@ -1,16 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getGalleryData, getServiceData, getWhatsAppLink, getYouTubeVideos } from "@/lib/data";
+import { getBlogPosts, getGalleryData, getServiceData, getWhatsAppLink } from "@/lib/data";
 import type { GalleryItem } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 import { siteConfig } from "@/lib/site-config";
 import kwakuPortrait from "../../public/image.png";
 
+function getExcerpt(html: string, maxLength = 140) {
+  const plainText = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (plainText.length <= maxLength) return plainText;
+  return `${plainText.slice(0, maxLength).trimEnd()}...`;
+}
+
 export default async function HomePage() {
   const services = await getServiceData();
   const featuredServices = services.slice(0, 3);
   const gallery: GalleryItem[] = await getGalleryData();
-  const videos = await getYouTubeVideos();
+  const posts = await getBlogPosts();
+  const latestPosts = posts.slice(0, 3);
 
   return (
     <div>
@@ -106,24 +113,23 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold">Latest Videos</h2>
-            <p className="mt-2 text-slate-600">Fresh updates from the Kwaku Lottery YouTube channel.</p>
+            <h2 className="text-3xl font-bold">Latest Blog Updates</h2>
+            <p className="mt-2 text-slate-600">Read the newest published updates pulled from Sedifex.</p>
           </div>
-          <a href="https://www.youtube.com/@kwakulotteryy" target="_blank" className="text-sm font-semibold text-[#0d6f73]">
-            View channel
-          </a>
+          <Link href="/blog" className="text-sm font-semibold text-[#0d6f73]">View all posts</Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
-          {videos.length ? videos.map((video) => (
-            <a key={video.id} href={video.link} target="_blank" className="overflow-hidden rounded-2xl border bg-white shadow-sm">
-              <img src={video.thumbnail} alt={video.title} className="h-48 w-full object-cover" />
+          {latestPosts.length ? latestPosts.map((post) => (
+            <Link key={post.id} href={`/blog/${post.slug}`} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+              {post.imageUrl ? <img src={post.imageUrl} alt={post.title} className="h-48 w-full object-cover" /> : null}
               <div className="p-4">
-                <h3 className="line-clamp-2 font-semibold">{video.title}</h3>
-                <p className="mt-2 text-xs text-slate-500">{video.published ? new Date(video.published).toLocaleDateString() : ""}</p>
+                <h3 className="line-clamp-2 font-semibold">{post.title}</h3>
+                <p className="mt-2 line-clamp-3 text-sm text-slate-600">{getExcerpt(post.content)}</p>
+                <p className="mt-2 text-xs text-slate-500">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ""}</p>
               </div>
-            </a>
+            </Link>
           )) : (
-            <p className="text-slate-600">Videos will appear here shortly.</p>
+            <p className="text-slate-600">Published blog posts will appear here shortly.</p>
           )}
         </div>
       </section>
