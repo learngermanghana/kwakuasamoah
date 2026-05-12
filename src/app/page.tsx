@@ -116,7 +116,7 @@ export default async function HomePage() {
             <h2 className="text-3xl font-bold">Latest Blog Updates</h2>
             <p className="mt-2 text-slate-600">Read the newest published updates pulled from Sedifex.</p>
           </div>
-          <Link href="/blog" className="text-sm font-semibold text-[#0d6f73]">View all posts</Link>
+          <Link href="/blog" className="text-sm font-semibold text-[#0d6f73]">View more</Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {latestPosts.length ? latestPosts.map((post) => (
