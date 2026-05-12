@@ -63,6 +63,16 @@ export type GalleryItem = {
   caption: string;
 };
 
+export type BlogPost = {
+  id: string;
+  title: string;
+  slug: string;
+  content: string;
+  linkUrl: string;
+  imageUrl: string;
+  publishedAt: string;
+};
+
 const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   id: pkg.slug,
   serviceName: pkg.title,
@@ -250,6 +260,70 @@ export async function getGalleryData() {
   }
 
   return defaultGallery;
+}
+
+type SedifexBlogItem = {
+  id: string;
+  title?: string;
+  slug?: string;
+  content?: string;
+  linkUrl?: string;
+  imageUrl?: string;
+  publishedAt?: string;
+};
+
+type SedifexBlogResponse = {
+  items?: SedifexBlogItem[];
+};
+
+function getSedifexBlogConfig() {
+  const baseUrl = process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
+  const storeId = process.env.SEDIFEX_STORE_ID;
+
+  return { baseUrl, storeId };
+}
+
+function mapSedifexBlogItem(item: SedifexBlogItem): BlogPost {
+  return {
+    id: item.id,
+    title: item.title ?? "Untitled post",
+    slug: item.slug ?? item.id,
+    content: item.content ?? "",
+    linkUrl: item.linkUrl ?? "",
+    imageUrl: item.imageUrl ?? "",
+    publishedAt: item.publishedAt ?? ""
+  };
+}
+
+export async function getBlogPosts(slug?: string) {
+  const { baseUrl, storeId } = getSedifexBlogConfig();
+
+  if (!storeId) {
+    return [] as BlogPost[];
+  }
+
+  const endpoint = new URL("/api/public-blog", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+  if (slug) {
+    endpoint.searchParams.set("slug", slug);
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      next: { revalidate: 60 },
+      headers: { Accept: "application/json" }
+    });
+
+    if (!response.ok) {
+      return [] as BlogPost[];
+    }
+
+    const payload = (await response.json()) as SedifexBlogResponse;
+    const items = Array.isArray(payload.items) ? payload.items : [];
+    return items.filter((item) => Boolean(item.id)).map(mapSedifexBlogItem);
+  } catch {
+    return [] as BlogPost[];
+  }
 }
 
 export type YouTubeVideo = {
