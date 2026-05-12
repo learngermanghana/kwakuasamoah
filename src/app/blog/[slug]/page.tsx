@@ -5,6 +5,43 @@ type BlogDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+function formatBlogContent(content: string) {
+  const trimmedContent = content.trim();
+
+  if (!trimmedContent) {
+    return "";
+  }
+
+  const hasHtmlTag = /<\/?[a-z][\s\S]*>/i.test(trimmedContent);
+  if (hasHtmlTag) {
+    return trimmedContent;
+  }
+
+  const paragraphBreaks = trimmedContent
+    .split(/\n\s*\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  if (paragraphBreaks.length > 1) {
+    return paragraphBreaks.map((paragraph) => `<p>${paragraph.replace(/\n/g, "<br />")}</p>`).join("");
+  }
+
+  const sentenceGroups = trimmedContent
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean)
+    .reduce<string[][]>((groups, sentence, index) => {
+      const groupIndex = Math.floor(index / 3);
+      if (!groups[groupIndex]) {
+        groups[groupIndex] = [];
+      }
+      groups[groupIndex].push(sentence);
+      return groups;
+    }, []);
+
+  return sentenceGroups.map((group) => `<p>${group.join(" ")}</p>`).join("");
+}
+
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
   const posts = await getBlogPosts(slug);
@@ -22,7 +59,7 @@ export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
 
       {post.imageUrl ? <img src={post.imageUrl} alt={post.title} className="mt-8 w-full rounded-2xl border object-cover" /> : null}
 
-      <article className="prose mt-8 max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+      <article className="prose mt-8 max-w-none break-words" dangerouslySetInnerHTML={{ __html: formatBlogContent(post.content) }} />
 
       {post.linkUrl ? (
         <a href={post.linkUrl} target="_blank" className="mt-8 inline-block text-sm font-semibold text-[#0d6f73]">
