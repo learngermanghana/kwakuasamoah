@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGalleryData } from "@/lib/data";
+import { getGalleryData, type GalleryItem } from "@/lib/data";
 
 function getCountryGuideLink(caption: string) {
   const text = caption.toLowerCase();
@@ -21,7 +21,7 @@ function getCountryGuideLink(caption: string) {
 export default async function GalleryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const gallery = await getGalleryData();
-  const photo = gallery.find((item) => item.id === id);
+  const photo = gallery.find((item: GalleryItem) => item.id === id);
 
   if (!photo) {
     notFound();
