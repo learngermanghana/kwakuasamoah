@@ -8,7 +8,7 @@ export const siteConfig = {
   whatsapp: "447424047530",
   email: "kwakulotteryy@gmail.com",
   socials: {
-    tiktok: "https://www.tiktok.com/@kwakulotteryy",
+    tiktok: "https://www.tiktok.com/@kwakulotteryy/video/7628683868836564244",
     instagram: "https://www.instagram.com/kwakulotteryy",
     youtube: "https://www.youtube.com/@kwakulotteryy",
     facebook: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr",
