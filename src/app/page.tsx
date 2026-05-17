@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getBlogPosts, getGalleryData, getServiceData, getWhatsAppLink } from "@/lib/data";
+import { getBlogPosts, getGalleryData, getServiceData } from "@/lib/data";
 import type { GalleryItem } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
 import { siteConfig } from "@/lib/site-config";
@@ -48,13 +48,6 @@ export default async function HomePage() {
               <Link href="/book" className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f]">
                 Book Consultation
               </Link>
-              <a
-                href={getWhatsAppLink("Hello, I want travel or relocation support.")}
-                target="_blank"
-                className="rounded-2xl border border-[#e9ddc3] px-6 py-3 font-semibold text-[#f4f1e6] transition hover:bg-white/10"
-              >
-                Chat on WhatsApp
-              </a>
             </div>
           </div>
         </div>
