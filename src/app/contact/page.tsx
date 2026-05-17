@@ -36,8 +36,7 @@ export default function ContactPage() {
           </p>
           <h1 className="mt-4 text-4xl font-bold text-white md:text-5xl">Let&apos;s plan your next travel move.</h1>
           <p className="mt-5 max-w-3xl text-lg leading-8 text-[#f4f1e6]">
-            Reach out for consultation, visa guidance, document support, and relocation planning for Europe, Canada,
-            and the USA.
+            Reach out for consultation, visa guidance, document support and planning for your international travel experience.
           </p>
         </div>
       </section>
