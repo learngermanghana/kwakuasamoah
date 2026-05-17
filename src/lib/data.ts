@@ -109,7 +109,7 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
     serviceName: item.name,
     category: normalizedCategory,
     description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
-    priceLabel: typeof item.price === "number" ? `From ${item.price}` : "Contact for price",
+    priceLabel: typeof item.price === "number" ? `Price ${item.price} GHC` : "Contact for price",
     image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
     imageAlt: item.imageAlt || item.name
   };
