@@ -85,6 +85,9 @@ const guides: CountryGuide[] = [
   }
 ];
 
+const getCountryId = (country: string) =>
+  `country-${country.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+
 export default function CountriesPage() {
   return (
     <div>
@@ -99,13 +102,19 @@ export default function CountriesPage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="text-2xl font-bold text-[#0b2d4f]">Countries covered</h2>
         <ul className="mt-4 grid gap-3 text-slate-700 md:grid-cols-2">
-          {guides.map((guide) => <li key={guide.country} className="rounded-xl border bg-white px-4 py-3 shadow-sm">{guide.country}</li>)}
+          {guides.map((guide) => (
+            <li key={guide.country} className="rounded-xl border bg-white px-4 py-3 shadow-sm">
+              <a href={`#${getCountryId(guide.country)}`} className="font-medium text-[#0d6f73] hover:underline">
+                {guide.country}
+              </a>
+            </li>
+          ))}
         </ul>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-16">
         {guides.map((guide) => (
-          <article key={guide.country} className="mb-8 rounded-2xl border bg-white p-6 shadow-sm">
+          <article id={getCountryId(guide.country)} key={guide.country} className="mb-8 scroll-mt-24 rounded-2xl border bg-white p-6 shadow-sm">
             <h2 className="text-2xl font-bold text-[#0b2d4f]">{guide.country}</h2>
             <p className="mt-2 text-slate-700"><strong>Visa type:</strong> {guide.visaType}</p>
             <div className="mt-4 grid gap-6 md:grid-cols-2">
