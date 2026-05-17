@@ -1,4 +1,4 @@
-import { getWhatsAppLink, type ServiceItem } from "@/lib/data";
+import { type ServiceItem } from "@/lib/data";
 import Link from "next/link";
 
 const MAX_DESCRIPTION_LENGTH = 120;
@@ -27,13 +27,6 @@ export function PackageCard({ item }: { item: ServiceItem }) {
           <p className="mt-2 whitespace-pre-line text-sm text-slate-600">{shortDescription}</p>
         ) : null}
         <div className="mt-4 flex gap-3">
-          <a
-            href={getWhatsAppLink(`Hello, I want to ask about ${item.serviceName}.`)}
-            target="_blank"
-            className="rounded-xl border px-4 py-2 text-sm font-medium"
-          >
-            WhatsApp
-          </a>
           <Link
             href={`/book?serviceName=${encodeURIComponent(item.serviceName)}`}
             className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0a5b5f]"
