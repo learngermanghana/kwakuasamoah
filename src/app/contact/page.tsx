@@ -7,19 +7,6 @@ const contactMethods = [
     value: siteConfig.email,
     href: `mailto:${siteConfig.email}`,
     helper: "Best for detailed questions about consultation and relocation support."
-  },
-  {
-    label: "Phone",
-    value: siteConfig.phone,
-    href: `tel:${siteConfig.phone}`,
-    helper: "Ideal for urgent inquiries and direct communication."
-  },
-  {
-    label: "WhatsApp",
-    value: "Start Chat",
-    href: `https://wa.me/${siteConfig.whatsapp}`,
-    helper: "Fastest response channel for quick travel questions.",
-    external: true
   }
 ];
 
@@ -48,7 +35,7 @@ export default function ContactPage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 py-16">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6">
           {contactMethods.map((method) => (
             <article key={method.label} className="rounded-2xl border bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-[#0b2d4f]">{method.label}</h2>
