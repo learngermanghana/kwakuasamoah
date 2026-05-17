@@ -95,10 +95,10 @@ export default async function HomePage() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
           {gallery.map((photo) => (
-            <figure key={photo.id} className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+            <Link key={photo.id} href={`/gallery/${photo.id}`} className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md">
               <img src={photo.url} alt={photo.alt} className="h-48 w-full object-contain bg-slate-50" />
-              {photo.caption ? <figcaption className="px-3 py-3 text-base font-semibold">{photo.caption}</figcaption> : null}
-            </figure>
+              {photo.caption ? <p className="px-3 py-3 text-base font-semibold">{photo.caption}</p> : null}
+            </Link>
           ))}
         </div>
       </section>
