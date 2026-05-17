@@ -10,7 +10,7 @@ export const siteConfig = {
   socials: {
     tiktok: "https://www.tiktok.com/@kwakulotteryy/video/7628683868836564244",
     instagram: "https://www.instagram.com/kwakulotteryy",
-    youtube: "https://www.youtube.com/@kwakulotteryy",
+    youtube: "https://youtube.com/@kwakulotteryy?si=AXD7lXvl7XBvGjvB",
     facebook: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr",
     x: "https://x.com/kwakulotteryy"
   }
