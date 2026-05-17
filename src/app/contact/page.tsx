@@ -59,6 +59,50 @@ export default function ContactPage() {
           ))}
         </div>
 
+        <div className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-bold text-[#0b2d4f]">Message from Kwaku Lotteryy</h2>
+          <div className="mt-4 space-y-4 text-slate-700">
+            <p>
+              Thank you for contacting Kwaku Lotteryy regarding your visa and travel services.
+            </p>
+            <p>
+              I provide guidance and expert advice on travel, study abroad opportunities, scholarships, family visas, and immigration updates.
+              Your goals and ideas are always welcome, and together we can turn your dreams into reality.
+            </p>
+            <p>I look forward to assisting you on your journey.</p>
+            <p>
+              I am not a lawyer and do not provide legal advice. I am not an immigration official. However, for legal matters, I can
+              assist in connecting you with a qualified lawyer for professional assistance.
+            </p>
+          </div>
+
+          <h3 className="mt-8 text-xl font-bold text-[#0b2d4f]">VISA SUPPORT</h3>
+          <p className="mt-3 text-slate-700">
+            For visa coaching, mentorship, mock interview preparation, guidance on required documentation, and review of your CV,
+            résumé, cover letter, Statement of Purpose (SOP), and related documents, kindly send an email to{" "}
+            <a className="font-semibold text-[#0d6f73] underline" href={`mailto:${siteConfig.email}`}>
+              {siteConfig.email}
+            </a>
+            .
+          </p>
+
+          <h3 className="mt-8 text-xl font-bold text-[#0b2d4f]">Social Media Advertisement and Promotion Services</h3>
+          <div className="mt-3 space-y-4 text-slate-700">
+            <p>
+              If you would love the opportunity for me to work with your brand and assist in promoting your products, services, or
+              campaigns across social media platforms to increase engagement and visibility, kindly send an email to{" "}
+              <a className="font-semibold text-[#0d6f73] underline" href={`mailto:${siteConfig.email}`}>
+                {siteConfig.email}
+              </a>
+              .
+            </p>
+            <p>
+              I am also available for advertisement and sponsorship services. Please feel free to contact me for further discussion and
+              collaboration opportunities.
+            </p>
+          </div>
+        </div>
+
         <div className="mt-10 grid gap-8 rounded-2xl border bg-[#f8f4ea] p-6 md:grid-cols-[1.3fr_1fr]">
           <div>
             <h2 className="text-2xl font-bold text-[#0b2d4f]">Before you message</h2>
