@@ -23,12 +23,8 @@ export function Footer() {
           </div>
         </div>
         <div>
-          <h4 className="font-semibold">Contact</h4>
+          <h4 className="font-semibold">Follow Us</h4>
           <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
-            <a href={`tel:${siteConfig.phone}`}>{siteConfig.phone}</a>
-            <a href={`https://wa.me/${siteConfig.whatsapp}`} target="_blank" rel="noreferrer">WhatsApp</a>
-            <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
-            <a href={siteConfig.socials.tiktok} target="_blank" rel="noreferrer">TikTok</a>
             <a href={siteConfig.socials.instagram} target="_blank" rel="noreferrer">Instagram</a>
             <a href={siteConfig.socials.facebook} target="_blank" rel="noreferrer">Facebook</a>
             <a href={siteConfig.socials.x} target="_blank" rel="noreferrer">X</a>

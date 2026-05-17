@@ -1,5 +1,4 @@
-import { getWhatsAppLink, type ServiceItem } from "@/lib/data";
-import { siteConfig } from "@/lib/site-config";
+import { type ServiceItem } from "@/lib/data";
 import Link from "next/link";
 
 const MAX_DESCRIPTION_LENGTH = 120;
@@ -27,29 +26,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
         ) : (
           <p className="mt-2 whitespace-pre-line text-sm text-slate-600">{shortDescription}</p>
         ) : null}
-        <div className="mt-4 flex flex-wrap gap-3">
-          <a
-            href={getWhatsAppLink(`Hello, I want to ask about ${item.serviceName}.`)}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border px-4 py-2 text-sm font-medium"
-          >
-            WhatsApp
-          </a>
-          <a
-            href={`mailto:${siteConfig.email}?subject=${encodeURIComponent(`Enquiry about ${item.serviceName}`)}`}
-            className="rounded-xl border px-4 py-2 text-sm font-medium"
-          >
-            Email
-          </a>
-          <a
-            href="https://www.sedifex.com/join-customers/e8e4f544fca24533843b88ba"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border px-4 py-2 text-sm font-medium"
-          >
-            Mailing List
-          </a>
+        <div className="mt-4 flex gap-3">
           <Link
             href={`/book?serviceName=${encodeURIComponent(item.serviceName)}`}
             className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0a5b5f]"
