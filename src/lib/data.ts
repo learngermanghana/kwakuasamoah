@@ -116,20 +116,42 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
 }
 
 const preferredServiceOrder = [
-  "Schengen Travel Assistance",
-  "Visa Application Support",
-  "Interview Preparation",
-  "Document Review Service",
-  "Study Abroad Guidance",
-  "Flight And Hotel Reservation Support"
+  "schenegen travel assistance",
+  "interview preparation",
+  "document review service",
+  "visa application filling",
+  "us america lottery",
+  "flight and hotel",
+  "study abroad"
 ] as const;
+
+function normalizeServiceNameForSort(name?: string) {
+  return (name ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getPreferredServiceIndex(name?: string) {
+  const normalizedName = normalizeServiceNameForSort(name);
+
+  for (let i = 0; i < preferredServiceOrder.length; i += 1) {
+    const preferredName = preferredServiceOrder[i];
+
+    if (normalizedName.includes(preferredName)) {
+      return i;
+    }
+  }
+
+  return -1;
+}
 
 function sortSedifexServices(items: SedifexItem[]) {
   return items
     .map((item, index) => ({ item, index }))
     .sort((a, b) => {
-      const aPreferredIndex = preferredServiceOrder.indexOf(a.item.name as (typeof preferredServiceOrder)[number]);
-      const bPreferredIndex = preferredServiceOrder.indexOf(b.item.name as (typeof preferredServiceOrder)[number]);
+      const aPreferredIndex = getPreferredServiceIndex(a.item.name);
+      const bPreferredIndex = getPreferredServiceIndex(b.item.name);
       const aHasPreferredOrder = aPreferredIndex !== -1;
       const bHasPreferredOrder = bPreferredIndex !== -1;
 
