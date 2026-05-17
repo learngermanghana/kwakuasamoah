@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 
-const contactMethods = [
+type ContactMethod = {
+  label: string;
+  value: string;
+  href: string;
+  helper: string;
+  external?: boolean;
+};
+
+const contactMethods: ContactMethod[] = [
   {
     label: "Email",
     value: siteConfig.email,
