@@ -18,6 +18,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
       <div className="p-5">
         {item.category ? <p className="text-sm font-semibold text-[#0d6f73]">{item.category}</p> : null}
         <h3 className="mt-1 text-xl font-bold">{item.serviceName}</h3>
+        {item.priceLabel ? <p className="mt-2 text-sm font-semibold text-[#0d6f73]">{item.priceLabel}</p> : null}
         {description ? isLongDescription ? (
           <details className="mt-2 text-sm text-slate-600">
             <summary className="cursor-pointer list-none font-medium text-[#0d6f73]">{shortDescription} Read more</summary>
