@@ -2,18 +2,28 @@ import { NextResponse } from "next/server";
 
 type BookingPayload = {
   serviceId?: string;
+  slotId?: string;
+  slotID?: string;
+  slot_id?: string;
   serviceName?: string;
   bookingDate?: string;
   bookingTime?: string;
   notes?: string;
+  quantity?: number | string;
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
+  customer?: {
+    name?: string;
+    phone?: string;
+    email?: string;
+  };
   website?: string;
   attributes?: Record<string, unknown>;
   paymentMethod?: string;
   paymentCollectionMode?: string;
   paymentConfirmed?: boolean | string;
+  status?: string;
 };
 
 const BOOKING_STATUS = "booked";
@@ -206,25 +216,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "invalid-request", message: "Booking could not be created." }, { status: 400 });
     }
 
-    const customerName = booking.customerName || (body.name as string | undefined);
-    const customerPhone = booking.customerPhone || (body.phone as string | undefined);
-    const customerEmail = booking.customerEmail || (body.email as string | undefined);
-    const bookingDate = booking.bookingDate || (body.travelDates as string | undefined);
+    const customerName =
+      booking.customer?.name ||
+      booking.customerName ||
+      (body.customerName as string | undefined) ||
+      (body.fullName as string | undefined) ||
+      (body.clientName as string | undefined) ||
+      (body.name as string | undefined);
+    const customerPhone =
+      booking.customer?.phone ||
+      booking.customerPhone ||
+      (body.phoneNumber as string | undefined) ||
+      (body.mobile as string | undefined) ||
+      (body.whatsapp as string | undefined) ||
+      (body.phone as string | undefined);
+    const customerEmail =
+      booking.customer?.email ||
+      booking.customerEmail ||
+      (body.emailAddress as string | undefined) ||
+      (body.email as string | undefined);
+    const bookingDate = booking.bookingDate || (body.date as string | undefined) || (body.travelDates as string | undefined);
     const notes = booking.notes || (body.message as string | undefined);
+    const slotId = booking.slotId || booking.slotID || booking.slot_id || (body.slotId as string | undefined);
+    const quantity = Math.max(Number(booking.quantity || body.quantity || 1), 1);
 
     const paymentMethod = "paystack_checkout";
     const paymentConfirmed = false;
 
-    if (!customerName) {
+    if (!customerName && !customerPhone && !customerEmail) {
       return NextResponse.json(
-        { ok: false, error: "missing-name", message: "Please provide your full name." },
-        { status: 400 }
-      );
-    }
-
-    if (!customerEmail) {
-      return NextResponse.json(
-        { ok: false, error: "missing-email", message: "Please provide an email address." },
+        { ok: false, error: "missing-customer", message: "Please provide at least one customer contact field (name, phone, or email)." },
         { status: 400 }
       );
     }
@@ -252,11 +273,13 @@ export async function POST(req: Request) {
 
     const payload = {
       serviceId: booking.serviceId || defaultServiceId,
+      slotId,
       customer: {
         name: customerName,
         phone: customerPhone,
         email: customerEmail
       },
+      quantity,
       notes,
       bookingDate,
       bookingTime: booking.bookingTime,
@@ -421,4 +444,53 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request payload." }, { status: 400 });
   }
+}
+
+export async function GET(req: Request) {
+  const baseUrl = process.env.SEDIFEX_API_BASE_URL;
+  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
+  const defaultStoreId = process.env.SEDIFEX_STORE_ID;
+
+  if (!baseUrl || !apiKey || !defaultStoreId) {
+    return NextResponse.json(
+      { ok: false, error: "Sedifex integration is not configured." },
+      { status: 500 }
+    );
+  }
+
+  const requestUrl = new URL(req.url);
+  const storeId = requestUrl.searchParams.get("storeId") || defaultStoreId;
+  const status = requestUrl.searchParams.get("status");
+  const serviceId = requestUrl.searchParams.get("serviceId");
+
+  const endpoint = new URL("/v1IntegrationBookings", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+  if (status) endpoint.searchParams.set("status", status);
+  if (serviceId) endpoint.searchParams.set("serviceId", serviceId);
+
+  const response = await fetch(endpoint, {
+    headers: {
+      "x-api-key": apiKey,
+      "X-Sedifex-Contract-Version": "2026-04-13",
+      Accept: "application/json"
+    },
+    cache: "no-store"
+  });
+
+  const responseData = await response.json().catch(() => null);
+  if (!response.ok) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: responseData?.error || "booking-list-request-failed",
+        message: responseData?.message || "Booking list could not be fetched."
+      },
+      { status: response.status }
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    data: responseData
+  });
 }
