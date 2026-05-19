@@ -73,10 +73,7 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
   function validate(nextState: FormState) {
     const nextErrors: ValidationErrors = {};
     if (!nextState.customerName.trim()) nextErrors.customerName = "Please enter your full name.";
-    if (!nextState.customerEmail.trim() && !nextState.customerPhone.trim()) {
-      nextErrors.customerEmail = "Add an email or phone number so we can reach you.";
-      nextErrors.customerPhone = "Add a phone number or email address so we can reach you.";
-    }
+    if (!nextState.customerEmail.trim()) nextErrors.customerEmail = "Please enter your email address.";
     if (nextState.customerEmail && !EMAIL_PATTERN.test(nextState.customerEmail)) nextErrors.customerEmail = "Enter a valid email address.";
     if (nextState.customerPhone && !PHONE_PATTERN.test(nextState.customerPhone)) nextErrors.customerPhone = "Enter a valid phone or WhatsApp number.";
     if (!nextState.serviceId) nextErrors.serviceId = "Please choose a service.";
@@ -138,7 +135,7 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
 
   return <form onSubmit={onSubmit} className="mt-8 space-y-4" noValidate>{/* trimmed for brevity */}
     <div className="space-y-1"><label htmlFor="customerName" className="block text-sm font-medium text-zinc-900">Full name *</label><input id="customerName" name="customerName" value={formState.customerName} onChange={(event) => setFormState((previous) => ({ ...previous, customerName: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
-    <div className="space-y-1"><label htmlFor="customerEmail" className="block text-sm font-medium text-zinc-900">Email</label><input id="customerEmail" name="customerEmail" type="email" value={formState.customerEmail} onChange={(event) => setFormState((previous) => ({ ...previous, customerEmail: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
+    <div className="space-y-1"><label htmlFor="customerEmail" className="block text-sm font-medium text-zinc-900">Email *</label><input id="customerEmail" name="customerEmail" type="email" required value={formState.customerEmail} onChange={(event) => setFormState((previous) => ({ ...previous, customerEmail: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
     <div className="space-y-1"><label htmlFor="customerPhone" className="block text-sm font-medium text-zinc-900">Phone / WhatsApp</label><input id="customerPhone" name="customerPhone" value={formState.customerPhone} onChange={(event) => setFormState((previous) => ({ ...previous, customerPhone: event.target.value }))} className="w-full rounded-xl border px-4 py-3" /></div>
     <div className="space-y-1"><label htmlFor="serviceId" className="block text-sm font-medium text-zinc-900">Service *</label><select id="serviceId" name="serviceId" value={formState.serviceId} onChange={(event) => { const selected = getSelectedService(serviceOptions, event.target.value); setFormState((previous) => ({ ...previous, serviceId: event.target.value, serviceName: selected?.name || "" })); }} className="w-full rounded-xl border px-4 py-3"><option value="">Select a service</option>{serviceOptions.map((service) => (<option key={service.id} value={service.id}>{service.name}</option>))}</select></div>
     <div className="grid gap-4 md:grid-cols-2">
