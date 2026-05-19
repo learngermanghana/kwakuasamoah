@@ -112,7 +112,7 @@ export function BookingForm({ serviceOptions, prefilledServiceName }: BookingFor
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/integration-bookings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const response = await fetch("/api/booking-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; message?: string; checkout?: { authorizationUrl?: string } } | null;
       if (!response.ok || !data?.ok) {
         setResultMessage({ kind: "error", text: data?.message || data?.error || "We could not submit your request right now. Please try again in a few minutes." });
