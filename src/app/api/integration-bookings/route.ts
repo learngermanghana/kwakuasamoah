@@ -19,6 +19,7 @@ type BookingPayload = {
 const BOOKING_STATUS = "booked";
 const PAYMENT_COLLECTION_MODE = "online_checkout";
 const PAYMENT_STATUS_CHECKOUT_CREATED = "checkout_created";
+const SEDIFEX_CHECKOUT_STORE_ID = "37mJqg20MjOriggaIaOOuahDsgj1";
 
 type SedifexCheckoutResponse = {
   ok?: boolean;
@@ -221,9 +222,9 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!customerPhone && !customerEmail) {
+    if (!customerEmail) {
       return NextResponse.json(
-        { ok: false, error: "missing-contact", message: "Please provide an email or phone number." },
+        { ok: false, error: "missing-email", message: "Please provide an email address." },
         { status: 400 }
       );
     }
@@ -300,6 +301,7 @@ export async function POST(req: Request) {
     });
 
     const responseData = await response.json().catch(() => null);
+    console.log("booking raw response:", responseData);
 
     if (!response.ok) {
       return NextResponse.json(
@@ -319,18 +321,23 @@ export async function POST(req: Request) {
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
     const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
-    checkoutEndpoint.searchParams.set("storeId", storeId);
+    checkoutEndpoint.searchParams.set("storeId", SEDIFEX_CHECKOUT_STORE_ID);
     const checkoutPayload = {
-      storeId,
+      storeId: SEDIFEX_CHECKOUT_STORE_ID,
       clientOrderId: resolvedClientOrderId,
       orderType: "service",
       currency: checkoutCurrency,
       items: [
         {
           id: booking.serviceId || defaultServiceId || "service",
+          item_id: booking.serviceId || defaultServiceId || "service",
+          serviceId: booking.serviceId || defaultServiceId || "service",
           name: booking.serviceName || "Service booking",
+          serviceName: booking.serviceName || "Service booking",
           unitPrice: checkoutAmount,
-          qty: 1
+          qty: 1,
+          type: "SERVICE",
+          item_type: "service"
         }
       ],
       amount: checkoutAmount,
@@ -374,7 +381,7 @@ export async function POST(req: Request) {
     console.log("checkout status:", checkoutResponse.status, checkoutResponse.statusText);
 
     const checkoutRawText = await checkoutResponse.text();
-    console.log("checkout raw response text:", checkoutRawText);
+    console.log("checkout raw response:", checkoutRawText);
 
     let checkoutPayloadResponse: CheckoutEnvelope | SedifexCheckoutResponse | null = null;
     try {
