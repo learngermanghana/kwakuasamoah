@@ -120,6 +120,10 @@ function firstString(...values: unknown[]) {
   return "";
 }
 
+function firstArrayString(value: unknown) {
+  return Array.isArray(value) && typeof value[0] === "string" ? value[0] : "";
+}
+
 function numberFrom(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
   if (typeof value === "string") {
@@ -166,7 +170,7 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
     item.image_url,
     item.image,
     item.imageUrls?.[0],
-    item.images?.[0],
+    firstArrayString(item.images),
     (item.media as { url?: string } | undefined)?.url,
     "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop"
   );
