@@ -3,29 +3,39 @@ import { packages } from "@/data/packages";
 import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils";
 
 const SEDIFEX_CONTRACT_VERSION = "2026-04-13";
+const DEFAULT_SEDIFEX_API_BASE_URL = "https://us-central1-sedifex-web.cloudfunctions.net";
 
 export async function getPackageData() {
   return packages;
 }
 
-type SedifexItem = {
-  id: string;
-  name: string;
+type SedifexItem = Record<string, unknown> & {
+  id?: string;
+  name?: string;
+  title?: string;
+  serviceName?: string;
   category?: string;
   description?: string;
-  price?: number;
+  summary?: string;
   itemType?: string;
-  sortOrder?: number;
-  order?: number;
+  item_type?: string;
+  type?: string;
+  price?: number | string;
+  unitPrice?: number | string;
+  amount?: number | string;
   imageUrl?: string;
   imageUrls?: string[];
-  imageAlt?: string;
+  image?: string;
+  sortOrder?: number;
+  order?: number;
 };
 
-type SedifexProductsResponse = {
+type SedifexProductsResponse = Record<string, unknown> & {
   products?: SedifexItem[];
+  services?: SedifexItem[];
   publicProducts?: SedifexItem[];
   publicServices?: SedifexItem[];
+  items?: SedifexItem[];
 };
 
 type SedifexGalleryItem = {
@@ -33,9 +43,7 @@ type SedifexGalleryItem = {
   url?: string;
   imageUrl?: string;
   image?: string;
-  media?: {
-    url?: string;
-  };
+  media?: { url?: string };
   alt?: string;
   caption?: string;
   sortOrder?: number;
@@ -73,6 +81,14 @@ export type BlogPost = {
   publishedAt: string;
 };
 
+export type YouTubeVideo = {
+  id: string;
+  title: string;
+  link: string;
+  published: string;
+  thumbnail: string;
+};
+
 const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   id: pkg.slug,
   serviceName: pkg.title,
@@ -91,27 +107,82 @@ const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) 
 }));
 
 function getSedifexConfig() {
-  const baseUrl = process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
-  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
-  const storeId = process.env.SEDIFEX_STORE_ID;
-
+  const baseUrl = (process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL || DEFAULT_SEDIFEX_API_BASE_URL).replace(/\/$/, "");
+  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY || process.env.SEDIFEX_CHECKOUT_API_KEY || process.env.SEDIFEX_BOOKING_API_KEY || "";
+  const storeId = process.env.SEDIFEX_STORE_ID || process.env.SEDIFEX_BOOKING_TARGET_STORE_ID || "";
   return { baseUrl, apiKey, storeId };
 }
 
-function mapSedifexItem(item: SedifexItem): ServiceItem {
-  const normalizedCategory =
-    item.category && item.category.toLowerCase() !== "not provided" ? item.category : undefined;
+function firstString(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
 
-  const normalizedDescription = normalizeServiceDescription(item.description);
+function firstArrayString(value: unknown) {
+  return Array.isArray(value) && typeof value[0] === "string" ? value[0] : "";
+}
+
+function numberFrom(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[^0-9.-]+/g, ""));
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+  return 0;
+}
+
+function priceFrom(item: SedifexItem) {
+  return numberFrom(item.price) || numberFrom(item.unitPrice) || numberFrom(item.unit_price) || numberFrom(item.amount) || numberFrom(item.sellingPrice) || numberFrom(item.checkoutAmount);
+}
+
+function normalizeItemType(item: SedifexItem) {
+  return firstString(item.itemType, item.item_type, item.type).toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
+function isServiceItem(item: SedifexItem) {
+  const itemType = normalizeItemType(item);
+  return itemType === "service" || itemType === "services" || itemType === "serviceitem";
+}
+
+function normalizeServiceDescription(description?: string) {
+  if (!description) return "";
+  return description
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .filter((line) => !/^\*\*(Product Name|Item Type|Category):\*\*/i.test(line))
+    .map((line) => line.replace(/\*\*/g, ""))
+    .map((line) => line.replace(/\s+,/g, ","))
+    .filter((line) => line.toLowerCase() !== "not provided")
+    .join("\n");
+}
+
+function mapSedifexItem(item: SedifexItem): ServiceItem {
+  const name = firstString(item.name, item.serviceName, item.service_name, item.title, "Service");
+  const id = firstString(item.id, item.itemId, item.item_id, item.serviceId, item.service_id, name);
+  const category = firstString(item.category, item.categoryName);
+  const description = normalizeServiceDescription(firstString(item.description, item.summary));
+  const price = priceFrom(item);
+  const image = firstString(
+    item.imageUrl,
+    item.image_url,
+    item.image,
+    item.imageUrls?.[0],
+    firstArrayString(item.images),
+    (item.media as { url?: string } | undefined)?.url,
+    "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop"
+  );
 
   return {
-    id: item.id,
-    serviceName: item.name,
-    category: normalizedCategory,
-    description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
-    priceLabel: typeof item.price === "number" ? `Price ${item.price} GHC` : "Contact for price",
-    image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
-    imageAlt: item.imageAlt || item.name
+    id,
+    serviceName: name,
+    category: category && category.toLowerCase() !== "not provided" ? category : undefined,
+    description: description || "Professional support tailored to your travel and relocation goals.",
+    priceLabel: price ? `Price ${price} GHC` : "Contact for price",
+    image,
+    imageAlt: firstString(item.imageAlt, item.image_alt, name)
   };
 }
 
@@ -126,23 +197,14 @@ const preferredServiceOrder = [
 ] as const;
 
 function normalizeServiceNameForSort(name?: string) {
-  return (name ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
+  return (name ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
 function getPreferredServiceIndex(name?: string) {
   const normalizedName = normalizeServiceNameForSort(name);
-
   for (let i = 0; i < preferredServiceOrder.length; i += 1) {
-    const preferredName = preferredServiceOrder[i];
-
-    if (normalizedName.includes(preferredName)) {
-      return i;
-    }
+    if (normalizedName.includes(preferredServiceOrder[i])) return i;
   }
-
   return -1;
 }
 
@@ -150,49 +212,74 @@ function sortSedifexServices(items: SedifexItem[]) {
   return items
     .map((item, index) => ({ item, index }))
     .sort((a, b) => {
-      const aPreferredIndex = getPreferredServiceIndex(a.item.name);
-      const bPreferredIndex = getPreferredServiceIndex(b.item.name);
-      const aHasPreferredOrder = aPreferredIndex !== -1;
-      const bHasPreferredOrder = bPreferredIndex !== -1;
-
-      if (aHasPreferredOrder && bHasPreferredOrder && aPreferredIndex !== bPreferredIndex) {
-        return aPreferredIndex - bPreferredIndex;
-      }
-
-      if (aHasPreferredOrder !== bHasPreferredOrder) {
-        return aHasPreferredOrder ? -1 : 1;
-      }
-
+      const aPreferredIndex = getPreferredServiceIndex(firstString(a.item.name, a.item.serviceName, a.item.title));
+      const bPreferredIndex = getPreferredServiceIndex(firstString(b.item.name, b.item.serviceName, b.item.title));
+      if (aPreferredIndex !== -1 && bPreferredIndex !== -1 && aPreferredIndex !== bPreferredIndex) return aPreferredIndex - bPreferredIndex;
+      if ((aPreferredIndex !== -1) !== (bPreferredIndex !== -1)) return aPreferredIndex !== -1 ? -1 : 1;
       const aOrder = a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
       const bOrder = b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
-
-      if (aOrder !== bOrder) {
-        return aOrder - bOrder;
-      }
-
+      if (aOrder !== bOrder) return aOrder - bOrder;
       return a.index - b.index;
     })
     .map(({ item }) => item);
 }
 
-function normalizeServiceDescription(description?: string) {
-  if (!description) return "";
+function collectItems(value: unknown, depth = 0): SedifexItem[] {
+  if (!value || depth > 4) return [];
+  if (Array.isArray(value)) return value.flatMap((entry) => (entry && typeof entry === "object" ? [entry as SedifexItem, ...collectItems(entry, depth + 1)] : []));
+  if (typeof value !== "object") return [];
+  const record = value as Record<string, unknown>;
+  return ["items", "products", "services", "publicProducts", "publicServices", "data", "catalog"].flatMap((key) => collectItems(record[key], depth + 1));
+}
 
-  const lines = description
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .filter((line) => !/^\*\*(Product Name|Item Type|Category):\*\*/i.test(line))
-    .map((line) => line.replace(/\*\*/g, ""))
-    .map((line) => line.replace(/\s+,/g, ","))
-    .filter((line) => line.toLowerCase() !== "not provided");
+function servicesFromPayload(payload: SedifexProductsResponse) {
+  const directServices = [...(payload.publicServices || []), ...(payload.services || [])];
+  if (directServices.length) return directServices;
+  return collectItems(payload).filter(isServiceItem);
+}
 
-  return lines.join("\n");
+function uniqueItems(items: SedifexItem[]) {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = firstString(item.id, item.itemId, item.item_id, item.serviceId, item.service_id, item.name, item.serviceName, item.title);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function sedifexHeaders(apiKey: string) {
+  return {
+    "x-api-key": apiKey,
+    Authorization: `Bearer ${apiKey}`,
+    "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
+    Accept: "application/json"
+  };
+}
+
+export async function getServiceData() {
+  const { baseUrl, apiKey, storeId } = getSedifexConfig();
+  if (!apiKey || !storeId) return defaultServices;
+
+  for (const path of ["/integrationProducts", "/v1IntegrationProducts"] as const) {
+    try {
+      const endpoint = new URL(path, `${baseUrl}/`);
+      endpoint.searchParams.set("storeId", storeId);
+      const response = await fetch(endpoint, { headers: sedifexHeaders(apiKey), next: { revalidate: 30 } });
+      if (!response.ok) continue;
+      const payload = (await response.json()) as SedifexProductsResponse;
+      const items = uniqueItems(servicesFromPayload(payload));
+      if (items.length) return sortSedifexServices(items).map(mapSedifexItem);
+    } catch {
+      continue;
+    }
+  }
+
+  return defaultServices;
 }
 
 function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
   const imageUrl = getGalleryImageUrl(item);
-
   return {
     id: item.id,
     url: imageUrl,
@@ -201,81 +288,19 @@ function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
   };
 }
 
-export async function getServiceData() {
-  const { baseUrl, apiKey, storeId } = getSedifexConfig();
-
-  if (!baseUrl || !apiKey || !storeId) {
-    return defaultServices;
-  }
-
-  const endpoint = new URL("/v1IntegrationProducts", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
-
-  try {
-    const response = await fetch(endpoint, {
-      headers: {
-        "x-api-key": apiKey,
-        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-        Accept: "application/json"
-      },
-      next: { revalidate: 30 }
-    });
-
-    if (!response.ok) {
-      return defaultServices;
-    }
-
-    const payload = (await response.json()) as SedifexProductsResponse;
-    const items =
-      payload.publicServices?.length
-        ? payload.publicServices
-        : (payload.products || []).filter((item) => item.itemType === "service");
-
-    if (!items.length) {
-      return defaultServices;
-    }
-
-    return sortSedifexServices(items).map(mapSedifexItem);
-  } catch {
-    return defaultServices;
-  }
-}
-
 export async function getGalleryData() {
   const { baseUrl, apiKey, storeId } = getSedifexConfig();
+  if (!apiKey || !storeId) return defaultGallery;
 
-  if (!baseUrl || !apiKey || !storeId) {
-    return defaultGallery;
-  }
-
-  const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
-
-  for (const path of galleryEndpoints) {
-    const endpoint = new URL(path, baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
-
+  for (const path of ["/integrationGallery", "/v1IntegrationGallery"] as const) {
     try {
-      const response = await fetch(endpoint, {
-        headers: {
-          "x-api-key": apiKey,
-          "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-          Accept: "application/json"
-        },
-        next: { revalidate: 60 }
-      });
-
-      if (!response.ok) {
-        continue;
-      }
-
+      const endpoint = new URL(path, `${baseUrl}/`);
+      endpoint.searchParams.set("storeId", storeId);
+      const response = await fetch(endpoint, { headers: sedifexHeaders(apiKey), next: { revalidate: 60 } });
+      if (!response.ok) continue;
       const payload = (await response.json()) as SedifexGalleryResponse;
       const galleryItems = normalizePublishedGallery(payload.gallery as SedifexGalleryItem[] | undefined);
-
-      if (!galleryItems.length) {
-        continue;
-      }
-
-      return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
+      if (galleryItems.length) return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
     } catch {
       continue;
     }
@@ -294,136 +319,37 @@ type SedifexBlogItem = {
   publishedAt?: string;
 };
 
-type SedifexBlogResponse = {
-  items?: SedifexBlogItem[];
-};
-
-function getSedifexBlogConfig() {
-  const baseUrl = process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
-  const storeId = process.env.SEDIFEX_STORE_ID;
-
-  return { baseUrl, storeId };
-}
-
-function mapSedifexBlogItem(item: SedifexBlogItem): BlogPost {
-  return {
-    id: item.id,
-    title: item.title ?? "Untitled post",
-    slug: item.slug ?? item.id,
-    content: item.content ?? "",
-    linkUrl: item.linkUrl ?? "",
-    imageUrl: item.imageUrl ?? "",
-    publishedAt: item.publishedAt ?? ""
-  };
-}
+type SedifexBlogResponse = { items?: SedifexBlogItem[] };
 
 export async function getBlogPosts(slug?: string) {
-  const { baseUrl, storeId } = getSedifexBlogConfig();
-
-  if (!storeId) {
-    return [] as BlogPost[];
-  }
+  const baseUrl = process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
+  const storeId = process.env.SEDIFEX_STORE_ID;
+  if (!storeId) return [] as BlogPost[];
 
   const endpoint = new URL("/api/public-blog", baseUrl);
   endpoint.searchParams.set("storeId", storeId);
-  if (slug) {
-    endpoint.searchParams.set("slug", slug);
-  }
+  if (slug) endpoint.searchParams.set("slug", slug);
 
   try {
-    const response = await fetch(endpoint, {
-      next: { revalidate: 60 },
-      headers: { Accept: "application/json" }
-    });
-
-    if (!response.ok) {
-      return [] as BlogPost[];
-    }
-
+    const response = await fetch(endpoint, { next: { revalidate: 60 }, headers: { Accept: "application/json" } });
+    if (!response.ok) return [] as BlogPost[];
     const payload = (await response.json()) as SedifexBlogResponse;
-    const items = Array.isArray(payload.items) ? payload.items : [];
-    return items.filter((item) => Boolean(item.id)).map(mapSedifexBlogItem);
+    return (payload.items || []).filter((item) => Boolean(item.id)).map((item) => ({
+      id: item.id,
+      title: item.title ?? "Untitled post",
+      slug: item.slug ?? item.id,
+      content: item.content ?? "",
+      linkUrl: item.linkUrl ?? "",
+      imageUrl: item.imageUrl ?? "",
+      publishedAt: item.publishedAt ?? ""
+    }));
   } catch {
     return [] as BlogPost[];
   }
 }
 
-export type YouTubeVideo = {
-  id: string;
-  title: string;
-  link: string;
-  published: string;
-  thumbnail: string;
-};
-
-const YOUTUBE_REQUEST_HEADERS = {
-  "User-Agent": "Mozilla/5.0 (compatible; KwakuLotteryBot/1.0; +https://www.youtube.com/@kwakulotteryy)",
-  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9"
-};
-
-function parseYouTubeFeed(xml: string) {
-  const entries = xml.split("<entry>").slice(1, 7);
-
-  return entries
-    .map((entry) => {
-      const id = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1] || "";
-      const title = entry.match(/<title>([^<]+)<\/title>/)?.[1] || "YouTube video";
-      const published = entry.match(/<published>([^<]+)<\/published>/)?.[1] || "";
-      return {
-        id,
-        title,
-        link: `https://www.youtube.com/watch?v=${id}`,
-        published,
-        thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
-      };
-    })
-    .filter((entry) => Boolean(entry.id));
-}
-
-function findChannelId(html: string) {
-  const matchers = [
-    /"channelId":"(UC[^"]+)"/,
-    /\\"channelId\\":\\"(UC[^\\"]+)\\"/,
-    /"externalId":"(UC[^"]+)"/
-  ];
-
-  for (const matcher of matchers) {
-    const result = html.match(matcher);
-    if (result?.[1]) return result[1];
-  }
-
-  return "";
-}
-
 export async function getYouTubeVideos() {
-  const fallback: YouTubeVideo[] = [];
-
-  try {
-    const videosUrl = `${siteConfig.socials.youtube.replace(/\/$/, "")}/videos`;
-    const channelPage = await fetch(videosUrl, {
-      cache: "no-store",
-      headers: YOUTUBE_REQUEST_HEADERS
-    });
-
-    if (!channelPage.ok) return fallback;
-
-    const html = await channelPage.text();
-    const channelId = findChannelId(html);
-    if (!channelId) return fallback;
-
-    const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-    const feedResponse = await fetch(feedUrl, {
-      cache: "no-store",
-      headers: YOUTUBE_REQUEST_HEADERS
-    });
-    if (!feedResponse.ok) return fallback;
-
-    const xml = await feedResponse.text();
-    return parseYouTubeFeed(xml);
-  } catch {
-    return fallback;
-  }
+  return [] as YouTubeVideo[];
 }
 
 export function getWhatsAppLink(message: string) {
