@@ -14,12 +14,53 @@ type AmountLookupResult = {
   preview?: R | null;
 };
 
+type UpstreamResult = {
+  ok: boolean;
+  status: number;
+  data: R | null;
+  keySource: string;
+};
+
 const s = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-const key = () => process.env.SEDIFEX_CHECKOUT_API_KEY || process.env.SEDIFEX_BOOKING_API_KEY || process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY || "";
+const integrationKey = () => process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY || "";
 const store = () => process.env.SEDIFEX_BOOKING_TARGET_STORE_ID || process.env.SEDIFEX_STORE_ID || "";
 const checkoutUrl = () => process.env.SEDIFEX_INTEGRATION_CHECKOUT_CREATE_URL || `${BASE}/integrationCheckoutCreate`;
 const ret = (req: Request) => process.env.SEDIFEX_CHECKOUT_RETURN_URL || new URL("/payment/return", req.url).toString();
 const currency = () => process.env.BOOKING_CHECKOUT_CURRENCY || process.env.SEDIFEX_CHECKOUT_CURRENCY || "GHS";
+
+function envKeyFragment(value: string) {
+  return value.replace(/[^a-zA-Z0-9]+/g, "_").toUpperCase();
+}
+
+function uniqKeys(entries: Array<{ value?: string; source: string }>) {
+  const seen = new Set<string>();
+  return entries
+    .map((entry) => ({ value: s(entry.value), source: entry.source }))
+    .filter((entry) => {
+      if (!entry.value || seen.has(entry.value)) return false;
+      seen.add(entry.value);
+      return true;
+    });
+}
+
+function checkoutKeysForStore(storeId: string) {
+  const storeTokenKey = storeId ? `SEDIFEX_MERCHANT_TOKEN_${envKeyFragment(storeId)}` : "";
+
+  return uniqKeys([
+    { value: process.env.SEDIFEX_CHECKOUT_API_KEY, source: "SEDIFEX_CHECKOUT_API_KEY" },
+    { value: process.env.SEDIFEX_BOOKING_API_KEY, source: "SEDIFEX_BOOKING_API_KEY" },
+    { value: storeTokenKey ? process.env[storeTokenKey] : "", source: storeTokenKey },
+    { value: process.env.SEDIFEX_MERCHANT_TOKEN, source: "SEDIFEX_MERCHANT_TOKEN" },
+    { value: integrationKey(), source: "SEDIFEX_INTEGRATION_API_KEY" }
+  ]);
+}
+
+function catalogKeysForStore(storeId: string) {
+  return uniqKeys([
+    { value: integrationKey(), source: "SEDIFEX_INTEGRATION_API_KEY" },
+    ...checkoutKeysForStore(storeId)
+  ]);
+}
 
 function pickUrl(data: R | null) {
   const d = ((data?.data as R) || (data?.checkout as R) || data || {}) as R;
@@ -44,6 +85,11 @@ function numberFrom(value: unknown) {
 
 function normalize(value: unknown) {
   return s(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function isUnauthorized(status: number, data: R | null) {
+  const error = s(data?.error || data?.message).toLowerCase();
+  return status === 401 || status === 403 || error === "unauthorized" || error.includes("unauthorized");
 }
 
 function collectItems(value: unknown, depth = 0): R[] {
@@ -215,33 +261,54 @@ function headers(apiKey: string) {
   };
 }
 
-async function catalogAmountFor(serviceId: string, serviceName: string, apiKey: string, storeId: string) {
+async function postWithAuth(url: string | URL, payload: R, authKeys: Array<{ value: string; source: string }>): Promise<UpstreamResult> {
+  let last: UpstreamResult = { ok: false, status: 500, data: null, keySource: "none" };
+
+  for (const authKey of authKeys) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: headers(authKey.value),
+      body: JSON.stringify(payload),
+      cache: "no-store"
+    });
+    const data = (await res.json().catch(() => null)) as R | null;
+    last = { ok: res.ok, status: res.status, data, keySource: authKey.source };
+
+    if (res.ok || !isUnauthorized(res.status, data)) return last;
+  }
+
+  return last;
+}
+
+async function catalogAmountFor(serviceId: string, serviceName: string, authKeys: Array<{ value: string; source: string }>, storeId: string) {
   const endpoints = ["/integrationProducts", "/v1IntegrationProducts"];
 
   for (const path of endpoints) {
-    try {
-      const url = new URL(path, `${BASE}/`);
-      url.searchParams.set("storeId", storeId);
+    for (const authKey of authKeys) {
+      try {
+        const url = new URL(path, `${BASE}/`);
+        url.searchParams.set("storeId", storeId);
 
-      const res = await fetch(url, {
-        headers: headers(apiKey),
-        cache: "no-store"
-      });
+        const res = await fetch(url, {
+          headers: headers(authKey.value),
+          cache: "no-store"
+        });
 
-      if (!res.ok) continue;
+        if (!res.ok) continue;
 
-      const data = (await res.json().catch(() => null)) as R | null;
-      const items = collectItems(data);
-      const found = items.find((item) => itemMatches(item, serviceId, serviceName));
+        const data = (await res.json().catch(() => null)) as R | null;
+        const items = collectItems(data);
+        const found = items.find((item) => itemMatches(item, serviceId, serviceName));
 
-      if (!found) continue;
+        if (!found) continue;
 
-      const amount = priceFrom(found);
-      if (amount) {
-        return { amount, item: found, source: path };
+        const amount = priceFrom(found);
+        if (amount) {
+          return { amount, item: found, source: `${path}:${authKey.source}` };
+        }
+      } catch {
+        continue;
       }
-    } catch {
-      continue;
     }
   }
 
@@ -257,7 +324,7 @@ function previewUrls() {
   ].filter((value): value is string => Boolean(value));
 }
 
-async function previewAmountFor(serviceId: string, serviceName: string, apiKey: string, storeId: string, itemAmount: number) {
+async function previewAmountFor(serviceId: string, serviceName: string, authKeys: Array<{ value: string; source: string }>, storeId: string, itemAmount: number) {
   const payload = {
     storeId,
     merchantId: storeId,
@@ -282,34 +349,42 @@ async function previewAmountFor(serviceId: string, serviceName: string, apiKey: 
   };
 
   for (const endpoint of previewUrls()) {
-    try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: headers(apiKey),
-        body: JSON.stringify(payload),
-        cache: "no-store"
-      });
+    for (const authKey of authKeys) {
+      try {
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: headers(authKey.value),
+          body: JSON.stringify(payload),
+          cache: "no-store"
+        });
 
-      if (!res.ok) continue;
+        if (!res.ok) continue;
 
-      const data = (await res.json().catch(() => null)) as R | null;
-      const amount = pickPreviewAmount(data);
+        const data = (await res.json().catch(() => null)) as R | null;
+        const amount = pickPreviewAmount(data);
 
-      if (amount) {
-        return { amount, currency: pickPreviewCurrency(data), preview: data, source: endpoint };
+        if (amount) {
+          return { amount, currency: pickPreviewCurrency(data), preview: data, source: `${endpoint}:${authKey.source}` };
+        }
+      } catch {
+        continue;
       }
-    } catch {
-      continue;
     }
   }
 
   return { amount: 0, currency: currency(), preview: null as R | null, source: "" };
 }
 
-async function amountFor(serviceId: string, serviceName: string, apiKey: string, storeId: string): Promise<AmountLookupResult> {
+async function amountFor(
+  serviceId: string,
+  serviceName: string,
+  catalogAuthKeys: Array<{ value: string; source: string }>,
+  checkoutAuthKeys: Array<{ value: string; source: string }>,
+  storeId: string
+): Promise<AmountLookupResult> {
   const fallback = numberFrom(process.env.BOOKING_CHECKOUT_AMOUNT || 0);
-  const catalog = await catalogAmountFor(serviceId, serviceName, apiKey, storeId);
-  const preview = await previewAmountFor(serviceId, serviceName, apiKey, storeId, catalog.amount);
+  const catalog = await catalogAmountFor(serviceId, serviceName, catalogAuthKeys, storeId);
+  const preview = await previewAmountFor(serviceId, serviceName, checkoutAuthKeys, storeId, catalog.amount);
 
   const itemAmount = catalog.amount || preview.amount || fallback;
   const checkoutAmount = preview.amount || catalog.amount || fallback;
@@ -325,9 +400,10 @@ async function amountFor(serviceId: string, serviceName: string, apiKey: string,
 }
 
 export async function POST(req: Request) {
-  const apiKey = key();
   const storeId = store();
-  if (!apiKey || !storeId) return NextResponse.json({ ok: false, error: "sedifex-not-configured" }, { status: 500 });
+  const checkoutAuthKeys = checkoutKeysForStore(storeId);
+  const catalogAuthKeys = catalogKeysForStore(storeId);
+  if (!storeId || !checkoutAuthKeys.length) return NextResponse.json({ ok: false, error: "sedifex-not-configured" }, { status: 500 });
 
   const body = await req.json().catch(() => ({} as R));
   if (s(body.website)) return NextResponse.json({ ok: false, error: "invalid-request" }, { status: 400 });
@@ -340,12 +416,11 @@ export async function POST(req: Request) {
   const phone = s(customer.phone || body.customerPhone);
   if (!serviceId) return NextResponse.json({ ok: false, error: "missing-service" }, { status: 400 });
 
-  const amountDetails = await amountFor(serviceId, serviceName, apiKey, storeId);
+  const amountDetails = await amountFor(serviceId, serviceName, catalogAuthKeys, checkoutAuthKeys, storeId);
   const amount = amountDetails.checkoutAmount;
   const itemAmount = amountDetails.itemAmount || amount;
   if (!amount) return NextResponse.json({ ok: false, error: "missing-checkout-amount" }, { status: 502 });
 
-  const requestHeaders = headers(apiKey);
   const bookingEndpoint = new URL(`${BASE}/v1IntegrationBookings`);
   bookingEndpoint.searchParams.set("storeId", storeId);
   const bookingPayload = {
@@ -371,11 +446,17 @@ export async function POST(req: Request) {
       ...((body.attributes as R | undefined) || {})
     }
   };
-  const bRes = await fetch(bookingEndpoint, { method: "POST", headers: requestHeaders, body: JSON.stringify(bookingPayload), cache: "no-store" });
-  const bData = await bRes.json().catch(() => null) as R | null;
-  if (!bRes.ok) return NextResponse.json({ ok: false, error: bData?.error || "booking-create-failed" }, { status: bRes.status });
 
-  const bookingId = pickId(bData);
+  const bookingResult = await postWithAuth(bookingEndpoint, bookingPayload, checkoutAuthKeys);
+  const canContinueWithoutBooking = !bookingResult.ok && isUnauthorized(bookingResult.status, bookingResult.data);
+  if (!bookingResult.ok && !canContinueWithoutBooking) {
+    return NextResponse.json(
+      { ok: false, error: bookingResult.data?.error || "booking-create-failed", stage: "booking-create", keySource: bookingResult.keySource },
+      { status: bookingResult.status || 502 }
+    );
+  }
+
+  const bookingId = bookingResult.ok ? pickId(bookingResult.data) : "";
   const clientOrderId = bookingId ? `BOOKING-${bookingId}` : `BOOKING-${Date.now()}`;
   const cPayload = {
     storeId,
@@ -411,13 +492,29 @@ export async function POST(req: Request) {
       channel: "client-website",
       amountSource: amountDetails.source,
       itemAmount,
-      checkoutAmount: amount
+      checkoutAmount: amount,
+      bookingCreateStatus: bookingResult.ok ? "created" : "skipped_unauthorized"
     }
   };
-  const cRes = await fetch(checkoutUrl(), { method: "POST", headers: requestHeaders, body: JSON.stringify(cPayload), cache: "no-store" });
-  const cData = await cRes.json().catch(() => null) as R | null;
-  const url = pickUrl(cData);
-  if (!cRes.ok || !url) return NextResponse.json({ ok: false, error: cData?.error || "checkout-create-failed", bookingId }, { status: cRes.status || 502 });
+  const checkoutResult = await postWithAuth(checkoutUrl(), cPayload, checkoutAuthKeys);
+  const url = pickUrl(checkoutResult.data);
+  if (!checkoutResult.ok || !url) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: checkoutResult.data?.error || "checkout-create-failed",
+        stage: "checkout-create",
+        keySource: checkoutResult.keySource,
+        bookingId
+      },
+      { status: checkoutResult.status || 502 }
+    );
+  }
 
-  return NextResponse.json({ ok: true, message: "Booking created. Redirecting to secure checkout.", data: bData, checkout: { bookingId, clientOrderId, authorizationUrl: url, checkoutUrl: url } });
+  return NextResponse.json({
+    ok: true,
+    message: "Booking created. Redirecting to secure checkout.",
+    data: bookingResult.data,
+    checkout: { bookingId, clientOrderId, authorizationUrl: url, checkoutUrl: url }
+  });
 }
