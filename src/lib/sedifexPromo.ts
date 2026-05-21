@@ -1,7 +1,7 @@
 import 'server-only';
 import { normalizePublishedGallery } from "./gallery-utils";
 
-const BASE_URL = process.env.SEDIFEX_API_BASE_URL ?? "https://us-central1-sedifex-web.cloudfunctions.net";
+const BASE_URL = (process.env.SEDIFEX_API_BASE_URL ?? "https://us-central1-sedifex-web.cloudfunctions.net").replace(/\/$/, "");
 const STORE_ID = process.env.SEDIFEX_STORE_ID ?? "";
 const API_KEY = process.env.SEDIFEX_INTEGRATION_API_KEY ?? process.env.SEDIFEX_INTEGRATION_KEY ?? "";
 const CONTRACT = process.env.SEDIFEX_CONTRACT_VERSION ?? "2026-04-13";
@@ -37,44 +37,69 @@ type GalleryPayload = {
   }>;
 };
 
-export async function fetchPromoAndGallery() {
-  if (!STORE_ID) {
-    throw new Error("Missing SEDIFEX_STORE_ID. Set a non-empty storeId in server runtime env.");
-  }
+const emptyPromo: PromoPayload["promo"] = {
+  enabled: false,
+  title: "Latest promo",
+  summary: null,
+  startDate: null,
+  endDate: null,
+  websiteUrl: null,
+  imageUrl: null,
+  imageAlt: null
+};
 
-  if (!API_KEY) {
-    throw new Error("Missing Sedifex integration API key in server runtime env.");
-  }
+function emptyPromoAndGallery() {
+  return { promo: emptyPromo, gallery: [] as GalleryPayload["gallery"] };
+}
 
-  const headers = {
+function requestHeaders() {
+  return {
     "x-api-key": API_KEY,
     "X-Sedifex-Contract-Version": CONTRACT,
     Accept: "application/json"
   };
+}
 
-  const promoRes = await fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
-    headers,
+async function fetchJson<T>(path: string) {
+  if (!STORE_ID || !API_KEY) return null;
+
+  const response = await fetch(`${BASE_URL}${path}?storeId=${encodeURIComponent(STORE_ID)}`, {
+    headers: requestHeaders(),
     next: { revalidate: 60 }
   });
 
-  if (!promoRes.ok) throw new Error(`Promo request failed: ${promoRes.status}`);
+  if (!response.ok) return null;
 
-  const promoJson = (await promoRes.json()) as PromoPayload;
+  return (await response.json().catch(() => null)) as T | null;
+}
+
+export async function fetchPromoAndGallery() {
+  if (!STORE_ID || !API_KEY) {
+    return emptyPromoAndGallery();
+  }
+
+  const promoEndpoints = ["/integrationPromo", "/v1IntegrationPromo"] as const;
+  let promo = emptyPromo;
+
+  for (const endpoint of promoEndpoints) {
+    const promoJson = await fetchJson<PromoPayload>(endpoint);
+
+    if (promoJson?.promo) {
+      promo = promoJson.promo;
+      break;
+    }
+  }
 
   const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
   let publishedGallery: GalleryPayload["gallery"] = [];
 
   for (const endpoint of galleryEndpoints) {
-    const galleryRes = await fetch(`${BASE_URL}${endpoint}?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    });
+    const galleryJson = await fetchJson<GalleryPayload>(endpoint);
 
-    if (!galleryRes.ok) {
+    if (!galleryJson?.gallery?.length) {
       continue;
     }
 
-    const galleryJson = (await galleryRes.json()) as GalleryPayload;
     const normalizedGallery = normalizePublishedGallery(galleryJson.gallery as GalleryPayload["gallery"]);
 
     if (normalizedGallery.length) {
@@ -83,5 +108,5 @@ export async function fetchPromoAndGallery() {
     }
   }
 
-  return { promo: promoJson.promo, gallery: publishedGallery };
+  return { promo, gallery: publishedGallery };
 }
