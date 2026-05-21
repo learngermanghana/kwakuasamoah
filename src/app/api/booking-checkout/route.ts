@@ -87,11 +87,6 @@ function normalize(value: unknown) {
   return s(value).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
-function isUnauthorized(status: number, data: R | null) {
-  const error = s(data?.error || data?.message).toLowerCase();
-  return status === 401 || status === 403 || error === "unauthorized" || error.includes("unauthorized");
-}
-
 function collectItems(value: unknown, depth = 0): R[] {
   if (!value || depth > 5) return [];
 
@@ -274,7 +269,7 @@ async function postWithAuth(url: string | URL, payload: R, authKeys: Array<{ val
     const data = (await res.json().catch(() => null)) as R | null;
     last = { ok: res.ok, status: res.status, data, keySource: authKey.source };
 
-    if (res.ok || !isUnauthorized(res.status, data)) return last;
+    if (res.ok || res.status !== 401) return last;
   }
 
   return last;
@@ -427,44 +422,56 @@ export async function POST(req: Request) {
     serviceId,
     serviceName,
     customer: { name, email, phone },
+    customerName: name,
+    customerEmail: email,
+    customerPhone: phone,
     quantity: Number(body.quantity || 1),
     notes: s(body.notes),
     bookingDate: s(body.bookingDate || body.date),
     bookingTime: s(body.bookingTime),
     paymentMethod: "paystack_checkout",
     paymentAmount: amount,
-    bookingStatus: "booked",
-    paymentCollectionMode: "online_checkout",
     paymentStatus: "checkout_created",
-    syncStatus: "pending",
-    syncRequestedAt: new Date().toISOString(),
+    bookingStatus: "pending_approval",
+    status: "pending",
+    source: "website_booking_form",
+    sourceChannel: "client_website",
+    sourceLabel: "Client website",
+    paymentCollectionMode: "online_checkout",
+    syncStatus: "not_ready",
     attributes: {
       source: "website_booking_form",
+      sourceChannel: "client_website",
+      sourceLabel: "Client website",
       amountSource: amountDetails.source,
       itemAmount,
       checkoutAmount: amount,
+      pageUrl: s((body.attributes as R | undefined)?.pageUrl),
+      timezone: s((body.attributes as R | undefined)?.timezone),
+      locale: s((body.attributes as R | undefined)?.locale),
       ...((body.attributes as R | undefined) || {})
     }
   };
 
   const bookingResult = await postWithAuth(bookingEndpoint, bookingPayload, checkoutAuthKeys);
-  const canContinueWithoutBooking = !bookingResult.ok && isUnauthorized(bookingResult.status, bookingResult.data);
-  if (!bookingResult.ok && !canContinueWithoutBooking) {
+  if (!bookingResult.ok) {
     return NextResponse.json(
-      { ok: false, error: bookingResult.data?.error || "booking-create-failed", stage: "booking-create", keySource: bookingResult.keySource },
+      { ok: false, error: bookingResult.data?.error || "booking-create-failed", message: bookingResult.data?.message, stage: "booking-create", keySource: bookingResult.keySource },
       { status: bookingResult.status || 502 }
     );
   }
 
-  const bookingId = bookingResult.ok ? pickId(bookingResult.data) : "";
-  const clientOrderId = bookingId ? `BOOKING-${bookingId}` : `BOOKING-${Date.now()}`;
+  const bookingId = pickId(bookingResult.data);
+  if (!bookingId) return NextResponse.json({ ok: false, error: "missing-booking-id", stage: "booking-create" }, { status: 502 });
+
+  const clientOrderId = `BOOKING-${bookingId}`;
   const cPayload = {
     storeId,
     merchantId: storeId,
     clientOrderId,
     orderType: "service",
     sourceChannel: "client_website",
-    sourceLabel: "Client Website",
+    sourceLabel: "Client website",
     currency: amountDetails.currency,
     amount,
     checkoutAmount: amount,
@@ -490,10 +497,12 @@ export async function POST(req: Request) {
       bookingId,
       clientOrderId,
       channel: "client-website",
+      sourceChannel: "client_website",
+      sourceLabel: "Client website",
       amountSource: amountDetails.source,
       itemAmount,
       checkoutAmount: amount,
-      bookingCreateStatus: bookingResult.ok ? "created" : "skipped_unauthorized"
+      bookingCreateStatus: "created"
     }
   };
   const checkoutResult = await postWithAuth(checkoutUrl(), cPayload, checkoutAuthKeys);
