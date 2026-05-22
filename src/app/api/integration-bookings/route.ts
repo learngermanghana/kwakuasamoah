@@ -38,12 +38,22 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 5;
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
+function env(name: string) {
+  return process.env[name];
+}
+
 function getSedifexConfig() {
   return {
-    baseUrl: process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL,
-    apiKey: process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY,
-    storeId: process.env.SEDIFEX_STORE_ID,
-    defaultServiceId: process.env.BOOKING_DEFAULT_SERVICE_ID
+    baseUrl: env("SEDIFEX_API_BASE_URL") || env("SEDIFEX_INTEGRATION_API_BASE_URL"),
+    apiKey:
+      env("SEDIFEX_BOOKING_API_KEY") ||
+      env("SEDIFEX_INTEGRATION_API_KEY") ||
+      env("SEDIFEX_INTEGRATION_KEY"),
+    storeId:
+      env("SEDIFEX_BOOKING_TARGET_STORE_ID") ||
+      env("SEDIFEX_STORE_ID") ||
+      env("NEXT_PUBLIC_SEDIFEX_STORE_ID"),
+    defaultServiceId: env("BOOKING_DEFAULT_SERVICE_ID")
   };
 }
 
@@ -125,7 +135,7 @@ export async function POST(req: Request) {
 
   if (!baseUrl || !apiKey || !storeId) {
     return NextResponse.json(
-      { ok: false, error: "sedifex-not-configured", message: "Sedifex integration is not configured." },
+      { ok: false, error: "sedifex-not-configured", message: "Sedifex booking integration is not configured." },
       { status: 500 }
     );
   }
@@ -256,7 +266,7 @@ export async function GET(req: Request) {
 
   if (!baseUrl || !apiKey || !defaultStoreId) {
     return NextResponse.json(
-      { ok: false, error: "sedifex-not-configured", message: "Sedifex integration is not configured." },
+      { ok: false, error: "sedifex-not-configured", message: "Sedifex booking integration is not configured." },
       { status: 500 }
     );
   }
