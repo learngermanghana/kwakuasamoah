@@ -29,7 +29,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
         ) : null}
         <div className="mt-4 flex gap-3">
           <Link
-            href={`/contact?serviceName=${encodeURIComponent(item.serviceName)}`}
+            href={`/book?serviceId=${encodeURIComponent(item.id)}&serviceName=${encodeURIComponent(item.serviceName)}`}
             className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#0a5b5f]"
           >
             Book
