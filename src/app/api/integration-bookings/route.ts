@@ -29,7 +29,6 @@ type BookingPayload = {
 const BOOKING_STATUS = "booked";
 const PAYMENT_COLLECTION_MODE = "online_checkout";
 const PAYMENT_STATUS_CHECKOUT_CREATED = "checkout_created";
-const SEDIFEX_CHECKOUT_STORE_ID = "37mJqg20MjOriggaIaOOuahDsgj1";
 
 type SedifexCheckoutResponse = {
   ok?: boolean;
@@ -118,6 +117,7 @@ async function resolveServiceCheckoutAmount({
   const response = await fetch(endpoint, {
     headers: {
       "x-api-key": apiKey,
+      Authorization: `Bearer ${apiKey}`,
       "X-Sedifex-Contract-Version": "2026-04-13",
       Accept: "application/json"
     },
@@ -178,13 +178,22 @@ function exceedsRateLimit(clientIp: string) {
 }
 
 export async function POST(req: Request) {
-  const baseUrl = process.env.SEDIFEX_API_BASE_URL;
-  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
-  const storeId = process.env.SEDIFEX_STORE_ID;
+  const baseUrl = (process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL || "https://us-central1-sedifex-web.cloudfunctions.net").replace(/\/$/, "");
+  const apiKey =
+    process.env.SEDIFEX_CHECKOUT_API_KEY ||
+    process.env.SEDIFEX_BOOKING_API_KEY ||
+    process.env.SEDIFEX_INTEGRATION_API_KEY ||
+    process.env.SEDIFEX_INTEGRATION_KEY ||
+    "";
+  const storeId =
+    process.env.SEDIFEX_BOOKING_TARGET_STORE_ID ||
+    process.env.SEDIFEX_CHECKOUT_STORE_ID ||
+    process.env.SEDIFEX_STORE_ID ||
+    "";
   const defaultServiceId = process.env.BOOKING_DEFAULT_SERVICE_ID;
   const checkoutCurrency = process.env.BOOKING_CHECKOUT_CURRENCY || "GHS";
 
-  if (!baseUrl || !apiKey || !storeId) {
+  if (!apiKey || !storeId) {
     return NextResponse.json(
       { ok: false, error: "Sedifex integration is not configured." },
       { status: 500 }
@@ -316,6 +325,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
         "X-Sedifex-Contract-Version": "2026-04-13",
         Accept: "application/json"
       },
@@ -343,10 +353,14 @@ export async function POST(req: Request) {
     const resolvedClientOrderId =
       bookingRecord?.clientOrderId || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    const checkoutEndpoint = new URL("/integration/checkout/create", baseUrl);
-    checkoutEndpoint.searchParams.set("storeId", SEDIFEX_CHECKOUT_STORE_ID);
+    const checkoutEndpoint = process.env.SEDIFEX_INTEGRATION_CHECKOUT_CREATE_URL
+      ? new URL(process.env.SEDIFEX_INTEGRATION_CHECKOUT_CREATE_URL)
+      : new URL("/integrationCheckoutCreate", baseUrl);
     const checkoutPayload = {
-      storeId: SEDIFEX_CHECKOUT_STORE_ID,
+      storeId,
+      merchantId: storeId,
+      sourceChannel: "client_website",
+      sourceLabel: "Client Website",
       clientOrderId: resolvedClientOrderId,
       orderType: "service",
       currency: checkoutCurrency,
@@ -394,6 +408,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/json",
         "x-api-key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
         "X-Sedifex-Contract-Version": "2026-04-13",
         Accept: "application/json"
       },
@@ -471,6 +486,7 @@ export async function GET(req: Request) {
   const response = await fetch(endpoint, {
     headers: {
       "x-api-key": apiKey,
+      Authorization: `Bearer ${apiKey}`,
       "X-Sedifex-Contract-Version": "2026-04-13",
       Accept: "application/json"
     },
