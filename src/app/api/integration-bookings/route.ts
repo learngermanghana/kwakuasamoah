@@ -46,8 +46,9 @@ function getSedifexConfig() {
   return {
     baseUrl: env("SEDIFEX_API_BASE_URL") || env("SEDIFEX_INTEGRATION_API_BASE_URL"),
     apiKey:
-      env("SEDIFEX_BOOKING_API_KEY") ||
       env("SEDIFEX_INTEGRATION_API_KEY") ||
+      env("SEDIFEX_PRODUCTS_API_KEY") ||
+      env("SEDIFEX_BOOKING_API_KEY") ||
       env("SEDIFEX_INTEGRATION_KEY"),
     storeId:
       env("SEDIFEX_BOOKING_TARGET_STORE_ID") ||
