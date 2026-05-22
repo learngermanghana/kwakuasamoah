@@ -113,10 +113,10 @@ export default function ContactPage() {
             </ul>
             <div className="mt-6">
               <Link
-                href="/book"
+                href="/contact"
                 className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f]"
               >
-                Book a Consultation
+                Contact Us
               </Link>
             </div>
           </div>
