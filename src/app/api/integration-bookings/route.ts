@@ -125,6 +125,14 @@ function resolvePaymentAmount(value: unknown) {
   return amount;
 }
 
+function normalizeServiceId(value: string | undefined) {
+  if (!value) return undefined;
+  if (!value.toLowerCase().startsWith("draft-")) return value;
+
+  const cleaned = value.slice("draft-".length).trim();
+  return cleaned || undefined;
+}
+
 function resolveBookingId(responseData: Record<string, unknown> | null) {
   if (!responseData) return undefined;
   const data = (responseData.data || responseData.booking || responseData) as Record<string, unknown>;
@@ -177,7 +185,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const serviceId = cleanOptionalString(booking.serviceId) || cleanOptionalString(defaultServiceId);
+    const rawServiceId = cleanOptionalString(booking.serviceId) || cleanOptionalString(defaultServiceId);
+    const serviceId = normalizeServiceId(rawServiceId);
+
     if (!serviceId && !booking.slotId && !booking.slotID && !booking.slot_id) {
       return NextResponse.json(
         { ok: false, error: "missing-service", message: "Please choose a service before submitting." },
