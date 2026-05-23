@@ -52,6 +52,7 @@ export type ServiceItem = {
   category?: string;
   description?: string;
   priceLabel?: string;
+  price?: number;
   image: string;
   imageAlt: string;
 };
@@ -79,6 +80,7 @@ const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   category: pkg.destination,
   description: pkg.summary,
   priceLabel: pkg.priceFrom,
+  price: undefined,
   image: pkg.image,
   imageAlt: pkg.title
 }));
@@ -110,6 +112,7 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
     category: normalizedCategory,
     description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
     priceLabel: typeof item.price === "number" ? `Price ${item.price} GHC` : "Contact for price",
+    price: typeof item.price === "number" ? item.price : undefined,
     image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
     imageAlt: item.imageAlt || item.name
   };
