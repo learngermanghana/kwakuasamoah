@@ -11,6 +11,7 @@ export async function getPackageData() {
 type SedifexItem = {
   id: string;
   name: string;
+  type?: string;
   category?: string;
   description?: string;
   price?: number;
@@ -26,6 +27,10 @@ type SedifexProductsResponse = {
   products?: SedifexItem[];
   publicProducts?: SedifexItem[];
   publicServices?: SedifexItem[];
+};
+
+type SedifexCatalogResponse = {
+  items?: SedifexItem[];
 };
 
 type SedifexGalleryItem = {
@@ -93,7 +98,10 @@ const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) 
 }));
 
 function getSedifexConfig() {
-  const baseUrl = process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
+  const baseUrl =
+    process.env.SEDIFEX_API_BASE_URL ||
+    process.env.SEDIFEX_INTEGRATION_API_BASE_URL ||
+    "https://us-central1-sedifex-web.cloudfunctions.net";
   const apiKey =
     process.env.SEDIFEX_INTEGRATION_API_KEY ||
     process.env.SEDIFEX_PRODUCTS_API_KEY ||
@@ -200,6 +208,11 @@ function normalizeServiceDescription(description?: string) {
   return lines.join("\n");
 }
 
+function isServiceItem(item: SedifexItem) {
+  const itemType = (item.itemType || item.type || "").toLowerCase();
+  return itemType === "service";
+}
+
 function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
   const imageUrl = getGalleryImageUrl(item);
 
@@ -214,17 +227,20 @@ function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
 export async function getServiceData() {
   const { baseUrl, apiKey, storeId } = getSedifexConfig();
 
-  if (!baseUrl || !apiKey || !storeId) {
+  if (!baseUrl || !storeId) {
     return defaultServices;
   }
 
-  const endpoint = new URL("/v1IntegrationProducts", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
+  const fetchIntegrationProducts = async () => {
+    if (!apiKey) return [] as SedifexItem[];
 
-  try {
+    const endpoint = new URL("/v1IntegrationProducts", baseUrl);
+    endpoint.searchParams.set("storeId", storeId);
+
     const response = await fetch(endpoint, {
       headers: {
         "x-api-key": apiKey,
+        Authorization: `Bearer ${apiKey}`,
         "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
         Accept: "application/json"
       },
@@ -232,14 +248,35 @@ export async function getServiceData() {
     });
 
     if (!response.ok) {
-      return defaultServices;
+      return [] as SedifexItem[];
     }
 
     const payload = (await response.json()) as SedifexProductsResponse;
-    const items =
-      payload.publicServices?.length
-        ? payload.publicServices
-        : (payload.products || []).filter((item) => item.itemType === "service");
+    return payload.publicServices?.length
+      ? payload.publicServices
+      : (payload.products || []).filter(isServiceItem);
+  };
+
+  const fetchPublicCatalog = async () => {
+    const endpoint = new URL("/publicQuickPayCatalog", baseUrl);
+    endpoint.searchParams.set("storeId", storeId);
+
+    const response = await fetch(endpoint, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 30 }
+    });
+
+    if (!response.ok) {
+      return [] as SedifexItem[];
+    }
+
+    const payload = (await response.json()) as SedifexCatalogResponse;
+    return (payload.items || []).filter(isServiceItem);
+  };
+
+  try {
+    const integrationItems = await fetchIntegrationProducts();
+    const items = integrationItems.length ? integrationItems : await fetchPublicCatalog();
 
     if (!items.length) {
       return defaultServices;
