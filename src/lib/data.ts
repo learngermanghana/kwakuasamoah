@@ -13,10 +13,7 @@ type SedifexItem = {
   name: string;
   category?: string;
   description?: string;
-  price?: number | string;
-  servicePrice?: number | string;
-  unitPrice?: number | string;
-  amount?: number | string;
+  price?: number;
   itemType?: string;
   sortOrder?: number;
   order?: number;
@@ -96,35 +93,11 @@ const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) 
 }));
 
 function getSedifexConfig() {
-  const baseUrl =
-    process.env.SEDIFEX_API_BASE_URL ||
-    process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
-  const apiKey =
-    process.env.SEDIFEX_INTEGRATION_API_KEY ||
-    process.env.SEDIFEX_PRODUCTS_API_KEY ||
-    process.env.SEDIFEX_BOOKING_API_KEY ||
-    process.env.SEDIFEX_INTEGRATION_KEY;
-  const storeId =
-    process.env.SEDIFEX_STORE_ID ||
-    process.env.SEDIFEX_BOOKING_TARGET_STORE_ID ||
-    process.env.NEXT_PUBLIC_SEDIFEX_STORE_ID;
+  const baseUrl = process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
+  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
+  const storeId = process.env.SEDIFEX_STORE_ID;
 
   return { baseUrl, apiKey, storeId };
-}
-
-function getSedifexPrice(item: SedifexItem) {
-  const value = item.price ?? item.servicePrice ?? item.unitPrice ?? item.amount;
-
-  if (typeof value === "number") {
-    return Number.isFinite(value) && value > 0 ? value : undefined;
-  }
-
-  if (typeof value === "string") {
-    const parsed = Number(value.replace(/[^0-9.]/g, ""));
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
-  }
-
-  return undefined;
 }
 
 function mapSedifexItem(item: SedifexItem): ServiceItem {
@@ -132,15 +105,14 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
     item.category && item.category.toLowerCase() !== "not provided" ? item.category : undefined;
 
   const normalizedDescription = normalizeServiceDescription(item.description);
-  const price = getSedifexPrice(item);
 
   return {
     id: item.id,
     serviceName: item.name,
     category: normalizedCategory,
     description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
-    priceLabel: typeof price === "number" ? `Price ${price} GHC` : "Contact for price",
-    price,
+    priceLabel: typeof item.price === "number" ? `Price ${item.price} GHC` : "Contact for price",
+    price: typeof item.price === "number" ? item.price : undefined,
     image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
     imageAlt: item.imageAlt || item.name
   };
