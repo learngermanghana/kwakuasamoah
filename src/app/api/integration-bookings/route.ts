@@ -139,6 +139,34 @@ function resolveBookingId(responseData: Record<string, unknown> | null) {
   return cleanOptionalString(data.id) || cleanOptionalString(data.bookingId) || cleanOptionalString(data.orderId);
 }
 
+
+function resolveCheckoutUrl(responseData: Record<string, unknown> | null) {
+  if (!responseData) return undefined;
+  const data = (responseData.data || responseData.booking || responseData) as Record<string, unknown>;
+  const payment = (data.payment || responseData.payment || null) as Record<string, unknown> | null;
+
+  const candidates = [
+    data.checkoutUrl,
+    data.checkout_url,
+    data.paymentUrl,
+    data.payment_url,
+    data.authorizationUrl,
+    data.authorization_url,
+    payment?.checkoutUrl,
+    payment?.checkout_url,
+    payment?.paymentUrl,
+    payment?.payment_url,
+    payment?.authorizationUrl,
+    payment?.authorization_url
+  ];
+
+  for (const value of candidates) {
+    const cleaned = cleanOptionalString(value);
+    if (cleaned) return cleaned;
+  }
+
+  return undefined;
+}
 export async function POST(req: Request) {
   const { baseUrl, apiKey, storeId, defaultServiceId } = getSedifexConfig();
 
@@ -261,6 +289,7 @@ export async function POST(req: Request) {
       ok: true,
       message: "Booking request saved. We will contact you shortly.",
       bookingId: resolveBookingId(responseData),
+      checkoutUrl: resolveCheckoutUrl(responseData),
       requestId,
       data: responseData
     });

@@ -162,9 +162,14 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         return;
       }
 
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+
       setResultMessage({
         kind: "success",
-        text: data.message || "Booking request saved. We will contact you shortly."
+        text: data?.message || "Booking request saved. We will contact you shortly."
       });
       setFormState((previous) => ({
         ...previous,
