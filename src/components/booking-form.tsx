@@ -16,6 +16,8 @@ type BookingFormProps = {
   prefilledServiceName?: string;
 };
 
+type PaymentMethod = "paystack";
+
 type FormState = {
   customerName: string;
   customerEmail: string;
@@ -28,6 +30,7 @@ type FormState = {
   website: string;
   consent: boolean;
   agreement: boolean;
+  paymentMethod: PaymentMethod;
 };
 
 type BookingApiResponse = {
@@ -102,11 +105,16 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     notes: "",
     website: "",
     consent: false,
-    agreement: false
+    agreement: false,
+    paymentMethod: "paystack"
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+
+
+  const selectedService = getSelectedService(serviceOptions, formState.serviceId);
+  const selectedPrice = typeof selectedService?.price === "number" && selectedService.price > 0 ? selectedService.price : undefined;
 
   const minimumDate = useMemo(() => {
     const date = new Date();
@@ -141,9 +149,6 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const selectedService = getSelectedService(serviceOptions, formState.serviceId);
-    const selectedPrice = typeof selectedService?.price === "number" && selectedService.price > 0 ? selectedService.price : undefined;
-
     const payload = {
       customerName: formState.customerName,
       customerEmail: formState.customerEmail,
@@ -155,6 +160,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
       bookingTime: formState.bookingTime,
       notes: formState.notes,
       quantity: 1,
+      paymentMethod: formState.paymentMethod,
       website: formState.website,
       attributes: {
         source: "website_booking_form",
@@ -192,7 +198,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
 
       const checkoutUrl = getCheckoutUrl(data);
       if (checkoutUrl) {
-        window.location.href = checkoutUrl;
+        window.location.assign(checkoutUrl);
         return;
       }
 
@@ -222,6 +228,19 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
 
   return (
     <form onSubmit={onSubmit} className="mt-8 space-y-5 rounded-3xl border border-[#d8d6cf] bg-white p-6 shadow-sm" noValidate>
+      <div className="grid gap-4 rounded-2xl border border-[#d8d6cf] bg-[#fffdf8] p-4 md:grid-cols-2">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Selected service price</p>
+          <p className="mt-1 text-lg font-semibold text-[#0b2d4f]">
+            {selectedPrice ? `GHS ${selectedPrice.toFixed(2)}` : selectedService?.priceLabel || "Price will be confirmed before checkout"}
+          </p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment method sent to Sedifex</p>
+          <p className="mt-1 text-lg font-semibold text-[#0b2d4f]">Paystack</p>
+        </div>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-1">
           <label htmlFor="customerName" className="block text-sm font-medium text-zinc-900">Full name *</label>
