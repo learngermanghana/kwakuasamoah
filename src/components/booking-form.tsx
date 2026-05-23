@@ -142,6 +142,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     if (Object.keys(nextErrors).length > 0) return;
 
     const selectedService = getSelectedService(serviceOptions, formState.serviceId);
+    const selectedPrice = typeof selectedService?.price === "number" && selectedService.price > 0 ? selectedService.price : undefined;
 
     const payload = {
       customerName: formState.customerName,
@@ -149,6 +150,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
       customerPhone: formState.customerPhone,
       serviceId: formState.serviceId,
       serviceName: selectedService?.name || formState.serviceName,
+      paymentAmount: selectedPrice,
       bookingDate: formState.bookingDate,
       bookingTime: formState.bookingTime,
       notes: formState.notes,
@@ -160,7 +162,8 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         sourceLabel: "Client website",
         pageUrl: window.location.href,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locale: navigator.language
+        locale: navigator.language,
+        paymentAmount: selectedPrice
       }
     };
 
