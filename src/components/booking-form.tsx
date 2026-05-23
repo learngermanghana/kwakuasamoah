@@ -145,19 +145,32 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         error?: string;
         message?: string;
         bookingId?: string;
+        checkoutUrl?: string;
+        requestId?: string;
       } | null;
 
       if (!response.ok || !data?.ok) {
+        const fallbackMessage = "We could not submit your booking right now. Please try again in a few minutes.";
+        const serverMessage = data?.message || data?.error || fallbackMessage;
+        const errorDetails = [data?.error ? `Code: ${data.error}` : "", data?.requestId ? `Request ID: ${data.requestId}` : ""]
+          .filter(Boolean)
+          .join(" · ");
+
         setResultMessage({
           kind: "error",
-          text: data?.message || data?.error || "We could not submit your booking right now. Please try again in a few minutes."
+          text: errorDetails ? `${serverMessage} (${errorDetails})` : serverMessage
         });
+        return;
+      }
+
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
         return;
       }
 
       setResultMessage({
         kind: "success",
-        text: data.message || "Booking request saved. We will contact you shortly."
+        text: data?.message || "Booking request saved. We will contact you shortly."
       });
       setFormState((previous) => ({
         ...previous,
