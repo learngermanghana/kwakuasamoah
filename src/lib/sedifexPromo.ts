@@ -3,7 +3,12 @@ import { normalizePublishedGallery } from "./gallery-utils";
 
 const BASE_URL = process.env.SEDIFEX_API_BASE_URL ?? "https://us-central1-sedifex-web.cloudfunctions.net";
 const STORE_ID = process.env.SEDIFEX_STORE_ID ?? "";
-const API_KEY = process.env.SEDIFEX_INTEGRATION_API_KEY ?? process.env.SEDIFEX_INTEGRATION_KEY ?? "";
+const API_KEY =
+  process.env.SEDIFEX_INTEGRATION_API_KEY ??
+  process.env.SEDIFEX_PRODUCTS_API_KEY ??
+  process.env.SEDIFEX_BOOKING_API_KEY ??
+  process.env.SEDIFEX_INTEGRATION_KEY ??
+  "";
 const CONTRACT = process.env.SEDIFEX_CONTRACT_VERSION ?? "2026-04-13";
 
 type PromoPayload = {
@@ -39,11 +44,11 @@ type GalleryPayload = {
 
 export async function fetchPromoAndGallery() {
   if (!STORE_ID) {
-    throw new Error("Missing SEDIFEX_STORE_ID. Set a non-empty storeId in server runtime env.");
+    return { promo: { enabled: false }, gallery: [] };
   }
 
   if (!API_KEY) {
-    throw new Error("Missing Sedifex integration API key in server runtime env.");
+    return { promo: { enabled: false }, gallery: [] };
   }
 
   const headers = {
@@ -57,7 +62,9 @@ export async function fetchPromoAndGallery() {
     next: { revalidate: 60 }
   });
 
-  if (!promoRes.ok) throw new Error(`Promo request failed: ${promoRes.status}`);
+  if (!promoRes.ok) {
+    return { promo: { enabled: false }, gallery: [] };
+  }
 
   const promoJson = (await promoRes.json()) as PromoPayload;
 
