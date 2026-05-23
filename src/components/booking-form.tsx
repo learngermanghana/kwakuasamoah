@@ -145,7 +145,6 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         error?: string;
         message?: string;
         bookingId?: string;
-        checkoutUrl?: string;
         requestId?: string;
       } | null;
 
