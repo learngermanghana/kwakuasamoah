@@ -36,9 +36,16 @@ function cleanOptionalString(value: unknown) {
 }
 
 function toPositiveNumber(value: unknown) {
-  const amount = Number(value);
-  if (!Number.isFinite(amount) || amount <= 0) return undefined;
-  return amount;
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }
+
+  if (typeof value === "string") {
+    const amount = Number(value.replace(/[^0-9.]/g, ""));
+    return Number.isFinite(amount) && amount > 0 ? amount : undefined;
+  }
+
+  return undefined;
 }
 
 function normalizeServiceId(serviceId?: string) {
@@ -47,6 +54,13 @@ function normalizeServiceId(serviceId?: string) {
   if (!cleaned.toLowerCase().startsWith("draft-")) return cleaned;
   const withoutPrefix = cleaned.slice("draft-".length).trim();
   return withoutPrefix || undefined;
+}
+
+function normalizeName(value?: string) {
+  return (value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 
 function getSedifexConfig(): SedifexConfig {
@@ -144,6 +158,17 @@ function resolveTrackingFields(data: Record<string, unknown>) {
   };
 }
 
+function readPrice(item: Record<string, unknown>) {
+  return toPositiveNumber(
+    item.price ??
+      item.servicePrice ??
+      item.unitPrice ??
+      item.amount ??
+      item.priceValue ??
+      item.basePrice
+  );
+}
+
 async function resolveServiceAmount(config: SedifexConfig, serviceId: string, serviceName?: string) {
   const endpoint = new URL("/v1IntegrationProducts", config.baseUrl);
   endpoint.searchParams.set("storeId", config.storeId || "");
@@ -159,6 +184,12 @@ async function resolveServiceAmount(config: SedifexConfig, serviceId: string, se
   });
 
   if (!response.ok) {
+    console.error("Sedifex service price lookup failed", {
+      status: response.status,
+      storeId: config.storeId,
+      serviceId,
+      serviceName
+    });
     return undefined;
   }
 
@@ -169,19 +200,35 @@ async function resolveServiceAmount(config: SedifexConfig, serviceId: string, se
   const items = [...publicServices, ...publicProducts, ...products].map(asRecord);
 
   const normalizedId = normalizeServiceId(serviceId);
+  const normalizedName = normalizeName(serviceName);
 
   const match = items.find((item) => {
     const itemId = normalizeServiceId(cleanOptionalString(item.id));
-    const itemName = cleanOptionalString(item.name);
+    const itemName = normalizeName(cleanOptionalString(item.name));
+    const serviceNameFromItem = normalizeName(cleanOptionalString(item.serviceName));
 
     if (normalizedId && itemId && normalizedId === itemId) return true;
-    if (serviceName && itemName && serviceName === itemName) return true;
+    if (normalizedName && itemName && normalizedName === itemName) return true;
+    if (normalizedName && serviceNameFromItem && normalizedName === serviceNameFromItem) return true;
     return false;
   });
 
-  if (!match) return undefined;
+  const amount = match ? readPrice(match) : undefined;
 
-  return toPositiveNumber(match.price ?? match.unitPrice ?? match.amount);
+  if (!amount) {
+    console.error("Sedifex service price missing", {
+      storeId: config.storeId,
+      serviceId,
+      serviceName,
+      itemCount: items.length,
+      matched: Boolean(match),
+      matchedId: match ? cleanOptionalString(match.id) : undefined,
+      matchedName: match ? cleanOptionalString(match.name) || cleanOptionalString(match.serviceName) : undefined,
+      availablePriceKeys: match ? Object.keys(match).filter((key) => key.toLowerCase().includes("price") || key.toLowerCase().includes("amount")) : []
+    });
+  }
+
+  return amount;
 }
 
 export async function POST(req: Request) {
@@ -218,10 +265,7 @@ export async function POST(req: Request) {
 
   const pageUrl = cleanOptionalString(asRecord(booking.attributes).pageUrl) || req.headers.get("referer") || undefined;
 
-  let amount = toPositiveNumber(booking.paymentAmount);
-  if (!amount) {
-    amount = await resolveServiceAmount(config, serviceId, serviceName);
-  }
+  const amount = await resolveServiceAmount(config, serviceId, serviceName);
 
   if (!amount) {
     return NextResponse.json(
