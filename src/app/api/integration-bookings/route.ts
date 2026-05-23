@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 
 type BookingPayload = {
   serviceId?: string;
-  slotId?: string;
-  slotID?: string;
-  slot_id?: string;
   serviceName?: string;
   bookingDate?: string;
   bookingTime?: string;
@@ -13,72 +10,21 @@ type BookingPayload = {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
-  customer?: {
-    name?: string;
-    phone?: string;
-    email?: string;
-  };
   website?: string;
-  attributes?: Record<string, unknown>;
-  paymentMethod?: string;
   paymentAmount?: number | string;
-  branchLocationId?: string;
-  branchLocationName?: string;
-  eventLocation?: string;
-  customerStayLocation?: string;
+  attributes?: Record<string, unknown>;
 };
 
-type RateLimitEntry = {
-  count: number;
-  resetAt: number;
+type SedifexConfig = {
+  baseUrl: string;
+  apiKey?: string;
+  storeId?: string;
+  contractVersion: string;
+  checkoutReturnUrl: string;
 };
 
-const SEDIFEX_CONTRACT_VERSION = "2026-04-13";
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-function env(name: string) {
-  return process.env[name];
-}
-
-function getSedifexConfig() {
-  return {
-    baseUrl: env("SEDIFEX_API_BASE_URL") || env("SEDIFEX_INTEGRATION_API_BASE_URL"),
-    apiKey:
-      env("SEDIFEX_INTEGRATION_API_KEY") ||
-      env("SEDIFEX_PRODUCTS_API_KEY") ||
-      env("SEDIFEX_BOOKING_API_KEY") ||
-      env("SEDIFEX_INTEGRATION_KEY"),
-    storeId:
-      env("SEDIFEX_BOOKING_TARGET_STORE_ID") ||
-      env("SEDIFEX_STORE_ID") ||
-      env("NEXT_PUBLIC_SEDIFEX_STORE_ID"),
-    defaultServiceId: env("BOOKING_DEFAULT_SERVICE_ID")
-  };
-}
-
-function getClientIp(req: Request) {
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0]?.trim() || "unknown";
-  return req.headers.get("x-real-ip") || "unknown";
-}
-
-function exceedsRateLimit(clientIp: string) {
-  const now = Date.now();
-  const entry = rateLimitStore.get(clientIp);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitStore.set(clientIp, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) return true;
-
-  entry.count += 1;
-  rateLimitStore.set(clientIp, entry);
-  return false;
-}
+const FALLBACK_BASE_URL = "https://us-central1-sedifex-web.cloudfunctions.net";
+const FALLBACK_RETURN_URL = "https://www.kwakulotteryy.com/payment/return";
 
 function cleanString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -89,261 +35,356 @@ function cleanOptionalString(value: unknown) {
   return cleaned || undefined;
 }
 
-function resolveCustomer(booking: BookingPayload, body: Record<string, unknown>) {
-  return {
-    name:
-      cleanOptionalString(booking.customer?.name) ||
-      cleanOptionalString(booking.customerName) ||
-      cleanOptionalString(body.customerName) ||
-      cleanOptionalString(body.fullName) ||
-      cleanOptionalString(body.clientName) ||
-      cleanOptionalString(body.name),
-    phone:
-      cleanOptionalString(booking.customer?.phone) ||
-      cleanOptionalString(booking.customerPhone) ||
-      cleanOptionalString(body.phoneNumber) ||
-      cleanOptionalString(body.mobile) ||
-      cleanOptionalString(body.whatsapp) ||
-      cleanOptionalString(body.phone),
-    email:
-      cleanOptionalString(booking.customer?.email) ||
-      cleanOptionalString(booking.customerEmail) ||
-      cleanOptionalString(body.emailAddress) ||
-      cleanOptionalString(body.email)
-  };
-}
-
-function resolveQuantity(value: unknown) {
-  const quantity = Number(value || 1);
-  if (!Number.isFinite(quantity) || quantity < 1) return 1;
-  return Math.floor(quantity);
-}
-
-function resolvePaymentAmount(value: unknown) {
+function toPositiveNumber(value: unknown) {
   const amount = Number(value);
   if (!Number.isFinite(amount) || amount <= 0) return undefined;
   return amount;
 }
 
-function normalizeServiceId(value: string | undefined) {
-  if (!value) return undefined;
-  if (!value.toLowerCase().startsWith("draft-")) return value;
-
-  const cleaned = value.slice("draft-".length).trim();
-  return cleaned || undefined;
+function normalizeServiceId(serviceId?: string) {
+  if (!serviceId) return undefined;
+  const cleaned = serviceId.trim();
+  if (!cleaned.toLowerCase().startsWith("draft-")) return cleaned;
+  const withoutPrefix = cleaned.slice("draft-".length).trim();
+  return withoutPrefix || undefined;
 }
 
-function resolveBookingId(responseData: Record<string, unknown> | null) {
-  if (!responseData) return undefined;
-  const data = (responseData.data || responseData.booking || responseData) as Record<string, unknown>;
-  return cleanOptionalString(data.id) || cleanOptionalString(data.bookingId) || cleanOptionalString(data.orderId);
+function getSedifexConfig(): SedifexConfig {
+  const baseUrl =
+    process.env.SEDIFEX_API_BASE_URL ||
+    process.env.SEDIFEX_INTEGRATION_API_BASE_URL ||
+    FALLBACK_BASE_URL;
+
+  return {
+    baseUrl,
+    apiKey:
+      process.env.SEDIFEX_INTEGRATION_API_KEY ||
+      process.env.SEDIFEX_PRODUCTS_API_KEY ||
+      process.env.SEDIFEX_BOOKING_API_KEY,
+    storeId:
+      process.env.SEDIFEX_BOOKING_TARGET_STORE_ID ||
+      process.env.SEDIFEX_STORE_ID ||
+      process.env.NEXT_PUBLIC_SEDIFEX_STORE_ID,
+    contractVersion: process.env.SEDIFEX_CONTRACT_VERSION || "2026-04-13",
+    checkoutReturnUrl: process.env.SEDIFEX_CHECKOUT_RETURN_URL || FALLBACK_RETURN_URL
+  };
 }
 
+function getHeaders(config: SedifexConfig): Record<string, string> {
+  const apiKey = config.apiKey || "";
 
-function resolveCheckoutUrl(responseData: Record<string, unknown> | null) {
-  if (!responseData) return undefined;
-  const data = (responseData.data || responseData.booking || responseData) as Record<string, unknown>;
-  const payment = (data.payment || responseData.payment || null) as Record<string, unknown> | null;
-
-  const candidates = [
-    data.checkoutUrl,
-    data.checkout_url,
-    data.paymentUrl,
-    data.payment_url,
-    data.authorizationUrl,
-    data.authorization_url,
-    payment?.checkoutUrl,
-    payment?.checkout_url,
-    payment?.paymentUrl,
-    payment?.payment_url,
-    payment?.authorizationUrl,
-    payment?.authorization_url
-  ];
-
-  for (const value of candidates) {
-    const cleaned = cleanOptionalString(value);
-    if (cleaned) return cleaned;
-  }
-
-  return undefined;
-}
-export async function POST(req: Request) {
-  const { baseUrl, apiKey, storeId, defaultServiceId } = getSedifexConfig();
-
-  if (!baseUrl || !apiKey || !storeId) {
-    return NextResponse.json(
-      { ok: false, error: "sedifex-not-configured", message: "Sedifex booking integration is not configured." },
-      { status: 500 }
-    );
-  }
-
-  const clientIp = getClientIp(req);
-  if (exceedsRateLimit(clientIp)) {
-    return NextResponse.json(
-      { ok: false, error: "too-many-requests", message: "Too many booking attempts. Please try again shortly." },
-      { status: 429 }
-    );
-  }
-
-  try {
-    const contentType = req.headers.get("content-type") || "";
-    let body: Record<string, unknown> = {};
-
-    if (contentType.includes("application/json")) {
-      body = await req.json();
-    } else {
-      const formData = await req.formData();
-      body = Object.fromEntries(formData.entries());
-    }
-
-    const booking = body as BookingPayload;
-
-    if (booking.website && cleanString(booking.website)) {
-      return NextResponse.json(
-        { ok: false, error: "invalid-request", message: "Booking could not be created." },
-        { status: 400 }
-      );
-    }
-
-    const customer = resolveCustomer(booking, body);
-    if (!customer.name && !customer.phone && !customer.email) {
-      return NextResponse.json(
-        { ok: false, error: "missing-customer", message: "Please provide at least one customer contact field." },
-        { status: 400 }
-      );
-    }
-
-    const rawServiceId = cleanOptionalString(booking.serviceId) || cleanOptionalString(defaultServiceId);
-    const serviceId = normalizeServiceId(rawServiceId);
-
-    if (!serviceId && !booking.slotId && !booking.slotID && !booking.slot_id) {
-      return NextResponse.json(
-        { ok: false, error: "missing-service", message: "Please choose a service before submitting." },
-        { status: 400 }
-      );
-    }
-
-    const bookingDate = cleanOptionalString(booking.bookingDate) || cleanOptionalString(body.date);
-    const bookingTime = cleanOptionalString(booking.bookingTime) || cleanOptionalString(body.time);
-    const paymentAmount = resolvePaymentAmount(booking.paymentAmount || body.amount || body.total || body.price);
-
-    const payload = {
-      serviceId,
-      slotId: cleanOptionalString(booking.slotId || booking.slotID || booking.slot_id || body.slotId),
-      customer,
-      quantity: resolveQuantity(booking.quantity || body.quantity),
-      notes: cleanOptionalString(booking.notes || body.message),
-      bookingDate,
-      bookingTime,
-      serviceName: cleanOptionalString(booking.serviceName || body.productName || body.service_note_name),
-      paymentMethod: cleanOptionalString(booking.paymentMethod || body.payment_method || body.paymentType),
-      paymentAmount,
-      branchLocationId: cleanOptionalString(booking.branchLocationId || body.branchId || body.locationId || body.storeBranchId),
-      branchLocationName: cleanOptionalString(booking.branchLocationName || body.branchName || body.storeBranch || body.locationName),
-      eventLocation: cleanOptionalString(booking.eventLocation || body.eventVenue || body.venue || body.eventAddress),
-      customerStayLocation: cleanOptionalString(booking.customerStayLocation || body.stayLocation || body.hotelLocation || body.guestLocation),
-      attributes: {
-        source: "website_booking_form",
-        sourceChannel: "client_website",
-        sourceLabel: "Client website",
-        websiteName: new URL(req.url).hostname,
-        pageUrl: req.headers.get("referer") || undefined,
-        bookingDate,
-        bookingTime,
-        paymentAmount,
-        ...(booking.attributes || {})
-      }
-    };
-
-    const endpoint = new URL("/v1IntegrationBookings", baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
-
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-        Accept: "application/json"
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store"
-    });
-
-    const responseData = (await response.json().catch(() => null)) as Record<string, unknown> | null;
-    const requestId = response.headers.get("x-sedifex-request-id") || undefined;
-
-    if (!response.ok) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: responseData?.error || "booking-request-failed",
-          message: responseData?.message || "Booking could not be created.",
-          requestId
-        },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json({
-      ok: true,
-      message: "Booking request saved. We will contact you shortly.",
-      bookingId: resolveBookingId(responseData),
-      checkoutUrl: resolveCheckoutUrl(responseData),
-      requestId,
-      data: responseData
-    });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "invalid-request-payload", message: "Invalid request payload." },
-      { status: 400 }
-    );
-  }
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "x-api-key": apiKey,
+    Authorization: `Bearer ${apiKey}`,
+    "X-Sedifex-Contract-Version": config.contractVersion
+  };
 }
 
-export async function GET(req: Request) {
-  const { baseUrl, apiKey, storeId: defaultStoreId } = getSedifexConfig();
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
 
-  if (!baseUrl || !apiKey || !defaultStoreId) {
-    return NextResponse.json(
-      { ok: false, error: "sedifex-not-configured", message: "Sedifex booking integration is not configured." },
-      { status: 500 }
-    );
+function resolveNestedString(data: Record<string, unknown>, path: string[]) {
+  let current: unknown = data;
+
+  for (const key of path) {
+    const next = asRecord(current);
+    current = next[key];
   }
 
-  const requestUrl = new URL(req.url);
-  const storeId = requestUrl.searchParams.get("storeId") || defaultStoreId;
-  const status = requestUrl.searchParams.get("status");
-  const serviceId = requestUrl.searchParams.get("serviceId");
+  return cleanOptionalString(current);
+}
 
-  const endpoint = new URL("/v1IntegrationBookings", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
-  if (status) endpoint.searchParams.set("status", status);
-  if (serviceId) endpoint.searchParams.set("serviceId", serviceId);
+function resolveBookingId(data: Record<string, unknown>) {
+  return (
+    resolveNestedString(data, ["bookingId"]) ||
+    resolveNestedString(data, ["id"]) ||
+    resolveNestedString(data, ["booking", "bookingId"]) ||
+    resolveNestedString(data, ["booking", "id"]) ||
+    resolveNestedString(data, ["data", "bookingId"]) ||
+    resolveNestedString(data, ["data", "id"])
+  );
+}
+
+function resolveCheckoutUrl(data: Record<string, unknown>) {
+  return (
+    resolveNestedString(data, ["checkoutUrl"]) ||
+    resolveNestedString(data, ["authorizationUrl"]) ||
+    resolveNestedString(data, ["authorization_url"]) ||
+    resolveNestedString(data, ["checkout", "checkoutUrl"]) ||
+    resolveNestedString(data, ["checkout", "authorizationUrl"]) ||
+    resolveNestedString(data, ["checkout", "authorization_url"]) ||
+    resolveNestedString(data, ["data", "checkoutUrl"]) ||
+    resolveNestedString(data, ["data", "authorizationUrl"]) ||
+    resolveNestedString(data, ["data", "authorization_url"])
+  );
+}
+
+function resolveTrackingFields(data: Record<string, unknown>) {
+  return {
+    reference:
+      resolveNestedString(data, ["reference"]) ||
+      resolveNestedString(data, ["data", "reference"]) ||
+      resolveNestedString(data, ["checkout", "reference"]),
+    sedifexOrderId:
+      resolveNestedString(data, ["sedifexOrderId"]) ||
+      resolveNestedString(data, ["data", "sedifexOrderId"]),
+    orderId: resolveNestedString(data, ["orderId"]) || resolveNestedString(data, ["data", "orderId"]),
+    clientOrderId:
+      resolveNestedString(data, ["clientOrderId"]) ||
+      resolveNestedString(data, ["client_order_id"]) ||
+      resolveNestedString(data, ["data", "clientOrderId"]) ||
+      resolveNestedString(data, ["data", "client_order_id"]),
+    bookingId:
+      resolveNestedString(data, ["bookingId"]) ||
+      resolveNestedString(data, ["data", "bookingId"]) ||
+      resolveNestedString(data, ["metadata", "bookingId"])
+  };
+}
+
+async function resolveServiceAmount(config: SedifexConfig, serviceId: string, serviceName?: string) {
+  const endpoint = new URL("/v1IntegrationProducts", config.baseUrl);
+  endpoint.searchParams.set("storeId", config.storeId || "");
 
   const response = await fetch(endpoint, {
+    method: "GET",
     headers: {
-      "x-api-key": apiKey,
-      "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
+      "x-api-key": config.apiKey || "",
+      "X-Sedifex-Contract-Version": config.contractVersion,
       Accept: "application/json"
     },
     cache: "no-store"
   });
 
-  const responseData = await response.json().catch(() => null);
-  const requestId = response.headers.get("x-sedifex-request-id") || undefined;
-
   if (!response.ok) {
+    return undefined;
+  }
+
+  const payload = asRecord(await response.json().catch(() => ({})));
+  const publicServices = Array.isArray(payload.publicServices) ? payload.publicServices : [];
+  const publicProducts = Array.isArray(payload.publicProducts) ? payload.publicProducts : [];
+  const products = Array.isArray(payload.products) ? payload.products : [];
+  const items = [...publicServices, ...publicProducts, ...products].map(asRecord);
+
+  const normalizedId = normalizeServiceId(serviceId);
+
+  const match = items.find((item) => {
+    const itemId = normalizeServiceId(cleanOptionalString(item.id));
+    const itemName = cleanOptionalString(item.name);
+
+    if (normalizedId && itemId && normalizedId === itemId) return true;
+    if (serviceName && itemName && serviceName === itemName) return true;
+    return false;
+  });
+
+  if (!match) return undefined;
+
+  return toPositiveNumber(match.price ?? match.unitPrice ?? match.amount);
+}
+
+export async function POST(req: Request) {
+  const config = getSedifexConfig();
+
+  if (!config.apiKey || !config.storeId) {
     return NextResponse.json(
-      {
-        ok: false,
-        error: responseData?.error || "booking-list-request-failed",
-        message: responseData?.message || "Booking list could not be fetched.",
-        requestId
-      },
-      { status: response.status }
+      { ok: false, error: "sedifex-not-configured", message: "Sedifex booking integration is not configured." },
+      { status: 500 }
     );
   }
 
-  return NextResponse.json({ ok: true, requestId, data: responseData });
+  const requestBody = asRecord(await req.json().catch(() => ({})));
+  const booking = requestBody as BookingPayload;
+
+  if (cleanString(booking.website)) {
+    return NextResponse.json({ ok: false, error: "invalid-request", message: "Booking could not be created." }, { status: 400 });
+  }
+
+  const customerName = cleanOptionalString(booking.customerName);
+  const customerEmail = cleanOptionalString(booking.customerEmail);
+  const customerPhone = cleanOptionalString(booking.customerPhone);
+  const rawServiceId = cleanOptionalString(booking.serviceId);
+  const serviceId = normalizeServiceId(rawServiceId);
+  const serviceName = cleanOptionalString(booking.serviceName) || "Service booking";
+  const bookingDate = cleanOptionalString(booking.bookingDate);
+  const bookingTime = cleanOptionalString(booking.bookingTime);
+
+  if (!customerName) return NextResponse.json({ ok: false, error: "missing-customer-name", message: "Customer name is required." }, { status: 400 });
+  if (!customerEmail) return NextResponse.json({ ok: false, error: "missing-customer-email", message: "Customer email is required for checkout." }, { status: 400 });
+  if (!serviceId) return NextResponse.json({ ok: false, error: "missing-service", message: "Service is required." }, { status: 400 });
+  if (!bookingDate) return NextResponse.json({ ok: false, error: "missing-booking-date", message: "Booking date is required." }, { status: 400 });
+  if (!bookingTime) return NextResponse.json({ ok: false, error: "missing-booking-time", message: "Booking time is required." }, { status: 400 });
+
+  const pageUrl = cleanOptionalString(asRecord(booking.attributes).pageUrl) || req.headers.get("referer") || undefined;
+
+  let amount = toPositiveNumber(booking.paymentAmount);
+  if (!amount) {
+    amount = await resolveServiceAmount(config, serviceId, serviceName);
+  }
+
+  if (!amount) {
+    return NextResponse.json(
+      { ok: false, error: "missing-price", message: "Service price is required before Paystack checkout can open." },
+      { status: 400 }
+    );
+  }
+
+  const syncRequestedAt = new Date().toISOString();
+  const bookingPayload = {
+    serviceId,
+    serviceName,
+    customer: { name: customerName, phone: customerPhone, email: customerEmail },
+    customerName,
+    customerPhone,
+    customerEmail,
+    bookingDate,
+    bookingTime,
+    quantity: 1,
+    notes: cleanOptionalString(booking.notes),
+    paymentMethod: "paystack",
+    paymentAmount: amount,
+    depositAmount: amount,
+    bookingStatus: "booked",
+    paymentCollectionMode: "online_checkout",
+    paymentStatus: "checkout_created",
+    syncStatus: "pending",
+    syncRequestedAt,
+    attributes: {
+      source: "website_booking_form",
+      sourceChannel: "client_website",
+      sourceLabel: "Client website",
+      channel: "client-website",
+      orderType: "service",
+      websiteName: "kwakulotteryy.com",
+      pageUrl,
+      bookingDate,
+      bookingTime,
+      serviceName,
+      paymentMethod: "paystack",
+      payment_method: "paystack",
+      paymentAmount: amount,
+      depositAmount: amount,
+      paymentStatus: "checkout_created",
+      paymentCollectionMode: "online_checkout",
+      syncStatus: "pending",
+      syncRequestedAt,
+      ...asRecord(booking.attributes)
+    }
+  };
+
+  const bookingEndpoint = new URL("/v1IntegrationBookings", config.baseUrl);
+  bookingEndpoint.searchParams.set("storeId", config.storeId);
+
+  const bookingResponse = await fetch(bookingEndpoint, {
+    method: "POST",
+    headers: getHeaders(config),
+    body: JSON.stringify(bookingPayload),
+    cache: "no-store"
+  });
+
+  const bookingData = asRecord(await bookingResponse.json().catch(() => ({})));
+  const requestId = bookingResponse.headers.get("x-sedifex-request-id") || undefined;
+
+  if (!bookingResponse.ok) {
+    console.error("Sedifex booking create failed", {
+      status: bookingResponse.status,
+      body: bookingData,
+      serviceId,
+      serviceName,
+      storeId: config.storeId,
+      customerEmail
+    });
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: cleanOptionalString(bookingData.error) || "booking-request-failed",
+        message: cleanOptionalString(bookingData.message) || "Booking could not be created.",
+        requestId
+      },
+      { status: bookingResponse.status }
+    );
+  }
+
+  const bookingId = resolveBookingId(bookingData);
+  if (!bookingId) {
+    return NextResponse.json(
+      { ok: false, error: "missing-booking-id", message: "Booking created but booking ID was not returned.", requestId },
+      { status: 502 }
+    );
+  }
+
+  const clientOrderId = `BOOKING-${bookingId}`;
+  const checkoutPayload = {
+    storeId: config.storeId,
+    store_id: config.storeId,
+    merchantId: config.storeId,
+    merchant_id: config.storeId,
+    clientOrderId,
+    client_order_id: clientOrderId,
+    orderType: "service",
+    order_type: "service",
+    currency: "GHS",
+    amount,
+    customer: { name: customerName, email: customerEmail, phone: customerPhone },
+    returnUrl: config.checkoutReturnUrl,
+    items: [{ id: serviceId, item_id: serviceId, serviceId, name: serviceName, serviceName, unitPrice: amount, price: amount, qty: 1, quantity: 1, type: "SERVICE", item_type: "service" }],
+    metadata: { bookingId, clientOrderId, channel: "client-website", sourceChannel: "client_website", source: "kwaku_website_booking_form", bookingDate, bookingTime, serviceName },
+    syncStatus: "pending",
+    syncRequestedAt
+  };
+
+  const checkoutPaths = ["/integration/checkout/create", "/integrationCheckoutCreate"];
+  let checkoutResponse: Response | undefined;
+  let checkoutData: Record<string, unknown> = {};
+
+  for (const path of checkoutPaths) {
+    const endpoint = new URL(path, config.baseUrl);
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: getHeaders(config),
+      body: JSON.stringify(checkoutPayload),
+      cache: "no-store"
+    });
+
+    const data = asRecord(await response.json().catch(() => ({})));
+    checkoutResponse = response;
+    checkoutData = data;
+
+    if (response.ok) break;
+    if (path === checkoutPaths[0] && response.status === 404) continue;
+    if (path === checkoutPaths[0]) continue;
+  }
+
+  const checkoutUrl = resolveCheckoutUrl(checkoutData);
+  if (!checkoutResponse?.ok || !checkoutUrl) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "checkout-create-failed",
+        message: "Booking was created but Paystack checkout could not open.",
+        bookingId,
+        reference: resolveTrackingFields(checkoutData).reference,
+        details: checkoutData
+      },
+      { status: checkoutResponse?.status || 502 }
+    );
+  }
+
+  const tracking = resolveTrackingFields(checkoutData);
+
+  return NextResponse.json({
+    ok: true,
+    message: "Booking created. Redirecting to secure checkout.",
+    bookingId,
+    reference: tracking.reference,
+    sedifexOrderId: tracking.sedifexOrderId,
+    orderId: tracking.orderId,
+    clientOrderId: tracking.clientOrderId || clientOrderId,
+    checkoutUrl,
+    authorizationUrl: checkoutUrl,
+    booking: bookingData,
+    checkout: checkoutData
+  });
 }

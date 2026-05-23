@@ -6,6 +6,7 @@ type ServiceOption = {
   id: string;
   name: string;
   priceLabel?: string;
+  price?: number;
   category?: string;
 };
 
@@ -34,6 +35,10 @@ type BookingApiResponse = {
   error?: string;
   message?: string;
   bookingId?: string;
+  reference?: string;
+  sedifexOrderId?: string;
+  orderId?: string;
+  clientOrderId?: string;
   requestId?: string;
   checkoutUrl?: string;
   authorizationUrl?: string;
@@ -115,8 +120,8 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     const hasPhone = Boolean(nextState.customerPhone.trim());
 
     if (!nextState.customerName.trim()) nextErrors.customerName = "Please enter your full name.";
-    if (!hasEmail && !hasPhone) nextErrors.customerEmail = "Please enter your email or phone number.";
-    if (hasEmail && !EMAIL_PATTERN.test(nextState.customerEmail)) nextErrors.customerEmail = "Enter a valid email address.";
+    if (!hasEmail) nextErrors.customerEmail = "Please enter your email address.";
+    else if (!EMAIL_PATTERN.test(nextState.customerEmail)) nextErrors.customerEmail = "Enter a valid email address.";
     if (hasPhone && !PHONE_PATTERN.test(nextState.customerPhone)) nextErrors.customerPhone = "Enter a valid phone or WhatsApp number.";
     if (!nextState.serviceId) nextErrors.serviceId = "Please choose a service from Sedifex.";
     if (!nextState.bookingDate) nextErrors.bookingDate = "Please choose your preferred date.";

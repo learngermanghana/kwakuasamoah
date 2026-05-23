@@ -18,6 +18,7 @@ export default async function BookPage({
     id: service.id,
     name: service.serviceName,
     priceLabel: service.priceLabel,
+    price: service.price,
     category: service.category
   }));
 
