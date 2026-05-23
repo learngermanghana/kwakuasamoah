@@ -1,6 +1,6 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Sedifex booking integration
+## Sedifex booking integration.
 
 The booking page at `/book` pulls service options from Sedifex and submits booking requests through the server-only route at `/api/integration-bookings`.
 
