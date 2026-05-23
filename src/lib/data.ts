@@ -94,8 +94,15 @@ const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) 
 
 function getSedifexConfig() {
   const baseUrl = process.env.SEDIFEX_API_BASE_URL || process.env.SEDIFEX_INTEGRATION_API_BASE_URL;
-  const apiKey = process.env.SEDIFEX_INTEGRATION_API_KEY || process.env.SEDIFEX_INTEGRATION_KEY;
-  const storeId = process.env.SEDIFEX_STORE_ID;
+  const apiKey =
+    process.env.SEDIFEX_INTEGRATION_API_KEY ||
+    process.env.SEDIFEX_PRODUCTS_API_KEY ||
+    process.env.SEDIFEX_BOOKING_API_KEY ||
+    process.env.SEDIFEX_INTEGRATION_KEY;
+  const storeId =
+    process.env.SEDIFEX_STORE_ID ||
+    process.env.SEDIFEX_BOOKING_TARGET_STORE_ID ||
+    process.env.NEXT_PUBLIC_SEDIFEX_STORE_ID;
 
   return { baseUrl, apiKey, storeId };
 }

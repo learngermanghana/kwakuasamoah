@@ -12,6 +12,7 @@ type BookingPayload = {
   customerEmail?: string;
   website?: string;
   paymentAmount?: number | string;
+  paymentMethod?: string;
   attributes?: Record<string, unknown>;
 };
 
@@ -209,6 +210,7 @@ export async function POST(req: Request) {
   const serviceName = cleanOptionalString(booking.serviceName) || "Service booking";
   const bookingDate = cleanOptionalString(booking.bookingDate);
   const bookingTime = cleanOptionalString(booking.bookingTime);
+  const paymentMethod = cleanOptionalString(booking.paymentMethod) || "paystack";
 
   if (!customerName) return NextResponse.json({ ok: false, error: "missing-customer-name", message: "Customer name is required." }, { status: 400 });
   if (!customerEmail) return NextResponse.json({ ok: false, error: "missing-customer-email", message: "Customer email is required for checkout." }, { status: 400 });
@@ -242,7 +244,7 @@ export async function POST(req: Request) {
     bookingTime,
     quantity: 1,
     notes: cleanOptionalString(booking.notes),
-    paymentMethod: "paystack",
+    paymentMethod,
     paymentAmount: amount,
     depositAmount: amount,
     bookingStatus: "booked",
@@ -261,8 +263,8 @@ export async function POST(req: Request) {
       bookingDate,
       bookingTime,
       serviceName,
-      paymentMethod: "paystack",
-      payment_method: "paystack",
+      paymentMethod,
+      payment_method: paymentMethod,
       paymentAmount: amount,
       depositAmount: amount,
       paymentStatus: "checkout_created",
