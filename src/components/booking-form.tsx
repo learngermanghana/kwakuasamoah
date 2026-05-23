@@ -29,6 +29,21 @@ type FormState = {
   agreement: boolean;
 };
 
+type BookingApiResponse = {
+  ok?: boolean;
+  error?: string;
+  message?: string;
+  bookingId?: string;
+  requestId?: string;
+  checkoutUrl?: string;
+  authorizationUrl?: string;
+  checkout?: {
+    checkoutUrl?: string;
+    authorizationUrl?: string;
+    authorization_url?: string;
+  };
+};
+
 type ValidationErrors = Partial<Record<keyof FormState, string>>;
 
 const PHONE_PATTERN = /^[+0-9()\-\s]{7,20}$/;
@@ -54,6 +69,17 @@ function getInitialService(
     serviceOptions.find((service) => service.id === prefilledServiceId) ||
     serviceOptions.find((service) => service.name === prefilledServiceName) ||
     null
+  );
+}
+
+function getCheckoutUrl(data: BookingApiResponse | null) {
+  return (
+    data?.checkoutUrl ||
+    data?.authorizationUrl ||
+    data?.checkout?.checkoutUrl ||
+    data?.checkout?.authorizationUrl ||
+    data?.checkout?.authorization_url ||
+    ""
   );
 }
 
@@ -140,13 +166,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      const data = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        error?: string;
-        message?: string;
-        bookingId?: string;
-        requestId?: string;
-      } | null;
+      const data = (await response.json().catch(() => null)) as BookingApiResponse | null;
 
       if (!response.ok || !data?.ok) {
         const fallbackMessage = "We could not submit your booking right now. Please try again in a few minutes.";
@@ -162,8 +182,9 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         return;
       }
 
-      if (data?.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+      const checkoutUrl = getCheckoutUrl(data);
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
         return;
       }
 
