@@ -7,6 +7,7 @@ import {
   getServiceData,
 } from "@/lib/data";
 import type { GalleryItem } from "@/lib/data";
+import { getReviewData } from "@/lib/reviews";
 import { PackageCard } from "@/components/package-card";
 import kwakuPortrait from "../../public/image.png";
 
@@ -19,13 +20,22 @@ function getExcerpt(html: string, maxLength = 140) {
   return `${plainText.slice(0, maxLength).trimEnd()}...`;
 }
 
+function renderStars(rating: number) {
+  const safeRating = Math.min(5, Math.max(1, Math.round(rating || 5)));
+  return "★★★★★".slice(0, safeRating);
+}
+
 export default async function HomePage() {
-  const services = await getServiceData();
+  const [services, gallery, posts, hero, reviews] = await Promise.all([
+    getServiceData(),
+    getGalleryData(),
+    getBlogPosts(),
+    getHomeHeroSlide(),
+    getReviewData(6),
+  ]);
   const featuredServices = services.slice(0, 3);
-  const gallery: GalleryItem[] = await getGalleryData();
-  const posts = await getBlogPosts();
+  const galleryItems: GalleryItem[] = gallery;
   const latestPosts = posts.slice(0, 3);
-  const hero = await getHomeHeroSlide();
   const heroMobileImageUrl = hero.mobileImageUrl || hero.imageUrl;
 
   return (
@@ -141,7 +151,7 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-          {gallery.map((photo) => (
+          {galleryItems.map((photo) => (
             <Link
               key={photo.id}
               href={`/gallery/${photo.id}`}
@@ -269,35 +279,21 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">
-                “I got a clear step-by-step study route, and it helped me avoid
-                expensive mistakes in my first application.”
-              </p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">
-                Ama O. — Netherlands (Master&apos;s applicant)
-              </footer>
-            </blockquote>
-            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">
-                “The consultation broke down my Canada visitor plan into simple
-                actions, from documents to interview prep.”
-              </p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">
-                Kojo A. — Canada visitor applicant
-              </footer>
-            </blockquote>
-            <blockquote className="rounded-2xl bg-white p-6 shadow-sm">
-              <p className="text-slate-700">
-                “They were very responsive on WhatsApp and practical with my
-                document preparation timeline.”
-              </p>
-              <footer className="mt-3 text-sm font-semibold text-slate-600">
-                Abena K. — USA relocation applicant
-              </footer>
-            </blockquote>
-          </div>
+          {reviews.length ? (
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {reviews.map((review) => (
+                <blockquote key={review.id} className="rounded-2xl bg-white p-6 shadow-sm">
+                  <p className="text-sm font-bold tracking-[0.18em] text-[#d9a441]" aria-label={`${review.rating} out of 5 stars`}>
+                    {renderStars(review.rating)}
+                  </p>
+                  <p className="mt-3 text-slate-700">“{review.reviewText}”</p>
+                  <footer className="mt-3 text-sm font-semibold text-slate-600">
+                    {review.name}
+                  </footer>
+                </blockquote>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>
