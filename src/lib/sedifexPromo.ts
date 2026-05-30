@@ -25,24 +25,31 @@ type PromoPayload = {
   };
 };
 
-type GalleryPayload = {
-  storeId: string;
-  gallery: Array<{
-    id: string;
+type GalleryItem = {
+  id: string;
+  url: string;
+  imageUrl?: string;
+  image?: string;
+  media?: {
     url?: string;
-    imageUrl?: string;
-    image?: string;
-    media?: {
-      url?: string;
-    };
-    alt?: string | null;
-    caption?: string | null;
-    sortOrder?: number;
-    isPublished?: boolean;
-  }>;
+  };
+  alt?: string | null;
+  caption?: string | null;
+  sortOrder?: number;
+  isPublished?: boolean;
 };
 
-export async function fetchPromoAndGallery() {
+type GalleryPayload = {
+  storeId: string;
+  gallery: GalleryItem[];
+};
+
+type PromoAndGallery = {
+  promo: PromoPayload["promo"];
+  gallery: GalleryItem[];
+};
+
+export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
   if (!STORE_ID) {
     return { promo: { enabled: false }, gallery: [] };
   }
@@ -57,38 +64,24 @@ export async function fetchPromoAndGallery() {
     Accept: "application/json"
   };
 
-  const promoRes = await fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
-    headers,
-    next: { revalidate: 60 }
-  });
+  const [promoRes, galleryRes] = await Promise.all([
+    fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
+      headers,
+      next: { revalidate: 60 }
+    }),
+    fetch(`${BASE_URL}/integrationGallery?storeId=${encodeURIComponent(STORE_ID)}`, {
+      headers,
+      next: { revalidate: 60 }
+    })
+  ]);
 
   if (!promoRes.ok) {
     return { promo: { enabled: false }, gallery: [] };
   }
 
   const promoJson = (await promoRes.json()) as PromoPayload;
-
-  const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
-  let publishedGallery: GalleryPayload["gallery"] = [];
-
-  for (const endpoint of galleryEndpoints) {
-    const galleryRes = await fetch(`${BASE_URL}${endpoint}?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    });
-
-    if (!galleryRes.ok) {
-      continue;
-    }
-
-    const galleryJson = (await galleryRes.json()) as GalleryPayload;
-    const normalizedGallery = normalizePublishedGallery(galleryJson.gallery as GalleryPayload["gallery"]);
-
-    if (normalizedGallery.length) {
-      publishedGallery = normalizedGallery;
-      break;
-    }
-  }
+  const galleryJson = galleryRes.ok ? (await galleryRes.json()) as GalleryPayload : { storeId: STORE_ID, gallery: [] };
+  const publishedGallery = normalizePublishedGallery(galleryJson.gallery as GalleryPayload["gallery"]) as GalleryItem[];
 
   return { promo: promoJson.promo, gallery: publishedGallery };
 }

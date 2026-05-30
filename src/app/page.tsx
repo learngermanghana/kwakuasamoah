@@ -87,7 +87,7 @@ export default async function HomePage() {
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Gallery</h2>
-            <p className="mt-2 text-slate-600">Photos synced from Sedifex integration gallery.</p>
+            <p className="mt-2 text-slate-600">Browse the latest published travel and consultation photos.</p>
           </div>
           <Link href="/promo" className="text-sm font-semibold text-[#0d6f73]">
             Explore gallery
@@ -107,7 +107,7 @@ export default async function HomePage() {
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Latest Blog Updates</h2>
-            <p className="mt-2 text-slate-600">Read the newest published updates pulled from Sedifex.</p>
+            <p className="mt-2 text-slate-600">Read the newest published travel and relocation updates.</p>
           </div>
           <Link href="/blog" className="text-sm font-semibold text-[#0d6f73]">View more</Link>
         </div>

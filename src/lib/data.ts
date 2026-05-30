@@ -1,3 +1,4 @@
+import "server-only";
 import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
 import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils";
@@ -295,40 +296,34 @@ export async function getGalleryData() {
     return defaultGallery;
   }
 
-  const galleryEndpoints = ["/integrationGallery", "/v1IntegrationGallery"] as const;
+  const endpoint = new URL("/integrationGallery", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
 
-  for (const path of galleryEndpoints) {
-    const endpoint = new URL(path, baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        "x-api-key": apiKey,
+        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
+        Accept: "application/json"
+      },
+      next: { revalidate: 60 }
+    });
 
-    try {
-      const response = await fetch(endpoint, {
-        headers: {
-          "x-api-key": apiKey,
-          "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-          Accept: "application/json"
-        },
-        next: { revalidate: 60 }
-      });
-
-      if (!response.ok) {
-        continue;
-      }
-
-      const payload = (await response.json()) as SedifexGalleryResponse;
-      const galleryItems = normalizePublishedGallery(payload.gallery as SedifexGalleryItem[] | undefined);
-
-      if (!galleryItems.length) {
-        continue;
-      }
-
-      return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
-    } catch {
-      continue;
+    if (!response.ok) {
+      return defaultGallery;
     }
-  }
 
-  return defaultGallery;
+    const payload = (await response.json()) as SedifexGalleryResponse;
+    const galleryItems = normalizePublishedGallery(payload.gallery as SedifexGalleryItem[] | undefined);
+
+    if (!galleryItems.length) {
+      return defaultGallery;
+    }
+
+    return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
+  } catch {
+    return defaultGallery;
+  }
 }
 
 type SedifexBlogItem = {
