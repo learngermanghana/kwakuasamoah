@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils.js";
+import {
+  getGalleryImageUrl,
+  normalizeIntegrationGallery,
+  normalizePublishedGallery
+} from "./gallery-utils.js";
 
 test("getGalleryImageUrl supports url, imageUrl, image, and media.url fallback order", () => {
   assert.equal(getGalleryImageUrl({ url: "https://cdn.example.com/direct.jpg" }), "https://cdn.example.com/direct.jpg");
@@ -10,7 +14,7 @@ test("getGalleryImageUrl supports url, imageUrl, image, and media.url fallback o
   assert.equal(getGalleryImageUrl({ alt: null }), "");
 });
 
-test("normalizePublishedGallery keeps published items with images and sorts by sortOrder", () => {
+test("normalizePublishedGallery keeps legacy published items with images and sorts by sortOrder", () => {
   const normalized = normalizePublishedGallery([
     {
       id: "3",
@@ -34,4 +38,42 @@ test("normalizePublishedGallery keeps published items with images and sorts by s
     normalized[1].url,
     "https://storage.googleapis.com/sedifeximage/stores/tAipWCKjLBgMJR5ofEIXEe6F8iw2/promo-gallery/draft-mo9ts6e8-bd7mp4.jpg?v=1776852400326"
   );
+});
+
+test("normalizeIntegrationGallery flattens album-based gallery in album and image order", () => {
+  const normalized = normalizeIntegrationGallery({
+    albums: [
+      { id: "events", title: "Events", sortOrder: 2 },
+      { id: "drafts", title: "Drafts", isPublished: false, sortOrder: 0 },
+      { albumId: "graduation", title: "Graduation 2026", sortOrder: 1 }
+    ],
+    images: [
+      { id: "hidden-image", albumId: "graduation", url: "https://cdn.example.com/hidden.jpg", isPublished: false, sortOrder: 0 },
+      { id: "event-1", albumId: "events", url: "https://cdn.example.com/event.jpg", sortOrder: 1 },
+      { id: "missing-url", albumId: "graduation", sortOrder: 2 },
+      { id: "draft-1", albumId: "drafts", url: "https://cdn.example.com/draft.jpg", sortOrder: 1 },
+      { imageId: "grad-1", albumId: "graduation", url: "https://cdn.example.com/grad.jpg", caption: "Graduate", sortOrder: 1 }
+    ]
+  });
+
+  assert.deepEqual(
+    normalized.map((item) => item.id),
+    ["grad-1", "event-1"]
+  );
+  assert.equal(normalized[0].caption, "Graduate");
+  assert.equal(normalized[1].caption, "Events");
+});
+
+test("normalizeIntegrationGallery supports data wrapper and homepage limit", () => {
+  const normalized = normalizeIntegrationGallery({
+    data: {
+      galleryAlbums: [{ id: "products", title: "Products" }],
+      galleryImages: [
+        { id: "1", albumId: "products", url: "https://cdn.example.com/1.jpg", sortOrder: 1 },
+        { id: "2", albumId: "products", url: "https://cdn.example.com/2.jpg", sortOrder: 2 }
+      ]
+    }
+  }, 1);
+
+  assert.deepEqual(normalized.map((item) => item.id), ["1"]);
 });

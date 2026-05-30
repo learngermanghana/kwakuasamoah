@@ -1,7 +1,7 @@
 import "server-only";
 import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
-import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils";
+import { normalizeIntegrationGallery } from "./gallery-utils";
 
 const SEDIFEX_CONTRACT_VERSION =
   process.env.SEDIFEX_CONTRACT_VERSION || "2026-04-13";
@@ -35,8 +35,20 @@ type SedifexCatalogResponse = {
   items?: SedifexItem[];
 };
 
+type SedifexGalleryAlbum = {
+  id?: string;
+  albumId?: string;
+  title?: string;
+  description?: string;
+  coverImageUrl?: string;
+  isPublished?: boolean;
+  sortOrder?: number;
+};
+
 type SedifexGalleryItem = {
-  id: string;
+  id?: string;
+  imageId?: string;
+  albumId?: string;
   url?: string;
   imageUrl?: string;
   image?: string;
@@ -51,6 +63,11 @@ type SedifexGalleryItem = {
 
 type SedifexGalleryResponse = {
   gallery?: SedifexGalleryItem[];
+  albums?: SedifexGalleryAlbum[];
+  galleryAlbums?: SedifexGalleryAlbum[];
+  images?: SedifexGalleryItem[];
+  galleryImages?: SedifexGalleryItem[];
+  data?: SedifexGalleryResponse;
 };
 
 export type HeroSlide = {
@@ -523,16 +540,7 @@ function isServiceItem(item: SedifexItem) {
   return itemType === "service";
 }
 
-function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
-  const imageUrl = getGalleryImageUrl(item);
 
-  return {
-    id: item.id,
-    url: imageUrl,
-    alt: item.alt || item.caption || "Store gallery image",
-    caption: item.caption || "",
-  };
-}
 
 export async function getHomeHeroSlide() {
   const { baseUrl, apiKey, storeId } = getSedifexConfig();
@@ -656,15 +664,16 @@ export async function getServiceData() {
   }
 }
 
-export async function getGalleryData() {
+export async function getGalleryData(limit = 8): Promise<GalleryItem[]> {
   const { baseUrl, apiKey, storeId } = getSedifexConfig();
 
-  if (!baseUrl || !apiKey || !storeId) {
-    return defaultGallery;
+  if (!baseUrl || !storeId) {
+    return defaultGallery.slice(0, limit);
   }
 
   const endpoint = new URL("/integrationGallery", baseUrl);
   endpoint.searchParams.set("storeId", storeId);
+  endpoint.searchParams.set("limit", String(limit));
 
   try {
     const response = await fetch(endpoint, {
@@ -673,21 +682,19 @@ export async function getGalleryData() {
     });
 
     if (!response.ok) {
-      return defaultGallery;
+      return defaultGallery.slice(0, limit);
     }
 
     const payload = (await response.json()) as SedifexGalleryResponse;
-    const galleryItems = normalizePublishedGallery(
-      payload.gallery as SedifexGalleryItem[] | undefined,
-    );
+    const galleryItems = normalizeIntegrationGallery(payload, limit) as GalleryItem[];
 
     if (!galleryItems.length) {
-      return defaultGallery;
+      return defaultGallery.slice(0, limit);
     }
 
-    return galleryItems.slice(0, 8).map(mapSedifexGalleryItem);
+    return galleryItems;
   } catch {
-    return defaultGallery;
+    return defaultGallery.slice(0, limit);
   }
 }
 

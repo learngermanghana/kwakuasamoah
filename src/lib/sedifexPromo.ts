@@ -1,5 +1,5 @@
 import 'server-only';
-import { normalizePublishedGallery } from "./gallery-utils";
+import { normalizeIntegrationGallery } from "./gallery-utils";
 
 const BASE_URL = process.env.SEDIFEX_API_BASE_URL ?? "https://us-central1-sedifex-web.cloudfunctions.net";
 const STORE_ID = process.env.SEDIFEX_STORE_ID ?? "";
@@ -26,8 +26,10 @@ type PromoPayload = {
 };
 
 type GalleryItem = {
-  id: string;
-  url: string;
+  id?: string;
+  imageId?: string;
+  albumId?: string;
+  url?: string;
   imageUrl?: string;
   image?: string;
   media?: {
@@ -39,14 +41,34 @@ type GalleryItem = {
   isPublished?: boolean;
 };
 
+type GalleryAlbum = {
+  id?: string;
+  albumId?: string;
+  title?: string;
+  isPublished?: boolean;
+  sortOrder?: number;
+};
+
 type GalleryPayload = {
   storeId: string;
-  gallery: GalleryItem[];
+  gallery?: GalleryItem[];
+  albums?: GalleryAlbum[];
+  galleryAlbums?: GalleryAlbum[];
+  images?: GalleryItem[];
+  galleryImages?: GalleryItem[];
+  data?: GalleryPayload;
+};
+
+type NormalizedGalleryItem = GalleryItem & {
+  id: string;
+  url: string;
+  alt: string;
+  caption: string;
 };
 
 type PromoAndGallery = {
   promo: PromoPayload["promo"];
-  gallery: GalleryItem[];
+  gallery: NormalizedGalleryItem[];
 };
 
 export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
@@ -81,7 +103,7 @@ export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
 
   const promoJson = (await promoRes.json()) as PromoPayload;
   const galleryJson = galleryRes.ok ? (await galleryRes.json()) as GalleryPayload : { storeId: STORE_ID, gallery: [] };
-  const publishedGallery = normalizePublishedGallery(galleryJson.gallery as GalleryPayload["gallery"]) as GalleryItem[];
+  const publishedGallery = normalizeIntegrationGallery(galleryJson) as NormalizedGalleryItem[];
 
   return { promo: promoJson.promo, gallery: publishedGallery };
 }
