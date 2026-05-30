@@ -131,7 +131,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     if (!hasEmail) nextErrors.customerEmail = "Please enter your email address.";
     else if (!EMAIL_PATTERN.test(nextState.customerEmail)) nextErrors.customerEmail = "Enter a valid email address.";
     if (hasPhone && !PHONE_PATTERN.test(nextState.customerPhone)) nextErrors.customerPhone = "Enter a valid phone or WhatsApp number.";
-    if (!nextState.serviceId) nextErrors.serviceId = "Please choose a service from Sedifex.";
+    if (!nextState.serviceId) nextErrors.serviceId = "Please choose a service.";
     if (!nextState.bookingDate) nextErrors.bookingDate = "Please choose your preferred date.";
     else if (nextState.bookingDate < minimumDate) nextErrors.bookingDate = "Please choose a future date.";
     if (!nextState.bookingTime) nextErrors.bookingTime = "Please choose your preferred time.";
@@ -236,7 +236,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           </p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment method sent to Sedifex</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment method</p>
           <p className="mt-1 text-lg font-semibold text-[#0b2d4f]">Paystack</p>
         </div>
       </div>
@@ -283,7 +283,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="serviceId" className="block text-sm font-medium text-zinc-900">Service from Sedifex *</label>
+        <label htmlFor="serviceId" className="block text-sm font-medium text-zinc-900">Service *</label>
         <select
           id="serviceId"
           name="serviceId"
@@ -385,7 +385,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           onChange={(event) => setFormState((previous) => ({ ...previous, agreement: event.target.checked }))}
           className="mt-1"
         />
-        <span>I understand this creates a booking request in Sedifex for admin confirmation.</span>
+        <span>I understand this creates a booking request for team review and confirmation.</span>
       </label>
       {errors.agreement ? <p className="text-sm text-red-700">{errors.agreement}</p> : null}
 
