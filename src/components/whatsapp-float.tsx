@@ -17,6 +17,10 @@ export async function WhatsAppFloat() {
     );
   }
 
+  if (!socialSettings.publicEmail) {
+    return null;
+  }
+
   return (
     <a
       href={`mailto:${socialSettings.publicEmail}`}

@@ -13,6 +13,7 @@ function ContactLink({ href, label }: { href: string; label: string }) {
 
 export async function Footer() {
   const socialSettings = await getSocialSettings();
+  const whatsappNumber = socialSettings.whatsappNumber.replace(/\D/g, "");
   const contactItems = [
     socialSettings.publicPhone
       ? {
@@ -20,9 +21,9 @@ export async function Footer() {
           label: socialSettings.publicPhone,
         }
       : null,
-    socialSettings.whatsappNumber
+    whatsappNumber
       ? {
-          href: `https://wa.me/${socialSettings.whatsappNumber.replace(/\D/g, "")}`,
+          href: `https://wa.me/${whatsappNumber}`,
           label: "WhatsApp",
         }
       : null,

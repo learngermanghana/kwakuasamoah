@@ -11,8 +11,8 @@ export async function getPackageData() {
 }
 
 type SedifexItem = {
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
   type?: string;
   category?: string;
   description?: string;
@@ -36,7 +36,7 @@ type SedifexCatalogResponse = {
 };
 
 type SedifexGalleryItem = {
-  id: string;
+  id?: string;
   url?: string;
   imageUrl?: string;
   image?: string;
@@ -98,7 +98,11 @@ type SedifexHeroSlidesResponse = {
   items?: SedifexHeroSlide[];
   data?:
     | SedifexHeroSlide[]
-    | { slides?: SedifexHeroSlide[]; items?: SedifexHeroSlide[] };
+    | {
+        slides?: SedifexHeroSlide[];
+        heroSlides?: SedifexHeroSlide[];
+        items?: SedifexHeroSlide[];
+      };
 };
 
 type SedifexSocialSettingsPayload = Partial<SocialSettings> & {
@@ -135,9 +139,9 @@ type SedifexSocialSettingsPayload = Partial<SocialSettings> & {
 };
 
 type SedifexSocialSettingsResponse = SedifexSocialSettingsPayload & {
-  settings?: SedifexSocialSettingsPayload;
-  socialSettings?: SedifexSocialSettingsPayload;
-  data?: SedifexSocialSettingsPayload;
+  settings?: SedifexSocialSettingsPayload | null;
+  socialSettings?: SedifexSocialSettingsPayload | null;
+  data?: SedifexSocialSettingsPayload | null;
 };
 
 export type ServiceItem = {
@@ -259,18 +263,24 @@ function firstNonEmpty(...values: Array<string | null | undefined>) {
   );
 }
 
-function getHeroSlideItems(
-  payload: SedifexHeroSlidesResponse,
-): SedifexHeroSlide[] {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.slides)) return payload.slides;
-  if (Array.isArray(payload.heroSlides)) return payload.heroSlides;
-  if (Array.isArray(payload.items)) return payload.items;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (payload.data && Array.isArray(payload.data.slides))
-    return payload.data.slides;
-  if (payload.data && Array.isArray(payload.data.items))
-    return payload.data.items;
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getHeroSlideItems(payload: unknown): SedifexHeroSlide[] {
+  if (Array.isArray(payload)) return payload as SedifexHeroSlide[];
+  if (!isObjectRecord(payload)) return [];
+
+  const response = payload as SedifexHeroSlidesResponse;
+  if (Array.isArray(response.slides)) return response.slides;
+  if (Array.isArray(response.heroSlides)) return response.heroSlides;
+  if (Array.isArray(response.items)) return response.items;
+  if (Array.isArray(response.data)) return response.data;
+  if (!isObjectRecord(response.data)) return [];
+
+  if (Array.isArray(response.data.slides)) return response.data.slides;
+  if (Array.isArray(response.data.heroSlides)) return response.data.heroSlides;
+  if (Array.isArray(response.data.items)) return response.data.items;
 
   return [];
 }
@@ -324,10 +334,11 @@ function sortHeroSlides(items: SedifexHeroSlide[]) {
     .map(({ item }) => item);
 }
 
-function getSocialSettingsPayload(
-  payload: SedifexSocialSettingsResponse,
-): SedifexSocialSettingsPayload {
-  return payload.settings ?? payload.socialSettings ?? payload.data ?? payload;
+function getSocialSettingsPayload(payload: unknown): SedifexSocialSettingsPayload {
+  if (!isObjectRecord(payload)) return {};
+
+  const response = payload as SedifexSocialSettingsResponse;
+  return response.settings ?? response.socialSettings ?? response.data ?? response;
 }
 
 function getSocialLink(
@@ -407,7 +418,9 @@ function mapSedifexSocialSettings(
   };
 }
 
-function mapSedifexItem(item: SedifexItem): ServiceItem {
+function mapSedifexItem(item: SedifexItem, index: number): ServiceItem {
+  const name = firstNonEmpty(item.name, `Travel service ${index + 1}`);
+  const id = firstNonEmpty(item.id, `sedifex-service-${index + 1}`);
   const normalizedCategory =
     item.category && item.category.toLowerCase() !== "not provided"
       ? item.category
@@ -416,8 +429,8 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
   const normalizedDescription = normalizeServiceDescription(item.description);
 
   return {
-    id: item.id,
-    serviceName: item.name,
+    id,
+    serviceName: name,
     category: normalizedCategory,
     description:
       normalizedDescription ||
@@ -431,7 +444,7 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
       item.imageUrl ||
       item.imageUrls?.[0] ||
       "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
-    imageAlt: item.imageAlt || item.name,
+    imageAlt: firstNonEmpty(item.imageAlt, name),
   };
 }
 
@@ -527,7 +540,7 @@ function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
   const imageUrl = getGalleryImageUrl(item);
 
   return {
-    id: item.id,
+    id: firstNonEmpty(item.id, imageUrl),
     url: imageUrl,
     alt: item.alt || item.caption || "Store gallery image",
     caption: item.caption || "",
@@ -555,7 +568,7 @@ export async function getHomeHeroSlide() {
       return defaultHeroSlide;
     }
 
-    const payload = (await response.json()) as SedifexHeroSlidesResponse;
+    const payload: unknown = await response.json();
     const slide = sortHeroSlides(getHeroSlideItems(payload))[0];
 
     if (!slide) {
@@ -588,7 +601,7 @@ export async function getSocialSettings() {
       return defaultSocialSettings;
     }
 
-    const payload = (await response.json()) as SedifexSocialSettingsResponse;
+    const payload: unknown = await response.json();
     return mapSedifexSocialSettings(getSocialSettingsPayload(payload));
   } catch {
     return defaultSocialSettings;
