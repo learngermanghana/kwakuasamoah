@@ -3,7 +3,8 @@ import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
 import { getGalleryImageUrl, normalizePublishedGallery } from "./gallery-utils";
 
-const SEDIFEX_CONTRACT_VERSION = "2026-04-13";
+const SEDIFEX_CONTRACT_VERSION =
+  process.env.SEDIFEX_CONTRACT_VERSION || "2026-04-13";
 
 export async function getPackageData() {
   return packages;
@@ -52,6 +53,93 @@ type SedifexGalleryResponse = {
   gallery?: SedifexGalleryItem[];
 };
 
+export type HeroSlide = {
+  id: string;
+  title: string;
+  eyebrow: string;
+  subtitle: string;
+  ctaLabel: string;
+  ctaHref: string;
+  secondaryCtaLabel: string;
+  secondaryCtaHref: string;
+  imageUrl: string;
+  mobileImageUrl: string;
+};
+
+export type SocialSettings = {
+  displayName: string;
+  tagline: string;
+  businessDescription: string;
+  publicPhone: string;
+  whatsappNumber: string;
+  publicEmail: string;
+  website: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  youtube: string;
+  x: string;
+  linkedin: string;
+};
+
+type SedifexHeroSlide = Partial<HeroSlide> & {
+  id?: string;
+  placement?: string;
+  sortOrder?: number;
+  order?: number;
+  isActive?: boolean;
+  enabled?: boolean;
+  published?: boolean;
+};
+
+type SedifexHeroSlidesResponse = {
+  slides?: SedifexHeroSlide[];
+  heroSlides?: SedifexHeroSlide[];
+  items?: SedifexHeroSlide[];
+  data?:
+    | SedifexHeroSlide[]
+    | { slides?: SedifexHeroSlide[]; items?: SedifexHeroSlide[] };
+};
+
+type SedifexSocialSettingsPayload = Partial<SocialSettings> & {
+  name?: string;
+  businessName?: string;
+  description?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  socialLinks?: Partial<
+    Record<
+      | "instagram"
+      | "facebook"
+      | "tiktok"
+      | "youtube"
+      | "x"
+      | "twitter"
+      | "linkedin",
+      string
+    >
+  >;
+  socials?: Partial<
+    Record<
+      | "instagram"
+      | "facebook"
+      | "tiktok"
+      | "youtube"
+      | "x"
+      | "twitter"
+      | "linkedin",
+      string
+    >
+  >;
+};
+
+type SedifexSocialSettingsResponse = SedifexSocialSettingsPayload & {
+  settings?: SedifexSocialSettingsPayload;
+  socialSettings?: SedifexSocialSettingsPayload;
+  data?: SedifexSocialSettingsPayload;
+};
+
 export type ServiceItem = {
   id: string;
   serviceName: string;
@@ -88,15 +176,48 @@ const defaultServices: ServiceItem[] = packages.map((pkg) => ({
   priceLabel: pkg.priceFrom,
   price: undefined,
   image: pkg.image,
-  imageAlt: pkg.title
+  imageAlt: pkg.title,
 }));
 
-const defaultGallery: GalleryItem[] = defaultServices.slice(0, 6).map((service) => ({
-  id: service.id,
-  url: service.image,
-  alt: service.imageAlt,
-  caption: service.serviceName
-}));
+const defaultGallery: GalleryItem[] = defaultServices
+  .slice(0, 6)
+  .map((service) => ({
+    id: service.id,
+    url: service.image,
+    alt: service.imageAlt,
+    caption: service.serviceName,
+  }));
+
+export const defaultHeroSlide: HeroSlide = {
+  id: "fallback-home-hero",
+  title: "Travel",
+  eyebrow: siteConfig.tagline,
+  subtitle:
+    "Get trusted travel updates, visa support services, right documents guidance, relocation guidance, and one-on-one consultation for destinations worldwide.",
+  ctaLabel: "Contact Us",
+  ctaHref: "/contact",
+  secondaryCtaLabel: "",
+  secondaryCtaHref: "",
+  imageUrl:
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80",
+  mobileImageUrl: "",
+};
+
+export const defaultSocialSettings: SocialSettings = {
+  displayName: siteConfig.name,
+  tagline: siteConfig.tagline,
+  businessDescription: siteConfig.description,
+  publicPhone: siteConfig.phone,
+  whatsappNumber: siteConfig.whatsapp,
+  publicEmail: siteConfig.email,
+  website: siteConfig.url,
+  instagram: siteConfig.socials.instagram,
+  facebook: siteConfig.socials.facebook,
+  tiktok: siteConfig.socials.tiktok,
+  youtube: siteConfig.socials.youtube,
+  x: siteConfig.socials.x,
+  linkedin: siteConfig.socials.linkedin ?? "",
+};
 
 function getSedifexConfig() {
   const baseUrl =
@@ -116,9 +237,181 @@ function getSedifexConfig() {
   return { baseUrl, apiKey, storeId };
 }
 
+function getSedifexIntegrationHeaders(apiKey?: string) {
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+  };
+
+  if (apiKey) {
+    headers["x-api-key"] = apiKey;
+    headers.Authorization = `Bearer ${apiKey}`;
+    headers["X-Sedifex-Contract-Version"] = SEDIFEX_CONTRACT_VERSION;
+  }
+
+  return headers;
+}
+
+function firstNonEmpty(...values: Array<string | null | undefined>) {
+  return (
+    values
+      .find((value) => typeof value === "string" && value.trim().length > 0)
+      ?.trim() ?? ""
+  );
+}
+
+function getHeroSlideItems(
+  payload: SedifexHeroSlidesResponse,
+): SedifexHeroSlide[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.slides)) return payload.slides;
+  if (Array.isArray(payload.heroSlides)) return payload.heroSlides;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (payload.data && Array.isArray(payload.data.slides))
+    return payload.data.slides;
+  if (payload.data && Array.isArray(payload.data.items))
+    return payload.data.items;
+
+  return [];
+}
+
+function mapSedifexHeroSlide(slide: SedifexHeroSlide): HeroSlide {
+  return {
+    id: firstNonEmpty(slide.id, defaultHeroSlide.id),
+    title: firstNonEmpty(slide.title, defaultHeroSlide.title),
+    eyebrow: firstNonEmpty(slide.eyebrow, defaultHeroSlide.eyebrow),
+    subtitle: firstNonEmpty(slide.subtitle, defaultHeroSlide.subtitle),
+    ctaLabel: firstNonEmpty(slide.ctaLabel, defaultHeroSlide.ctaLabel),
+    ctaHref: firstNonEmpty(slide.ctaHref, defaultHeroSlide.ctaHref),
+    secondaryCtaLabel: firstNonEmpty(
+      slide.secondaryCtaLabel,
+      defaultHeroSlide.secondaryCtaLabel,
+    ),
+    secondaryCtaHref: firstNonEmpty(
+      slide.secondaryCtaHref,
+      defaultHeroSlide.secondaryCtaHref,
+    ),
+    imageUrl: firstNonEmpty(slide.imageUrl, defaultHeroSlide.imageUrl),
+    mobileImageUrl: firstNonEmpty(
+      slide.mobileImageUrl,
+      slide.imageUrl,
+      defaultHeroSlide.mobileImageUrl,
+    ),
+  };
+}
+
+function sortHeroSlides(items: SedifexHeroSlide[]) {
+  return items
+    .filter(
+      (item) =>
+        item.isActive !== false &&
+        item.enabled !== false &&
+        item.published !== false,
+    )
+    .map((item, index) => ({ item, index }))
+    .sort((a, b) => {
+      const aOrder =
+        a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
+      const bOrder =
+        b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
+
+      if (aOrder !== bOrder) {
+        return aOrder - bOrder;
+      }
+
+      return a.index - b.index;
+    })
+    .map(({ item }) => item);
+}
+
+function getSocialSettingsPayload(
+  payload: SedifexSocialSettingsResponse,
+): SedifexSocialSettingsPayload {
+  return payload.settings ?? payload.socialSettings ?? payload.data ?? payload;
+}
+
+function getSocialLink(
+  settings: SedifexSocialSettingsPayload,
+  key: keyof SocialSettings,
+  alternateKey?: "twitter",
+) {
+  return firstNonEmpty(
+    settings[key],
+    settings.socialLinks?.[
+      key as keyof NonNullable<SedifexSocialSettingsPayload["socialLinks"]>
+    ],
+    settings.socials?.[
+      key as keyof NonNullable<SedifexSocialSettingsPayload["socials"]>
+    ],
+    alternateKey ? settings.socialLinks?.[alternateKey] : undefined,
+    alternateKey ? settings.socials?.[alternateKey] : undefined,
+  );
+}
+
+function mapSedifexSocialSettings(
+  settings: SedifexSocialSettingsPayload,
+): SocialSettings {
+  return {
+    displayName: firstNonEmpty(
+      settings.displayName,
+      settings.businessName,
+      settings.name,
+      defaultSocialSettings.displayName,
+    ),
+    tagline: firstNonEmpty(settings.tagline, defaultSocialSettings.tagline),
+    businessDescription: firstNonEmpty(
+      settings.businessDescription,
+      settings.description,
+      defaultSocialSettings.businessDescription,
+    ),
+    publicPhone: firstNonEmpty(
+      settings.publicPhone,
+      settings.phone,
+      defaultSocialSettings.publicPhone,
+    ),
+    whatsappNumber: firstNonEmpty(
+      settings.whatsappNumber,
+      settings.whatsapp,
+      defaultSocialSettings.whatsappNumber,
+    ),
+    publicEmail: firstNonEmpty(
+      settings.publicEmail,
+      settings.email,
+      defaultSocialSettings.publicEmail,
+    ),
+    website: firstNonEmpty(settings.website, defaultSocialSettings.website),
+    instagram: firstNonEmpty(
+      getSocialLink(settings, "instagram"),
+      defaultSocialSettings.instagram,
+    ),
+    facebook: firstNonEmpty(
+      getSocialLink(settings, "facebook"),
+      defaultSocialSettings.facebook,
+    ),
+    tiktok: firstNonEmpty(
+      getSocialLink(settings, "tiktok"),
+      defaultSocialSettings.tiktok,
+    ),
+    youtube: firstNonEmpty(
+      getSocialLink(settings, "youtube"),
+      defaultSocialSettings.youtube,
+    ),
+    x: firstNonEmpty(
+      getSocialLink(settings, "x", "twitter"),
+      defaultSocialSettings.x,
+    ),
+    linkedin: firstNonEmpty(
+      getSocialLink(settings, "linkedin"),
+      defaultSocialSettings.linkedin,
+    ),
+  };
+}
+
 function mapSedifexItem(item: SedifexItem): ServiceItem {
   const normalizedCategory =
-    item.category && item.category.toLowerCase() !== "not provided" ? item.category : undefined;
+    item.category && item.category.toLowerCase() !== "not provided"
+      ? item.category
+      : undefined;
 
   const normalizedDescription = normalizeServiceDescription(item.description);
 
@@ -126,11 +419,19 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
     id: item.id,
     serviceName: item.name,
     category: normalizedCategory,
-    description: normalizedDescription || "Professional support tailored to your travel and relocation goals.",
-    priceLabel: typeof item.price === "number" ? `Price ${item.price} GHC` : "Contact for price",
+    description:
+      normalizedDescription ||
+      "Professional support tailored to your travel and relocation goals.",
+    priceLabel:
+      typeof item.price === "number"
+        ? `Price ${item.price} GHC`
+        : "Contact for price",
     price: typeof item.price === "number" ? item.price : undefined,
-    image: item.imageUrl || item.imageUrls?.[0] || "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
-    imageAlt: item.imageAlt || item.name
+    image:
+      item.imageUrl ||
+      item.imageUrls?.[0] ||
+      "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?q=80&w=1200&auto=format&fit=crop",
+    imageAlt: item.imageAlt || item.name,
   };
 }
 
@@ -141,7 +442,7 @@ const preferredServiceOrder = [
   "visa application filling",
   "us america lottery",
   "flight and hotel",
-  "study abroad"
+  "study abroad",
 ] as const;
 
 function normalizeServiceNameForSort(name?: string) {
@@ -174,7 +475,11 @@ function sortSedifexServices(items: SedifexItem[]) {
       const aHasPreferredOrder = aPreferredIndex !== -1;
       const bHasPreferredOrder = bPreferredIndex !== -1;
 
-      if (aHasPreferredOrder && bHasPreferredOrder && aPreferredIndex !== bPreferredIndex) {
+      if (
+        aHasPreferredOrder &&
+        bHasPreferredOrder &&
+        aPreferredIndex !== bPreferredIndex
+      ) {
         return aPreferredIndex - bPreferredIndex;
       }
 
@@ -182,8 +487,10 @@ function sortSedifexServices(items: SedifexItem[]) {
         return aHasPreferredOrder ? -1 : 1;
       }
 
-      const aOrder = a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
-      const bOrder = b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
+      const aOrder =
+        a.item.sortOrder ?? a.item.order ?? Number.POSITIVE_INFINITY;
+      const bOrder =
+        b.item.sortOrder ?? b.item.order ?? Number.POSITIVE_INFINITY;
 
       if (aOrder !== bOrder) {
         return aOrder - bOrder;
@@ -201,7 +508,9 @@ function normalizeServiceDescription(description?: string) {
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
-    .filter((line) => !/^\*\*(Product Name|Item Type|Category):\*\*/i.test(line))
+    .filter(
+      (line) => !/^\*\*(Product Name|Item Type|Category):\*\*/i.test(line),
+    )
     .map((line) => line.replace(/\*\*/g, ""))
     .map((line) => line.replace(/\s+,/g, ","))
     .filter((line) => line.toLowerCase() !== "not provided");
@@ -221,8 +530,69 @@ function mapSedifexGalleryItem(item: SedifexGalleryItem): GalleryItem {
     id: item.id,
     url: imageUrl,
     alt: item.alt || item.caption || "Store gallery image",
-    caption: item.caption || ""
+    caption: item.caption || "",
   };
+}
+
+export async function getHomeHeroSlide() {
+  const { baseUrl, apiKey, storeId } = getSedifexConfig();
+
+  if (!baseUrl || !storeId) {
+    return defaultHeroSlide;
+  }
+
+  const endpoint = new URL("/v1IntegrationHeroSlides", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+  endpoint.searchParams.set("placement", "home_hero");
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: getSedifexIntegrationHeaders(apiKey),
+      next: { revalidate: 60 },
+    });
+
+    if (!response.ok) {
+      return defaultHeroSlide;
+    }
+
+    const payload = (await response.json()) as SedifexHeroSlidesResponse;
+    const slide = sortHeroSlides(getHeroSlideItems(payload))[0];
+
+    if (!slide) {
+      return defaultHeroSlide;
+    }
+
+    return mapSedifexHeroSlide(slide);
+  } catch {
+    return defaultHeroSlide;
+  }
+}
+
+export async function getSocialSettings() {
+  const { baseUrl, apiKey, storeId } = getSedifexConfig();
+
+  if (!baseUrl || !storeId) {
+    return defaultSocialSettings;
+  }
+
+  const endpoint = new URL("/v1IntegrationSocialSettings", baseUrl);
+  endpoint.searchParams.set("storeId", storeId);
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: getSedifexIntegrationHeaders(apiKey),
+      next: { revalidate: 60 },
+    });
+
+    if (!response.ok) {
+      return defaultSocialSettings;
+    }
+
+    const payload = (await response.json()) as SedifexSocialSettingsResponse;
+    return mapSedifexSocialSettings(getSocialSettingsPayload(payload));
+  } catch {
+    return defaultSocialSettings;
+  }
 }
 
 export async function getServiceData() {
@@ -239,13 +609,8 @@ export async function getServiceData() {
     endpoint.searchParams.set("storeId", storeId);
 
     const response = await fetch(endpoint, {
-      headers: {
-        "x-api-key": apiKey,
-        Authorization: `Bearer ${apiKey}`,
-        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-        Accept: "application/json"
-      },
-      next: { revalidate: 30 }
+      headers: getSedifexIntegrationHeaders(apiKey),
+      next: { revalidate: 30 },
     });
 
     if (!response.ok) {
@@ -264,7 +629,7 @@ export async function getServiceData() {
 
     const response = await fetch(endpoint, {
       headers: { Accept: "application/json" },
-      next: { revalidate: 30 }
+      next: { revalidate: 30 },
     });
 
     if (!response.ok) {
@@ -277,7 +642,9 @@ export async function getServiceData() {
 
   try {
     const integrationItems = await fetchIntegrationProducts();
-    const items = integrationItems.length ? integrationItems : await fetchPublicCatalog();
+    const items = integrationItems.length
+      ? integrationItems
+      : await fetchPublicCatalog();
 
     if (!items.length) {
       return defaultServices;
@@ -301,12 +668,8 @@ export async function getGalleryData() {
 
   try {
     const response = await fetch(endpoint, {
-      headers: {
-        "x-api-key": apiKey,
-        "X-Sedifex-Contract-Version": SEDIFEX_CONTRACT_VERSION,
-        Accept: "application/json"
-      },
-      next: { revalidate: 60 }
+      headers: getSedifexIntegrationHeaders(apiKey),
+      next: { revalidate: 60 },
     });
 
     if (!response.ok) {
@@ -314,7 +677,9 @@ export async function getGalleryData() {
     }
 
     const payload = (await response.json()) as SedifexGalleryResponse;
-    const galleryItems = normalizePublishedGallery(payload.gallery as SedifexGalleryItem[] | undefined);
+    const galleryItems = normalizePublishedGallery(
+      payload.gallery as SedifexGalleryItem[] | undefined,
+    );
 
     if (!galleryItems.length) {
       return defaultGallery;
@@ -341,7 +706,8 @@ type SedifexBlogResponse = {
 };
 
 function getSedifexBlogConfig() {
-  const baseUrl = process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
+  const baseUrl =
+    process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
   const storeId = process.env.SEDIFEX_STORE_ID;
 
   return { baseUrl, storeId };
@@ -355,7 +721,7 @@ function mapSedifexBlogItem(item: SedifexBlogItem): BlogPost {
     content: item.content ?? "",
     linkUrl: item.linkUrl ?? "",
     imageUrl: item.imageUrl ?? "",
-    publishedAt: item.publishedAt ?? ""
+    publishedAt: item.publishedAt ?? "",
   };
 }
 
@@ -375,7 +741,7 @@ export async function getBlogPosts(slug?: string) {
   try {
     const response = await fetch(endpoint, {
       next: { revalidate: 60 },
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
     });
 
     if (!response.ok) {
@@ -399,9 +765,10 @@ export type YouTubeVideo = {
 };
 
 const YOUTUBE_REQUEST_HEADERS = {
-  "User-Agent": "Mozilla/5.0 (compatible; KwakuLotteryBot/1.0; +https://www.youtube.com/@kwakulotteryy)",
+  "User-Agent":
+    "Mozilla/5.0 (compatible; KwakuLotteryBot/1.0; +https://www.youtube.com/@kwakulotteryy)",
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9"
+  "Accept-Language": "en-US,en;q=0.9",
 };
 
 function parseYouTubeFeed(xml: string) {
@@ -410,14 +777,16 @@ function parseYouTubeFeed(xml: string) {
   return entries
     .map((entry) => {
       const id = entry.match(/<yt:videoId>([^<]+)<\/yt:videoId>/)?.[1] || "";
-      const title = entry.match(/<title>([^<]+)<\/title>/)?.[1] || "YouTube video";
-      const published = entry.match(/<published>([^<]+)<\/published>/)?.[1] || "";
+      const title =
+        entry.match(/<title>([^<]+)<\/title>/)?.[1] || "YouTube video";
+      const published =
+        entry.match(/<published>([^<]+)<\/published>/)?.[1] || "";
       return {
         id,
         title,
         link: `https://www.youtube.com/watch?v=${id}`,
         published,
-        thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+        thumbnail: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`,
       };
     })
     .filter((entry) => Boolean(entry.id));
@@ -427,7 +796,7 @@ function findChannelId(html: string) {
   const matchers = [
     /"channelId":"(UC[^"]+)"/,
     /\\"channelId\\":\\"(UC[^\\"]+)\\"/,
-    /"externalId":"(UC[^"]+)"/
+    /"externalId":"(UC[^"]+)"/,
   ];
 
   for (const matcher of matchers) {
@@ -445,7 +814,7 @@ export async function getYouTubeVideos() {
     const videosUrl = `${siteConfig.socials.youtube.replace(/\/$/, "")}/videos`;
     const channelPage = await fetch(videosUrl, {
       cache: "no-store",
-      headers: YOUTUBE_REQUEST_HEADERS
+      headers: YOUTUBE_REQUEST_HEADERS,
     });
 
     if (!channelPage.ok) return fallback;
@@ -457,7 +826,7 @@ export async function getYouTubeVideos() {
     const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
     const feedResponse = await fetch(feedUrl, {
       cache: "no-store",
-      headers: YOUTUBE_REQUEST_HEADERS
+      headers: YOUTUBE_REQUEST_HEADERS,
     });
     if (!feedResponse.ok) return fallback;
 
