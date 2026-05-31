@@ -1,8 +1,29 @@
-import { getServiceData } from "@/lib/data";
 import { PackageCard } from "@/components/package-card";
+import { getServiceData, type ServiceItem } from "@/lib/data";
+
+function normalizeServiceKey(service: ServiceItem) {
+  return service.serviceName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function removeDuplicateServices(services: ServiceItem[]) {
+  const seen = new Set<string>();
+
+  return services.filter((service) => {
+    const key = normalizeServiceKey(service);
+
+    if (!key) return true;
+    if (seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
+}
 
 export default async function ServicesPage() {
-  const services = await getServiceData();
+  const services = removeDuplicateServices(await getServiceData());
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16">
