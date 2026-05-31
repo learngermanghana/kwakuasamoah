@@ -41,6 +41,46 @@ function formatPriceLabel(service: ServiceItem) {
 function getServiceTopMessage(service: ServiceItem) {
   const serviceKey = `${service.serviceName} ${service.category || ""}`.toLowerCase();
 
+  if (
+    serviceKey.includes("dv") ||
+    serviceKey.includes("lottery") ||
+    serviceKey.includes("usa america")
+  ) {
+    return {
+      eyebrow: "DV Lottery Visa Guidance",
+      headline:
+        "Selected for the DV Lottery? Let me help you turn your selection into a successful visa journey.",
+      body:
+        "Get clear guidance for your next steps, documents, interview preparation, and visa journey after selection.",
+    };
+  }
+
+  if (
+    serviceKey.includes("visa application filling") ||
+    serviceKey.includes("application filling")
+  ) {
+    return {
+      eyebrow: "Visa Application Filling Support",
+      headline:
+        "Don't leave your visa application to chance. Get personalized support to help ensure every detail is completed correctly.",
+      body:
+        "A careful application filling support service to help reduce avoidable mistakes before submission.",
+    };
+  }
+
+  if (
+    serviceKey.includes("interview preparation") ||
+    serviceKey.includes("visa coaching")
+  ) {
+    return {
+      eyebrow: "Interview & Visa Coaching",
+      headline:
+        "Professional Visa Interview Coaching – Helping You Prepare, Perform, and Present Your Case with Confidence.",
+      body:
+        "Practice your answers, understand your case, and prepare to explain your travel or visa purpose clearly.",
+    };
+  }
+
   if (!serviceKey.includes("document")) {
     return null;
   }
