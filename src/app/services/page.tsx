@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { getServiceData, type ServiceItem } from "@/lib/data";
 
-const MAX_DESCRIPTION_LENGTH = 110;
-
 function normalizeServiceKey(service: ServiceItem) {
   return service.serviceName
     .toLowerCase()
@@ -42,21 +40,6 @@ function formatPriceLabel(service: ServiceItem) {
   }
 
   return "Service price confirmed after review";
-}
-
-function getShortDescription(service: ServiceItem) {
-  const description = service.description?.trim() || "";
-
-  if (!description) return "Open to read the full service details.";
-
-  const plainText = description
-    .replace(/\*\*/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (plainText.length <= MAX_DESCRIPTION_LENGTH) return plainText;
-
-  return `${plainText.slice(0, MAX_DESCRIPTION_LENGTH).trimEnd()}...`;
 }
 
 export default async function ServicesPage() {
@@ -110,16 +93,14 @@ export default async function ServicesPage() {
                   {formatPriceLabel(service)}
                 </p>
 
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  {getShortDescription(service)}
-                </p>
-
-                <Link
-                  href={serviceHref}
-                  className="mt-auto inline-flex w-full justify-center rounded-2xl bg-[#0d6f73] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a585c]"
-                >
-                  Open
-                </Link>
+                <div className="mt-auto pt-6">
+                  <Link
+                    href={serviceHref}
+                    className="inline-flex w-full justify-center rounded-2xl bg-[#0d6f73] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a585c]"
+                  >
+                    Open
+                  </Link>
+                </div>
               </div>
             </article>
           );
