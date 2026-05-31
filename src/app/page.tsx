@@ -6,7 +6,7 @@ import {
   getHomeHeroSlide,
   getServiceData,
 } from "@/lib/data";
-import type { GalleryItem } from "@/lib/data";
+import type { GalleryItem, ServiceItem } from "@/lib/data";
 import { getReviewData } from "@/lib/reviews";
 import { PackageCard } from "@/components/package-card";
 import kwakuPortrait from "../../public/image.png";
@@ -25,6 +25,27 @@ function renderStars(rating: number) {
   return "★★★★★".slice(0, safeRating);
 }
 
+function normalizeServiceKey(service: ServiceItem) {
+  return service.serviceName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function removeDuplicateServices(services: ServiceItem[]) {
+  const seen = new Set<string>();
+
+  return services.filter((service) => {
+    const key = normalizeServiceKey(service);
+
+    if (!key) return true;
+    if (seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
+}
+
 export default async function HomePage() {
   const [services, gallery, posts, hero, reviews] = await Promise.all([
     getServiceData(),
@@ -33,7 +54,7 @@ export default async function HomePage() {
     getHomeHeroSlide(),
     getReviewData(6),
   ]);
-  const featuredServices = services.slice(0, 3);
+  const featuredServices = removeDuplicateServices(services).slice(0, 3);
   const galleryItems: GalleryItem[] = gallery;
   const latestPosts = posts.slice(0, 3);
   const heroMobileImageUrl = hero.mobileImageUrl || hero.imageUrl;
