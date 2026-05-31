@@ -38,6 +38,20 @@ function formatPriceLabel(service: ServiceItem) {
   return "Service price confirmed after review";
 }
 
+function getServiceTopMessage(service: ServiceItem) {
+  const serviceKey = `${service.serviceName} ${service.category || ""}`.toLowerCase();
+
+  if (!serviceKey.includes("document")) {
+    return null;
+  }
+
+  return {
+    eyebrow: "Document Review Support",
+    headline: "I review your documents. You submit with confidence.",
+    body: "A focused document check to help you catch mistakes, organize your file, and prepare a clearer submission before you continue.",
+  };
+}
+
 function cleanLine(line: string) {
   return line
     .replace(/\*\*/g, "")
@@ -182,6 +196,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
 
   const bookHref = `/book?serviceId=${encodeURIComponent(service.id)}&serviceName=${encodeURIComponent(service.serviceName)}`;
   const priceLabel = formatPriceLabel(service);
+  const topMessage = getServiceTopMessage(service);
 
   return (
     <main className="bg-[#fffdf8]">
@@ -204,6 +219,20 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           <p className="mt-5 inline-flex rounded-full border border-[#0d6f73]/20 bg-[#f8f4ea] px-4 py-2 text-sm font-black text-[#0d6f73]">
             {priceLabel}
           </p>
+
+          {topMessage ? (
+            <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[#0d6f73]/20 bg-gradient-to-br from-[#d8f2f1] via-white to-[#f8f4ea] p-5 shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#0d6f73]">
+                {topMessage.eyebrow}
+              </p>
+              <p className="mt-3 text-2xl font-black leading-snug text-[#0b2d4f] md:text-3xl">
+                “{topMessage.headline}”
+              </p>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+                {topMessage.body}
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
