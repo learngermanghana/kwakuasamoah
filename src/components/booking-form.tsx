@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { cleanBookingContact, validateBookingContact } from "@/lib/booking-validation";
 
 type ServiceOption = {
   id: string;
@@ -45,6 +46,7 @@ type BookingApiResponse = {
   requestId?: string;
   checkoutUrl?: string;
   authorizationUrl?: string;
+  fieldErrors?: Partial<Record<"customerName" | "customerEmail" | "customerPhone", string>>;
   checkout?: {
     checkoutUrl?: string;
     authorizationUrl?: string;
@@ -53,9 +55,6 @@ type BookingApiResponse = {
 };
 
 type ValidationErrors = Partial<Record<keyof FormState, string>>;
-
-const PHONE_PATTERN = /^[+0-9()\-\s]{7,20}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TIME_OPTIONS = Array.from({ length: 24 * 2 }, (_, index) => {
   const hours = Math.floor(index / 2);
@@ -124,13 +123,11 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
 
   function validate(nextState: FormState) {
     const nextErrors: ValidationErrors = {};
-    const hasEmail = Boolean(nextState.customerEmail.trim());
-    const hasPhone = Boolean(nextState.customerPhone.trim());
+    const contactErrors = validateBookingContact(nextState);
 
-    if (!nextState.customerName.trim()) nextErrors.customerName = "Please enter your full name.";
-    if (!hasEmail) nextErrors.customerEmail = "Please enter your email address.";
-    else if (!EMAIL_PATTERN.test(nextState.customerEmail)) nextErrors.customerEmail = "Enter a valid email address.";
-    if (hasPhone && !PHONE_PATTERN.test(nextState.customerPhone)) nextErrors.customerPhone = "Enter a valid phone or WhatsApp number.";
+    if (contactErrors.customerName) nextErrors.customerName = contactErrors.customerName;
+    if (contactErrors.customerEmail) nextErrors.customerEmail = contactErrors.customerEmail;
+    if (contactErrors.customerPhone) nextErrors.customerPhone = contactErrors.customerPhone;
     if (!nextState.serviceId) nextErrors.serviceId = "Please choose a service.";
     if (!nextState.bookingDate) nextErrors.bookingDate = "Please choose your preferred date.";
     else if (nextState.bookingDate < minimumDate) nextErrors.bookingDate = "Please choose a future date.";
@@ -149,10 +146,11 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
+    const contact = cleanBookingContact(formState);
     const payload = {
-      customerName: formState.customerName,
-      customerEmail: formState.customerEmail,
-      customerPhone: formState.customerPhone,
+      customerName: contact.customerName,
+      customerEmail: contact.customerEmail,
+      customerPhone: contact.customerPhone,
       serviceId: formState.serviceId,
       serviceName: selectedService?.name || formState.serviceName,
       paymentAmount: selectedPrice,
@@ -183,6 +181,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
       const data = (await response.json().catch(() => null)) as BookingApiResponse | null;
 
       if (!response.ok || !data?.ok) {
+        if (data?.fieldErrors) setErrors((previous) => ({ ...previous, ...data.fieldErrors }));
         const fallbackMessage = "We could not submit your booking right now. Please try again in a few minutes.";
         const serverMessage = data?.message || data?.error || fallbackMessage;
         const errorDetails = [data?.error ? `Code: ${data.error}` : "", data?.requestId ? `Request ID: ${data.requestId}` : ""]
@@ -251,11 +250,16 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             onChange={(event) => setFormState((previous) => ({ ...previous, customerName: event.target.value }))}
             className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
             autoComplete="name"
+            required
+            maxLength={80}
+            aria-invalid={Boolean(errors.customerName)}
+            aria-describedby={errors.customerName ? "customerName-error" : "customerName-help"}
           />
-          {errors.customerName ? <p className="text-sm text-red-700">{errors.customerName}</p> : null}
+          <p id="customerName-help" className="text-xs text-slate-500">Enter your first and last name as they should appear on the booking.</p>
+          {errors.customerName ? <p id="customerName-error" className="text-sm text-red-700">{errors.customerName}</p> : null}
         </div>
         <div className="space-y-1">
-          <label htmlFor="customerPhone" className="block text-sm font-medium text-zinc-900">Phone / WhatsApp</label>
+          <label htmlFor="customerPhone" className="block text-sm font-medium text-zinc-900">Phone / WhatsApp *</label>
           <input
             id="customerPhone"
             name="customerPhone"
@@ -263,13 +267,19 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             onChange={(event) => setFormState((previous) => ({ ...previous, customerPhone: event.target.value }))}
             className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
             autoComplete="tel"
+            inputMode="tel"
+            required
+            maxLength={24}
+            aria-invalid={Boolean(errors.customerPhone)}
+            aria-describedby={errors.customerPhone ? "customerPhone-error" : "customerPhone-help"}
           />
-          {errors.customerPhone ? <p className="text-sm text-red-700">{errors.customerPhone}</p> : null}
+          <p id="customerPhone-help" className="text-xs text-slate-500">Include the country code if this is an international number.</p>
+          {errors.customerPhone ? <p id="customerPhone-error" className="text-sm text-red-700">{errors.customerPhone}</p> : null}
         </div>
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="customerEmail" className="block text-sm font-medium text-zinc-900">Email address</label>
+        <label htmlFor="customerEmail" className="block text-sm font-medium text-zinc-900">Email address *</label>
         <input
           id="customerEmail"
           name="customerEmail"
@@ -278,8 +288,13 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           onChange={(event) => setFormState((previous) => ({ ...previous, customerEmail: event.target.value }))}
           className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
           autoComplete="email"
+          inputMode="email"
+          required
+          maxLength={254}
+          aria-invalid={Boolean(errors.customerEmail)}
+          aria-describedby={errors.customerEmail ? "customerEmail-error" : undefined}
         />
-        {errors.customerEmail ? <p className="text-sm text-red-700">{errors.customerEmail}</p> : null}
+        {errors.customerEmail ? <p id="customerEmail-error" className="text-sm text-red-700">{errors.customerEmail}</p> : null}
       </div>
 
       <div className="space-y-1">

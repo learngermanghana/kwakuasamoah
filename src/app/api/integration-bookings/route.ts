@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cleanBookingContact, validateBookingContact } from "@/lib/booking-validation";
 
 type BookingPayload = {
   serviceId?: string;
@@ -186,6 +187,27 @@ async function resolveServiceAmount(config: SedifexConfig, serviceId: string, se
 }
 
 export async function POST(req: Request) {
+  const requestBody = asRecord(await req.json().catch(() => ({})));
+  const booking = requestBody as BookingPayload;
+
+  if (cleanString(booking.website)) {
+    return NextResponse.json({ ok: false, error: "invalid-request", message: "Booking could not be created." }, { status: 400 });
+  }
+
+  const contact = cleanBookingContact(booking);
+  const contactErrors = validateBookingContact(contact);
+  const fieldErrors = Object.fromEntries(Object.entries(contactErrors).filter((entry) => Boolean(entry[1])));
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return NextResponse.json(
+      { ok: false, error: "invalid-contact-data", message: "Please correct your contact details before checkout.", fieldErrors },
+      { status: 400 }
+    );
+  }
+
+  const customerName = contact.customerName;
+  const customerEmail = contact.customerEmail;
+  const customerPhone = contact.customerPhone;
   const config = getSedifexConfig();
 
   if (!config.apiKey || !config.storeId) {
@@ -194,17 +216,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-
-  const requestBody = asRecord(await req.json().catch(() => ({})));
-  const booking = requestBody as BookingPayload;
-
-  if (cleanString(booking.website)) {
-    return NextResponse.json({ ok: false, error: "invalid-request", message: "Booking could not be created." }, { status: 400 });
-  }
-
-  const customerName = cleanOptionalString(booking.customerName);
-  const customerEmail = cleanOptionalString(booking.customerEmail);
-  const customerPhone = cleanOptionalString(booking.customerPhone);
   const rawServiceId = cleanOptionalString(booking.serviceId);
   const serviceId = normalizeServiceId(rawServiceId);
   const serviceName = cleanOptionalString(booking.serviceName) || "Service booking";
@@ -212,8 +223,6 @@ export async function POST(req: Request) {
   const bookingTime = cleanOptionalString(booking.bookingTime);
   const paymentMethod = cleanOptionalString(booking.paymentMethod) || "paystack";
 
-  if (!customerName) return NextResponse.json({ ok: false, error: "missing-customer-name", message: "Customer name is required." }, { status: 400 });
-  if (!customerEmail) return NextResponse.json({ ok: false, error: "missing-customer-email", message: "Customer email is required for checkout." }, { status: 400 });
   if (!serviceId) return NextResponse.json({ ok: false, error: "missing-service", message: "Service is required." }, { status: 400 });
   if (!bookingDate) return NextResponse.json({ ok: false, error: "missing-booking-date", message: "Booking date is required." }, { status: 400 });
   if (!bookingTime) return NextResponse.json({ ok: false, error: "missing-booking-time", message: "Booking time is required." }, { status: 400 });
