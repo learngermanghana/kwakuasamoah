@@ -62,9 +62,13 @@ export async function Footer() {
 
   const footerLinks = [
     { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
     { name: "Services", path: "/services" },
+    { name: "Countries", path: "/countries" },
     { name: "Book Now", path: "/book" },
     { name: "Blog Updates", path: "/blog" },
+    { name: "Resources", path: "/resources" },
+    { name: "FAQ", path: "/faq" },
     { name: "Contact Us", path: "/contact" },
   ];
 

@@ -5,16 +5,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
 
-const nav = [
-  { href: "/", label: "Home" },
-  { href: "/services", label: "Services" },
-  { href: "/book", label: "Book Now" },
-  { href: "/blog", label: "Blog" },
-  { href: "/contact", label: "Contact" }
-];
+const ChevronIcon = ({ className = "w-4 h-4" }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+  </svg>
+);
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const mainNav = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/services", label: "Services" },
+    { href: "/book", label: "Book Now" },
+    { href: "/contact", label: "Contact" }
+  ];
+
+  const submenuNav = [
+    { href: "/countries", label: "Countries Visited" },
+    { href: "/resources", label: "Travel Resources" },
+    { href: "/faq", label: "FAQ Guides" },
+    { href: "/blog", label: "Blog Updates" }
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-npontu-green/10 bg-[#F4F7F5]/90 backdrop-blur-md shadow-sm">
@@ -35,8 +49,8 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-8 md:flex">
-          {nav.map((item) => (
+        <nav className="hidden items-center gap-6 md:flex">
+          {mainNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -45,6 +59,36 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+
+          {/* Submenu Dropdown */}
+          <div 
+            className="relative"
+            onMouseEnter={() => setIsDropdownOpen(true)}
+            onMouseLeave={() => setIsDropdownOpen(false)}
+          >
+            <button
+              className="flex items-center gap-1 text-sm font-bold text-slate-700 hover:text-npontu-green transition duration-150 pb-1 focus:outline-none cursor-pointer"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span>Relocation Info</span>
+              <ChevronIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${isDropdownOpen ? "rotate-180 text-npontu-green" : ""}`} />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute top-[100%] right-0 mt-1 w-52 rounded-xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+                {submenuNav.map((subItem) => (
+                  <Link
+                    key={subItem.href}
+                    href={subItem.href}
+                    className="block rounded-lg px-4 py-2 text-sm font-bold text-slate-700 hover:bg-[#F4F7F5] hover:text-npontu-green transition"
+                  >
+                    {subItem.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
         </nav>
 
         {/* Mobile Hamburger Button */}
@@ -62,11 +106,11 @@ export function Header() {
       {/* Mobile Drawer */}
       <div
         className={`md:hidden absolute top-[100%] left-0 w-full bg-white border-b border-slate-200 shadow-xl overflow-hidden transition-all duration-300 ease-in-out z-50 ${
-          isOpen ? "max-h-[300px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+          isOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
         }`}
       >
-        <nav className="flex flex-col p-4 space-y-3">
-          {nav.map((item) => (
+        <nav className="flex flex-col p-4 space-y-2">
+          {mainNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -76,6 +120,23 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+
+          {/* Mobile Submenu Headers */}
+          <div className="border-t border-slate-100 pt-2 mt-2">
+            <span className="block px-4 py-1 text-xs font-bold uppercase tracking-wider text-slate-400">Relocation Info</span>
+            {submenuNav.map((subItem) => (
+              <Link
+                key={subItem.href}
+                href={subItem.href}
+                onClick={() => setIsOpen(false)}
+                className="block rounded-lg px-6 py-2 text-sm font-bold text-slate-600 hover:bg-[#F4F7F5] hover:text-npontu-green transition"
+              >
+                {subItem.label}
+              </Link>
+            ))}
+          </div>
+
+
         </nav>
       </div>
     </header>
