@@ -72,9 +72,9 @@ export default async function HomePage() {
           {/* Hero Left Content */}
           <div className="flex-1 space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-npontu-gold/30 bg-[#0B2117] px-4 py-1.5 text-xs font-bold text-npontu-gold tracking-wide uppercase">
-              ✨ {hero.eyebrow}
+              {hero.eyebrow}
             </div>
-            
+
             <h1 className="text-4xl font-extrabold leading-tight md:text-6xl tracking-tight">
               <span className="bg-gradient-to-r from-white via-slate-100 to-npontu-gold bg-clip-text text-transparent block">
                 {hero.title.split(" ").slice(0, -1).join(" ")}
@@ -110,7 +110,7 @@ export default async function HomePage() {
                 data-cal-modal
                 className="rounded-xl bg-[#F3BA00] hover:bg-[#E8A500] text-black px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200 cursor-pointer"
               >
-               Book Now
+                Book Now
               </a>
             </div>
           </div>
@@ -176,16 +176,16 @@ export default async function HomePage() {
             </p>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-emerald-100/80 font-semibold">
               <li className="flex items-center gap-2">
-                <span className="text-[#F3BA00]">✔</span> Tailored Document Checklists
+                <span className="text-[#F3BA00]">-</span> Tailored Document Checklists
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-[#F3BA00]">✔</span> Real Relocation Insights
+                <span className="text-[#F3BA00]">-</span> Real Relocation Insights
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-[#F3BA00]">✔</span> Visa Interview Preparation
+                <span className="text-[#F3BA00]">-</span> Visa Interview Preparation
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-[#F3BA00]">✔</span> One-on-One Action Plans
+                <span className="text-[#F3BA00]">-</span> One-on-One Action Plans
               </li>
             </ul>
           </div>
