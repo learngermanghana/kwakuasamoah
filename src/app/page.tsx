@@ -174,7 +174,7 @@ export default async function HomePage() {
           <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">Featured Travel Expeditions</h2>
           <p className="text-slate-500 text-sm mt-1">Explore real flight bookings, study guides, and visa packages dynamically.</p>
         </div>
-        <TravelCarousel />
+        <TravelCarousel slides={galleryItems} />
       </section>
 
       {/* Redesigned Featured Services Section */}
