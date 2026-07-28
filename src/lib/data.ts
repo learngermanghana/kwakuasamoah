@@ -2,11 +2,29 @@ import "server-only";
 import { siteConfig } from "./site-config";
 import { packages } from "@/data/packages";
 import { normalizeIntegrationGallery } from "./gallery-utils";
+import { readDB } from "./db-client";
 
 const SEDIFEX_CONTRACT_VERSION =
   process.env.SEDIFEX_CONTRACT_VERSION || "2026-04-13";
 
 export async function getPackageData() {
+  try {
+    const db = readDB();
+    if (db.packages && db.packages.length > 0) {
+      return db.packages.map(pkg => ({
+        slug: pkg.id,
+        title: pkg.serviceName,
+        destination: pkg.category || "",
+        durationDays: pkg.durationDays || 30,
+        priceFrom: pkg.priceLabel || `GHS ${pkg.price || 0}`,
+        summary: pkg.description || "",
+        includes: pkg.includes ? pkg.includes.split(",").map(i => i.trim()) : [],
+        image: pkg.image
+      }));
+    }
+  } catch (e) {
+    console.error("getPackageData DB load failed, falling back to static packages", e);
+  }
   return packages;
 }
 
@@ -577,190 +595,91 @@ export async function getHomeHeroSlide() {
 }
 
 export async function getSocialSettings() {
-  const { baseUrl, apiKey, storeId } = getSedifexConfig();
-
-  if (!baseUrl || !storeId) {
-    return defaultSocialSettings;
-  }
-
-  const endpoint = new URL("/v1IntegrationSocialSettings", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
-
   try {
-    const response = await fetch(endpoint, {
-      headers: getSedifexIntegrationHeaders(apiKey),
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      return defaultSocialSettings;
+    const db = readDB();
+    if (db.settings) {
+      return {
+        displayName: db.settings.displayName || defaultSocialSettings.displayName,
+        tagline: db.settings.tagline || defaultSocialSettings.tagline,
+        businessDescription: db.settings.businessDescription || defaultSocialSettings.businessDescription,
+        publicPhone: db.settings.publicPhone || defaultSocialSettings.publicPhone,
+        whatsappNumber: db.settings.whatsappNumber || defaultSocialSettings.whatsappNumber,
+        publicEmail: db.settings.publicEmail || defaultSocialSettings.publicEmail,
+        website: db.settings.website || defaultSocialSettings.website,
+        instagram: db.settings.instagram || defaultSocialSettings.instagram,
+        facebook: db.settings.facebook || defaultSocialSettings.facebook,
+        tiktok: db.settings.tiktok || defaultSocialSettings.tiktok,
+        youtube: db.settings.youtube || defaultSocialSettings.youtube,
+        x: db.settings.x || defaultSocialSettings.x,
+        linkedin: db.settings.linkedin || defaultSocialSettings.linkedin,
+      };
     }
-
-    const payload = (await response.json()) as SedifexSocialSettingsResponse;
-    return mapSedifexSocialSettings(getSocialSettingsPayload(payload));
-  } catch {
-    return defaultSocialSettings;
+  } catch (e) {
+    console.error("Failed to load settings from DB", e);
   }
+  return defaultSocialSettings;
 }
 
 export async function getServiceData() {
-  const { baseUrl, apiKey, storeId } = getSedifexConfig();
-
-  if (!baseUrl || !storeId) {
-    return defaultServices;
-  }
-
-  const fetchIntegrationProducts = async () => {
-    if (!apiKey) return [] as SedifexItem[];
-
-    const endpoint = new URL("/v1IntegrationProducts", baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
-
-    const response = await fetch(endpoint, {
-      headers: getSedifexIntegrationHeaders(apiKey),
-      next: { revalidate: 30 },
-    });
-
-    if (!response.ok) {
-      return [] as SedifexItem[];
-    }
-
-    const payload = (await response.json()) as SedifexProductsResponse;
-    return payload.publicServices?.length
-      ? payload.publicServices
-      : (payload.products || []).filter(isServiceItem);
-  };
-
-  const fetchPublicCatalog = async () => {
-    const endpoint = new URL("/publicQuickPayCatalog", baseUrl);
-    endpoint.searchParams.set("storeId", storeId);
-
-    const response = await fetch(endpoint, {
-      headers: { Accept: "application/json" },
-      next: { revalidate: 30 },
-    });
-
-    if (!response.ok) {
-      return [] as SedifexItem[];
-    }
-
-    const payload = (await response.json()) as SedifexCatalogResponse;
-    return (payload.items || []).filter(isServiceItem);
-  };
-
   try {
-    const integrationItems = await fetchIntegrationProducts();
-    const items = integrationItems.length
-      ? integrationItems
-      : await fetchPublicCatalog();
-
-    if (!items.length) {
-      return defaultServices;
+    const db = readDB();
+    if (db.packages && db.packages.length > 0) {
+      return db.packages.map((pkg) => ({
+        id: pkg.id,
+        serviceName: pkg.serviceName,
+        category: pkg.category,
+        description: pkg.description || "",
+        priceLabel: pkg.priceLabel || `GHS ${pkg.price || 0}`,
+        price: pkg.price,
+        image: pkg.image,
+        imageAlt: pkg.imageAlt || pkg.serviceName,
+      }));
     }
-
-    return sortSedifexServices(items).map(mapSedifexItem);
-  } catch {
-    return defaultServices;
+  } catch (e) {
+    console.error("Failed to load packages from DB", e);
   }
+  return defaultServices;
 }
 
 export async function getGalleryData(limit = 8): Promise<GalleryItem[]> {
-  const { baseUrl, apiKey, storeId } = getSedifexConfig();
-
-  if (!baseUrl || !storeId) {
-    return defaultGallery.slice(0, limit);
-  }
-
-  const endpoint = new URL("/integrationGallery", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
-  endpoint.searchParams.set("limit", String(limit));
-
   try {
-    const response = await fetch(endpoint, {
-      headers: getSedifexIntegrationHeaders(apiKey),
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      return defaultGallery.slice(0, limit);
+    const db = readDB();
+    if (db.gallery && db.gallery.length > 0) {
+      return db.gallery.slice(0, limit).map((photo) => ({
+        id: photo.id,
+        url: photo.url,
+        alt: photo.alt,
+        caption: photo.caption,
+      }));
     }
-
-    const payload = (await response.json()) as SedifexGalleryResponse;
-    const galleryItems = normalizeIntegrationGallery(payload, limit) as GalleryItem[];
-
-    if (!galleryItems.length) {
-      return defaultGallery.slice(0, limit);
-    }
-
-    return galleryItems;
-  } catch {
-    return defaultGallery.slice(0, limit);
+  } catch (e) {
+    console.error("Failed to load gallery from DB", e);
   }
-}
-
-type SedifexBlogItem = {
-  id: string;
-  title?: string;
-  slug?: string;
-  content?: string;
-  linkUrl?: string;
-  imageUrl?: string;
-  publishedAt?: string;
-};
-
-type SedifexBlogResponse = {
-  items?: SedifexBlogItem[];
-};
-
-function getSedifexBlogConfig() {
-  const baseUrl =
-    process.env.SEDIFEX_SITE_BASE_URL ?? "https://www.sedifex.com";
-  const storeId = process.env.SEDIFEX_STORE_ID;
-
-  return { baseUrl, storeId };
-}
-
-function mapSedifexBlogItem(item: SedifexBlogItem): BlogPost {
-  return {
-    id: item.id,
-    title: item.title ?? "Untitled post",
-    slug: item.slug ?? item.id,
-    content: item.content ?? "",
-    linkUrl: item.linkUrl ?? "",
-    imageUrl: item.imageUrl ?? "",
-    publishedAt: item.publishedAt ?? "",
-  };
+  return defaultGallery.slice(0, limit);
 }
 
 export async function getBlogPosts(slug?: string) {
-  const { baseUrl, storeId } = getSedifexBlogConfig();
-
-  if (!storeId) {
-    return [] as BlogPost[];
-  }
-
-  const endpoint = new URL("/api/public-blog", baseUrl);
-  endpoint.searchParams.set("storeId", storeId);
-  if (slug) {
-    endpoint.searchParams.set("slug", slug);
-  }
-
   try {
-    const response = await fetch(endpoint, {
-      next: { revalidate: 60 },
-      headers: { Accept: "application/json" },
-    });
-
-    if (!response.ok) {
-      return [] as BlogPost[];
+    const db = readDB();
+    if (db.blogs && db.blogs.length > 0) {
+      const posts = db.blogs.map((blog) => ({
+        id: blog.id,
+        title: blog.title,
+        slug: blog.slug,
+        content: blog.content,
+        linkUrl: `/blog/${blog.slug}`,
+        imageUrl: blog.imageUrl,
+        publishedAt: blog.publishedAt,
+      }));
+      if (slug) {
+        return posts.filter((post) => post.slug === slug);
+      }
+      return posts;
     }
-
-    const payload = (await response.json()) as SedifexBlogResponse;
-    const items = Array.isArray(payload.items) ? payload.items : [];
-    return items.filter((item) => Boolean(item.id)).map(mapSedifexBlogItem);
-  } catch {
-    return [] as BlogPost[];
+  } catch (e) {
+    console.error("Failed to load blogs from DB", e);
   }
+  return [] as BlogPost[];
 }
 
 export type YouTubeVideo = {

@@ -1,11 +1,12 @@
 export const siteConfig = {
   name: "Kwaku Lotteryy",
-  tagline: "Turning travel dreams into reality. ",
+  tagline: "Turning travel dreams into reality.",
   description: "Travel guidance and relocation support worldwide.",
   url: "https://www.kwakulotteryy.com",
   phone: "+44 7424 047530",
   whatsapp: "447424047530",
-  email: "kwakulotteryy@gmail.com",
+  email: "hello@kwakulotteryy.com",
+  bookingsEmail: "bookings@kwakulotteryy.com",
   socials: {
     tiktok: "https://www.tiktok.com/@kwakulotteryy/video/7628683868836564244",
     instagram: "https://www.instagram.com/kwakulotteryy",
@@ -15,3 +16,4 @@ export const siteConfig = {
     linkedin: "",
   },
 };
+

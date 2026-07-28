@@ -1,8 +1,20 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
+
+@theme {
+  --color-npontu-green: #1B6B3A;
+  --color-npontu-green-light: #2A8F52;
+  --color-npontu-green-dark: #12492A;
+  --color-npontu-gold: #F5C518;
+  --color-npontu-gold-warm: #E8A500;
+  --color-npontu-danger: #E63946;
+  --color-npontu-surface-dark: #0F1A14;
+  --color-npontu-surface-mid: #1A2E22;
+  --color-npontu-surface-light: #F4F7F5;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #0f172a;
+  --background: #F4F7F5;
+  --foreground: #0F1A14;
 }
 
 html {
@@ -12,6 +24,18 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+.developer-grid {
+  background-image: linear-gradient(rgba(27, 107, 58, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(27, 107, 58, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.developer-grid-dark {
+  background-image: linear-gradient(rgba(245, 197, 24, 0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(245, 197, 24, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
 }
 
 ::selection {
