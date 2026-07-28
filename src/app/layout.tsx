@@ -5,6 +5,7 @@ import { Footer } from "@/components/footer";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { MailingListCta } from "@/components/mailing-list-cta";
 import { siteConfig } from "@/lib/site-config";
+import { CalBookingProvider } from "@/components/cal-booking-provider";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -56,11 +57,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body className="bg-[#fffdf8] text-slate-900 antialiased">
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <WhatsAppFloat />
-        <MailingListCta />
+        <CalBookingProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <WhatsAppFloat />
+          <MailingListCta />
+        </CalBookingProvider>
       </body>
     </html>
   );

@@ -20,6 +20,11 @@ export type DBData = {
     x: string;
     linkedin: string;
     calLink: string;
+    footerImages?: Array<{
+      url: string;
+      overlay: string;
+      link: string;
+    }>;
   };
   packages: Array<{
     id: string;
@@ -82,7 +87,29 @@ export function readDB(): DBData {
           youtube: "https://youtube.com/@kwakulotteryy?si=AXD7lXvl7XBvGjvB",
           x: "https://x.com/kwakulotteryy",
           linkedin: "",
-          calLink: "https://cal.com/kwakulotteryy"
+          calLink: "https://cal.com/kwakulotteryy",
+          footerImages: [
+            {
+              url: "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1200&auto=format&fit=crop",
+              overlay: "facebook",
+              link: "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+              overlay: "instagram",
+              link: "https://www.instagram.com/kwakulotteryy"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=1200&auto=format&fit=crop",
+              overlay: "tiktok",
+              link: "https://www.tiktok.com/@kwakulotteryy"
+            },
+            {
+              url: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1200&auto=format&fit=crop",
+              overlay: "youtube",
+              link: "https://youtube.com/@kwakulotteryy"
+            }
+          ]
         },
         packages: [],
         blogs: [],

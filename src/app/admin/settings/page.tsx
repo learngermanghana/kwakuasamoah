@@ -18,6 +18,11 @@ type Settings = {
   x: string;
   linkedin: string;
   calLink: string;
+  footerImages?: Array<{
+    url: string;
+    overlay: string;
+    link: string;
+  }>;
 };
 
 export default function SettingsManager() {
@@ -197,6 +202,63 @@ export default function SettingsManager() {
                 className="mt-1 w-full px-3 py-2 border rounded-lg outline-none focus:border-[#1B6B3A]"
               />
             </div>
+
+            <div className="col-span-2 border-b pb-2 pt-2">
+              <h3 className="font-bold text-[#1B6B3A] text-sm">Footer Images Configuration</h3>
+              <p className="text-xs text-slate-500 mt-1">Configure the 4 image cards shown in the footer, their overlays and destination URLs</p>
+            </div>
+            {[0, 1, 2, 3].map((idx) => {
+              const img = (settings.footerImages && settings.footerImages[idx]) || { url: "", overlay: "instagram", link: "" };
+              const updateImg = (field: "url" | "overlay" | "link", val: string) => {
+                const newImgs = [...(settings.footerImages || [])];
+                while (newImgs.length <= idx) {
+                  newImgs.push({ url: "", overlay: "instagram", link: "" });
+                }
+                newImgs[idx] = { ...newImgs[idx], [field]: val };
+                setSettings({ ...settings, footerImages: newImgs });
+              };
+
+              return (
+                <div key={idx} className="col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                  <div className="col-span-3 font-semibold text-xs text-[#1B6B3A]">Image Card #{idx + 1}</div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500">Image URL</label>
+                    <input
+                      type="text"
+                      value={img.url}
+                      onChange={(e) => updateImg("url", e.target.value)}
+                      placeholder="https://..."
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-white outline-none focus:border-[#1B6B3A] text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500">Social Overlay Type</label>
+                    <select
+                      value={img.overlay}
+                      onChange={(e) => updateImg("overlay", e.target.value)}
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-white outline-none focus:border-[#1B6B3A] text-sm"
+                    >
+                      <option value="instagram">Instagram</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="tiktok">TikTok</option>
+                      <option value="youtube">YouTube</option>
+                      <option value="x">X / Twitter</option>
+                      <option value="linkedin">LinkedIn</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500">Link URL</label>
+                    <input
+                      type="text"
+                      value={img.link}
+                      onChange={(e) => updateImg("link", e.target.value)}
+                      placeholder="https://..."
+                      className="mt-1 w-full px-3 py-2 border rounded-lg bg-white outline-none focus:border-[#1B6B3A] text-sm"
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="flex justify-end pt-4 border-t">

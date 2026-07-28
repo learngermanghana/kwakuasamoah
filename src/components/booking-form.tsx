@@ -419,12 +419,11 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           {isSubmitting ? "Saving booking..." : "Submit booking request"}
         </button>
         <a
-          href="https://cal.com/kwakulotteryy"
-          target="_blank"
-          rel="noreferrer"
-          className="flex-1 rounded-2xl border-2 border-npontu-green hover:bg-npontu-green/5 text-npontu-green px-6 py-3.5 font-semibold text-center transition shadow-sm"
+          href="https://cal.com/kwakulotteryy/15min"
+          data-cal-modal
+          className="flex-1 rounded-2xl border-2 border-npontu-green hover:bg-npontu-green/5 text-npontu-green px-6 py-3.5 font-semibold text-center transition shadow-sm cursor-pointer"
         >
-          📅 Schedule via Cal.com
+          📅 Book Now
         </a>
       </div>
     </form>

@@ -106,12 +106,11 @@ export default async function HomePage() {
                 </Link>
               ) : null}
               <a
-                href="https://cal.com/kwakulotteryy"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl bg-npontu-gold hover:bg-npontu-gold-warm text-npontu-surface-dark px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200"
+                href="https://cal.com/kwakulotteryy/15min"
+                data-cal-modal
+                className="rounded-xl bg-npontu-gold hover:bg-npontu-gold-warm text-npontu-surface-dark px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200 cursor-pointer"
               >
-                📅 Book via Cal.com
+                📅 Book Now
               </a>
             </div>
           </div>
