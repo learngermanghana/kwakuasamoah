@@ -100,47 +100,85 @@ const getCountryId = (country: string) =>
 export default function CountriesPage() {
   return (
     <div>
-      <section className="bg-[#0b2d4f]">
-        <div className="mx-auto max-w-6xl px-4 py-16 text-white md:py-20">
-          <p className="inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">Countries Visa Guide</p>
-          <h1 className="mt-4 text-4xl font-bold leading-tight md:text-5xl">Visa Preparation by Country: Expanded Guide</h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-[#f4f1e6]">This expanded page groups visa preparation under key destinations: USA, Germany, Canada, United Kingdom, Netherlands, Spain, Italy, and Australia. Use each country block as a practical checklist before submission.</p>
+      {/* Dark Grid Hero */}
+      <section className="relative overflow-hidden bg-[#0B1510] border-b border-emerald-950/40 developer-grid-dark py-16 md:py-20 text-white">
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-npontu-green/10 blur-[100px] pointer-events-none" />
+        <div className="relative mx-auto max-w-6xl px-4 space-y-4">
+          <span className="inline-flex rounded-full bg-npontu-green/20 border border-npontu-gold/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-npontu-gold">
+            Countries Visa Guide
+          </span>
+          <h1 className="text-4xl font-extrabold leading-tight md:text-5xl tracking-tight">
+            Visa Preparation by Country: Expanded Guide
+          </h1>
+          <p className="max-w-3xl text-base text-emerald-100/75 leading-relaxed">
+            This expanded page groups visa preparation under key destinations: USA, Germany, Canada, United Kingdom, Netherlands, Spain, Italy, and Australia. Use each country block as a practical checklist before submission.
+          </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-[#0b2d4f]">Countries covered</h2>
-        <ul className="mt-4 grid gap-3 text-slate-700 md:grid-cols-2">
+      {/* Selector Section */}
+      <section className="mx-auto max-w-6xl px-4 py-12 developer-grid">
+        <h2 className="text-xl font-bold text-slate-800">Countries Covered</h2>
+        <div className="h-0.5 w-10 bg-npontu-gold mt-2 mb-4 rounded-full" />
+        <ul className="grid gap-4 text-slate-700 sm:grid-cols-2 md:grid-cols-4">
           {guides.map((guide) => (
-            <li key={guide.country} className="rounded-xl border bg-white px-4 py-3 shadow-sm">
-              <a href={`#${getCountryId(guide.country)}`} className="font-medium text-[#0d6f73] hover:underline">
-                {guide.country}
+            <li key={guide.country} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:shadow transition duration-150">
+              <a href={`#${getCountryId(guide.country)}`} className="font-bold text-npontu-green hover:text-npontu-green-light transition">
+                🌍 {guide.country}
               </a>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 pb-16">
+      {/* Guide Cards */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 space-y-12">
         {guides.map((guide) => (
-          <article id={getCountryId(guide.country)} key={guide.country} className="mb-8 scroll-mt-24 rounded-2xl border bg-white p-6 shadow-sm">
-            <h2 className="text-2xl font-bold text-[#0b2d4f]">{guide.country}</h2>
-            <p className="mt-2 text-slate-700"><strong>Visa type:</strong> {guide.visaType}</p>
-            <p className="mt-3 rounded-xl bg-slate-50 p-4 text-slate-700">{guide.writeUp}</p>
-            <div className="mt-4 grid gap-6 md:grid-cols-2">
-              <div><h3 className="text-lg font-semibold text-[#0d6f73]">Who needs this visa?</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-600">{guide.whoNeedsIt.map((item) => <li key={item}>{item}</li>)}</ul></div>
-              <div><h3 className="text-lg font-semibold text-[#0d6f73]">Step-by-step application guide</h3><ol className="mt-2 list-decimal space-y-2 pl-5 text-sm text-slate-600">{guide.steps.map((item) => <li key={item}>{item}</li>)}</ol></div>
-              <div><h3 className="text-lg font-semibold text-[#0d6f73]">Required documents</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-600">{guide.documents.map((item) => <li key={item}>{item}</li>)}</ul></div>
-              <div><h3 className="text-lg font-semibold text-[#0d6f73]">Processing times and fees</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-600">{guide.processingAndFees.map((item) => <li key={item}>{item}</li>)}</ul></div>
+          <article id={getCountryId(guide.country)} key={guide.country} className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <div className="border-b border-slate-100 pb-4 mb-6">
+              <h2 className="text-3xl font-extrabold text-npontu-green">{guide.country}</h2>
+              <p className="text-sm text-slate-500 mt-1"><strong>Visa Type:</strong> {guide.visaType}</p>
             </div>
-            <div className="mt-5 rounded-xl bg-[#f8f4ea] p-4"><h3 className="font-semibold text-[#0b2d4f]">Tips for a successful application</h3><ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-700">{guide.tips.map((tip) => <li key={tip}>{tip}</li>)}</ul></div>
+            
+            <p className="rounded-xl bg-npontu-surface-light/60 border border-slate-100 p-5 text-slate-600 leading-relaxed text-sm mb-6">{guide.writeUp}</p>
+            
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-npontu-green">Who Needs This Visa?</h3>
+                <ul className="list-disc space-y-1.5 pl-5 text-sm text-slate-600">{guide.whoNeedsIt.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-npontu-green">Step-by-Step Application Guide</h3>
+                <ol className="list-decimal space-y-1.5 pl-5 text-sm text-slate-600">{guide.steps.map((item) => <li key={item}>{item}</li>)}</ol>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-npontu-green">Required Documents</h3>
+                <ul className="list-disc space-y-1.5 pl-5 text-sm text-slate-600">{guide.documents.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-base font-bold text-npontu-green">Processing Times and Fees</h3>
+                <ul className="list-disc space-y-1.5 pl-5 text-sm text-slate-600">{guide.processingAndFees.map((item) => <li key={item}>{item}</li>)}</ul>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-xl bg-npontu-green/5 border border-npontu-green/10 p-5">
+              <h3 className="font-bold text-npontu-green text-sm">💡 Tips for a Successful Application</h3>
+              <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-slate-600">{guide.tips.map((tip) => <li key={tip}>{tip}</li>)}</ul>
+            </div>
           </article>
         ))}
 
-        <div className="rounded-2xl bg-[#0d6f73] p-8 text-white">
-          <h2 className="text-2xl font-bold">Conclusion</h2>
-          <p className="mt-3 max-w-3xl leading-7 text-[#e9fffe]">You now have an expanded country-based template you can adapt quickly for your own application plan. Before final submission, always confirm the newest embassy/immigration checklist for your nationality.</p>
-          <Link href="/contact" className="mt-6 inline-block rounded-xl bg-white px-5 py-3 font-semibold text-[#0d6f73]">Get personalized visa support</Link>
+        {/* Conclusion Callout */}
+        <div className="rounded-2xl bg-[#0B1510] border border-emerald-950 developer-grid-dark p-8 md:p-12 text-white text-center space-y-4">
+          <h2 className="text-2xl font-bold text-[#F5C518]">Start Your Relocation Checklist</h2>
+          <p className="max-w-2xl mx-auto leading-relaxed text-sm text-emerald-100/75">
+            You now have an expanded country-based template you can adapt quickly for your own application plan. Before final submission, always confirm the newest embassy/immigration checklist.
+          </p>
+          <div className="pt-2">
+            <Link href="/contact" className="inline-block rounded-xl bg-npontu-green hover:bg-npontu-green-light px-8 py-3.5 font-bold text-white transition shadow duration-150">
+              Get Personalized Visa Support
+            </Link>
+          </div>
         </div>
       </section>
     </div>

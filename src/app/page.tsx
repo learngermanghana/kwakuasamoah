@@ -9,6 +9,7 @@ import {
 import type { GalleryItem, ServiceItem } from "@/lib/data";
 import { getReviewData } from "@/lib/reviews";
 import { PackageCard } from "@/components/package-card";
+import { TravelCarousel } from "@/components/travel-carousel";
 import kwakuPortrait from "../../public/image.png";
 
 function getExcerpt(html: string, maxLength = 140) {
@@ -103,6 +104,14 @@ export default async function HomePage() {
                   {hero.secondaryCtaLabel}
                 </Link>
               ) : null}
+              <a
+                href="https://cal.com/kwakulotteryy"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-xl bg-npontu-gold hover:bg-npontu-gold-warm text-npontu-surface-dark px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200"
+              >
+                📅 Book via Cal.com
+              </a>
             </div>
           </div>
 
@@ -155,6 +164,16 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Interactive Sliding Destination Showcase */}
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="mb-8">
+          <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Interactive Showpiece</span>
+          <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">Featured Travel Expeditions</h2>
+          <p className="text-slate-500 text-sm mt-1">Explore real flight bookings, study guides, and visa packages dynamically.</p>
+        </div>
+        <TravelCarousel />
       </section>
 
       {/* Redesigned Featured Services Section */}

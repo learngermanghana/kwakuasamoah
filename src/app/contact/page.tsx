@@ -1,22 +1,8 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
-
-type ContactMethod = {
-  label: string;
-  value: string;
-  href: string;
-  helper: string;
-  external?: boolean;
-};
-
-const contactMethods: ContactMethod[] = [
-  {
-    label: "Email",
-    value: siteConfig.email,
-    href: `mailto:${siteConfig.email}`,
-    helper: "Best for detailed questions about consultation and relocation support."
-  }
-];
 
 const socialLinks = [
   { label: "TikTok", href: siteConfig.socials.tiktok },
@@ -27,114 +13,165 @@ const socialLinks = [
 ];
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const res = await fetch("/api/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setSuccess(true);
+        setFormData({ name: "", email: "", phone: "", message: "" });
+      } else {
+        setError(data.error || "Failed to submit inquiry.");
+      }
+    } catch (err) {
+      setError("A connection error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div>
-      <section className="bg-[#0b2d4f]">
-        <div className="mx-auto max-w-5xl px-4 py-16 md:py-20">
-          <p className="inline-block rounded-full border border-[#89d5d2]/40 bg-[#0d6f73]/40 px-3 py-1 text-sm font-semibold text-[#d9f7f5]">
-            Contact Kwaku
-          </p>
-          <h1 className="mt-4 text-4xl font-bold text-white md:text-5xl">Let&apos;s plan your next travel move.</h1>
-          <p className="mt-5 max-w-3xl text-lg leading-8 text-[#f4f1e6]">
-            Reach out for consultation, visa guidance, document support and planning for your international travel experience.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-4 py-16">
-        <div className="grid gap-6">
-          {contactMethods.map((method) => (
-            <article key={method.label} className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-[#0b2d4f]">{method.label}</h2>
-              <p className="mt-2 text-sm leading-7 text-slate-600">{method.helper}</p>
-              <a
-                className="mt-4 inline-flex text-base font-semibold text-[#0d6f73] underline"
-                href={method.href}
-                target={method.external ? "_blank" : undefined}
-                rel={method.external ? "noreferrer" : undefined}
-              >
-                {method.value}
-              </a>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-10 rounded-2xl border bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-bold text-[#0b2d4f]">Message from Kwaku Lotteryy</h2>
-          <div className="mt-4 space-y-4 text-slate-700">
-            <p>
-              Thank you for contacting Kwaku Lotteryy regarding your visa and travel services.
-            </p>
-            <p>
-              I provide guidance and expert advice on travel, study abroad opportunities, scholarships, family visas, and immigration updates.
-              Your goals and ideas are always welcome, and together we can turn your dreams into reality.
-            </p>
-            <p>I look forward to assisting you on your journey.</p>
-            <p>
-              I am not a lawyer and do not provide legal advice. I am not an immigration official. However, for legal matters, I can
-              assist in connecting you with a qualified lawyer for professional assistance.
+    <div className="bg-npontu-surface-light developer-grid min-h-[90vh] py-16">
+      <div className="mx-auto max-w-7xl px-4 grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+        {/* Info Area */}
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <span className="inline-flex rounded-full bg-npontu-green/10 border border-npontu-green/20 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-npontu-green">
+              Contact Kwaku
+            </span>
+            <h1 className="text-4xl font-extrabold text-npontu-green tracking-tight md:text-5xl">
+              Let&apos;s plan your next travel move.
+            </h1>
+            <p className="text-base text-slate-600 leading-relaxed">
+              Reach out for consultation, visa guidance, document support and planning for your international travel experience.
             </p>
           </div>
 
-          <h3 className="mt-8 text-xl font-bold text-[#0b2d4f]">VISA SUPPORT</h3>
-          <p className="mt-3 text-slate-700">
-            For visa coaching, mentorship, mock interview preparation, guidance on required documentation, and review of your CV,
-            résumé, cover letter, Statement of Purpose (SOP), and related documents, kindly send an email to{" "}
-            <a className="font-semibold text-[#0d6f73] underline" href={`mailto:${siteConfig.email}`}>
-              {siteConfig.email}
-            </a>
-            .
-          </p>
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+            <div className="space-y-2">
+              <h2 className="text-lg font-bold text-slate-800">Support & Booking Channels</h2>
+              <div className="h-0.5 w-10 bg-npontu-gold rounded-full" />
+            </div>
 
-          <h3 className="mt-8 text-xl font-bold text-[#0b2d4f]">Social Media Advertisement and Promotion Services</h3>
-          <div className="mt-3 space-y-4 text-slate-700">
-            <p>
-              If you would love the opportunity for me to work with your brand and assist in promoting your products, services, or
-              campaigns across social media platforms to increase engagement and visibility, kindly send an email to{" "}
-              <a className="font-semibold text-[#0d6f73] underline" href={`mailto:${siteConfig.email}`}>
-                {siteConfig.email}
-              </a>
-              .
-            </p>
-            <p>
-              I am also available for advertisement and sponsorship services. Please feel free to contact me for further discussion and
-              collaboration opportunities.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-10 grid gap-8 rounded-2xl border bg-[#f8f4ea] p-6 md:grid-cols-[1.3fr_1fr]">
-          <div>
-            <h2 className="text-2xl font-bold text-[#0b2d4f]">Before you message</h2>
-            <ul className="mt-4 space-y-3 text-slate-700">
-              <li>Share your destination and travel purpose (visit, study, relocation).</li>
-              <li>Mention your timeline and any upcoming embassy or travel deadlines.</li>
-              <li>Include specific questions so you can get the most useful response quickly.</li>
-            </ul>
-            <div className="mt-6">
-              <Link
-                href="/contact"
-                className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f]"
-              >
-                Contact Us
-              </Link>
+            <div className="space-y-4 text-sm text-slate-600 leading-relaxed">
+              <p>
+                <strong>Email:</strong>{" "}
+                <a href={`mailto:${siteConfig.email}`} className="text-npontu-green font-bold hover:underline">
+                  {siteConfig.email}
+                </a>
+              </p>
+              <p>
+                <strong>Phone/WhatsApp:</strong>{" "}
+                <a href={`https://wa.me/${siteConfig.whatsapp}`} className="text-npontu-green font-bold hover:underline">
+                  {siteConfig.phone}
+                </a>
+              </p>
             </div>
           </div>
 
-          <aside>
-            <h3 className="text-lg font-bold text-[#0b2d4f]">Follow for daily updates</h3>
-            <ul className="mt-4 space-y-2 text-sm">
-              {socialLinks.map((social) => (
-                <li key={social.label}>
-                  <a href={social.href} target="_blank" rel="noreferrer" className="font-semibold text-[#0d6f73] underline">
-                    {social.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </aside>
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <h3 className="text-lg font-bold text-slate-800">Visa Mock Coaching & SOP Reviews</h3>
+            <p className="text-sm text-slate-500 leading-relaxed">
+              For visa coaching, mock interview preparation, Statement of Purpose (SOP) guidance, and resume edits, write to us directly. We will assign a mentor to your application pathway.
+            </p>
+          </div>
         </div>
-      </section>
+
+        {/* Contact Form Area */}
+        <div className="relative">
+          <div className="absolute -inset-2 bg-gradient-to-tr from-npontu-green to-npontu-gold opacity-10 blur-xl rounded-3xl" />
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-8 shadow-md space-y-6">
+            <h2 className="text-2xl font-bold text-npontu-green">Send a Quick Message</h2>
+            <p className="text-sm text-slate-500">Provide details of your destination/deadlines, and we will get back to you.</p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-xs font-semibold text-slate-500">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="email" className="block text-xs font-semibold text-slate-500">Email Address</label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-semibold text-slate-500">Phone / WhatsApp</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    required
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="message" className="block text-xs font-semibold text-slate-500">Your Message Details</label>
+                <textarea
+                  id="message"
+                  required
+                  rows={4}
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
+                  placeholder="Share details of your travel purpose, destination, deadlines..."
+                />
+              </div>
+
+              {success && (
+                <div className="rounded-xl bg-emerald-50 border border-emerald-250 p-4 text-sm text-emerald-800 animate-in fade-in duration-200">
+                  🎉 Thank you! Your message has been sent successfully. We will follow up shortly.
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-xl bg-red-50 border border-red-250 p-4 text-sm text-red-800">
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-xl bg-npontu-green hover:bg-npontu-green-light py-3.5 font-bold text-white transition duration-150 disabled:opacity-50 shadow-sm"
+              >
+                {loading ? "Sending Message..." : "Submit Inquiry"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
