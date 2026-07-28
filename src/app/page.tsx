@@ -249,6 +249,49 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Supported Destinations / Countries (LIGHT MODE) */}
+      <section className="bg-[#FAFBF9] py-24 border-b border-slate-100 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-full h-full bg-[url('/noise.png')] opacity-20 mix-blend-overlay pointer-events-none" />
+        <div className="mx-auto max-w-7xl px-4 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#E8A500]">Global Reach</span>
+            <h2 className="text-3xl font-extrabold text-[#0C3823] tracking-tight mt-1">
+              Supported Destinations
+            </h2>
+            <p className="mt-4 text-slate-500 leading-relaxed">
+              We provide comprehensive visa guidance and travel planning for the most requested destinations worldwide.
+            </p>
+            <div className="h-1 w-16 bg-[#F3BA00] mx-auto mt-6 rounded-full" />
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {["United States", "United Kingdom", "Canada", "Germany", "Netherlands", "Spain", "Italy", "Australia"].map((country) => (
+              <Link 
+                href={`/countries#country-${country.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`}
+                key={country}
+                className="group flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md hover:border-npontu-green/30 transition duration-300"
+              >
+                <span className="text-sm font-bold text-slate-700 group-hover:text-npontu-green transition duration-150 text-center">
+                  {country}
+                </span>
+                <span className="mt-2 text-[10px] uppercase font-bold text-slate-400 group-hover:text-[#F3BA00] transition duration-150">
+                  View Guide &rarr;
+                </span>
+              </Link>
+            ))}
+          </div>
+          
+          <div className="mt-12 text-center">
+            <Link
+              href="/countries"
+              className="inline-flex items-center text-sm font-bold text-[#1B6B3A] hover:text-[#2A8F52] transition duration-150 group"
+            >
+              See all country guides <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* 6. Testimonials Section (LIGHT MODE) */}
       <section className="bg-white py-24 border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4">
