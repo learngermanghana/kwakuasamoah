@@ -59,19 +59,19 @@ export default async function HomePage() {
   const featuredServices = removeDuplicateServices(services).slice(0, 3);
   const galleryItems: GalleryItem[] = gallery;
   const latestPosts = posts.slice(0, 3);
-  const heroMobileImageUrl = hero.mobileImageUrl || hero.imageUrl;
 
   return (
     <div>
-      {/* Redesigned Premium Dark Hero Section */}
-      <section className="relative overflow-hidden bg-[#0B1510] border-b border-emerald-950/40 developer-grid-dark py-12 md:py-24">
-        {/* Glow overlay */}
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-npontu-green/10 blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 right-10 h-[300px] w-[300px] rounded-full bg-npontu-gold/5 blur-[100px] pointer-events-none" />
+      {/* 1. Hero Section (DARK MODE) */}
+      <section className="relative overflow-hidden bg-[#050D0A] text-white border-b border-emerald-950/40 developer-grid-dark py-20 md:py-32">
+        {/* Decorative backdrop glow */}
+        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 h-[450px] w-[450px] rounded-full bg-emerald-700/10 blur-[130px] pointer-events-none" />
+        <div className="absolute bottom-0 right-10 h-[280px] w-[280px] rounded-full bg-npontu-gold/5 blur-[100px] pointer-events-none" />
 
         <div className="relative mx-auto max-w-7xl px-4 flex flex-col lg:flex-row items-center gap-12">
-          <div className="flex-1 text-white space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-npontu-gold/30 bg-npontu-green/15 px-4 py-1.5 text-xs font-bold text-npontu-gold tracking-wide uppercase">
+          {/* Hero Left Content */}
+          <div className="flex-1 space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-npontu-gold/30 bg-[#0B2117] px-4 py-1.5 text-xs font-bold text-npontu-gold tracking-wide uppercase">
               ✨ {hero.eyebrow}
             </div>
             
@@ -79,7 +79,7 @@ export default async function HomePage() {
               <span className="bg-gradient-to-r from-white via-slate-100 to-npontu-gold bg-clip-text text-transparent block">
                 {hero.title.split(" ").slice(0, -1).join(" ")}
               </span>
-              <span className="text-npontu-green-light block mt-1">
+              <span className="text-npontu-gold block mt-1">
                 {hero.title.split(" ").slice(-1)}
               </span>
             </h1>
@@ -92,7 +92,7 @@ export default async function HomePage() {
               {hero.ctaLabel && hero.ctaHref ? (
                 <Link
                   href={hero.ctaHref}
-                  className="rounded-xl bg-npontu-green hover:bg-npontu-green-light text-white px-8 py-4 font-bold text-sm transition shadow-lg hover:shadow-npontu-green/20 hover:-translate-y-[2px] active:translate-y-0 duration-200"
+                  className="rounded-xl bg-[#12492A] hover:bg-[#1B6B3A] text-white px-8 py-4 font-bold text-sm transition shadow-lg hover:shadow-emerald-950/40 hover:-translate-y-[2px] active:translate-y-0 duration-200"
                 >
                   {hero.ctaLabel}
                 </Link>
@@ -108,17 +108,17 @@ export default async function HomePage() {
               <a
                 href="https://cal.com/kwakulotteryy/15min"
                 data-cal-modal
-                className="rounded-xl bg-npontu-gold hover:bg-npontu-gold-warm text-npontu-surface-dark px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200 cursor-pointer"
+                className="rounded-xl bg-[#F3BA00] hover:bg-[#E8A500] text-black px-8 py-4 font-bold text-sm transition shadow-lg hover:-translate-y-[2px] active:translate-y-0 duration-200 cursor-pointer"
               >
-                📅 Book Now
+               Book Now
               </a>
             </div>
           </div>
 
+          {/* Hero Right Media */}
           <div className="w-full lg:w-96 shrink-0 relative group">
-            {/* Interactive backdrop glow */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-npontu-green to-npontu-gold opacity-20 blur-xl group-hover:opacity-30 transition duration-300" />
-            <div className="relative rounded-2xl border border-emerald-900/60 bg-[#0F1A14]/80 p-3 shadow-2xl backdrop-blur">
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-[#1B6B3A] to-[#F5C518] opacity-25 blur-xl group-hover:opacity-30 transition duration-300" />
+            <div className="relative rounded-2xl border border-emerald-900/60 bg-[#0B1510]/80 p-3 shadow-2xl backdrop-blur">
               <img
                 src={hero.imageUrl}
                 alt="Kwaku Lotteryy Travel"
@@ -129,36 +129,79 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Redesigned Meet Kwaku Section */}
-      <section className="relative overflow-hidden py-24 developer-grid border-b border-npontu-green/5">
+      {/* 2. Trust Metrics Section (LIGHT MODE) */}
+      <section className="relative bg-white py-16 border-b border-slate-100">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="bg-[#FAFBF9] border border-slate-100 rounded-2xl p-8 flex flex-col justify-center items-center text-center shadow-sm">
+              <span className="text-5xl font-extrabold text-[#0C3823] tracking-tight">500+</span>
+              <h4 className="font-bold text-slate-800 mt-2 text-base">Successful Consultations</h4>
+              <p className="text-sm text-slate-500 mt-1">
+                Completed one-on-one travel routes and migration briefings.
+              </p>
+            </div>
+            <div className="bg-[#FAFBF9] border border-slate-100 rounded-2xl p-8 flex flex-col justify-center items-center text-center shadow-sm">
+              <span className="text-5xl font-extrabold text-[#0C3823] tracking-tight">15+</span>
+              <h4 className="font-bold text-slate-800 mt-2 text-base">Supported Destinations</h4>
+              <p className="text-sm text-slate-500 mt-1">
+                Comprehensive visa & relocation guides across multiple continents.
+              </p>
+            </div>
+            <div className="bg-[#FAFBF9] border border-slate-100 rounded-2xl p-8 flex flex-col justify-center items-center text-center shadow-sm">
+              <span className="text-5xl font-extrabold text-[#0C3823] tracking-tight">99%</span>
+              <h4 className="font-bold text-slate-800 mt-2 text-base">Client Satisfaction</h4>
+              <p className="text-sm text-slate-500 mt-1">
+                Feedback score based on documentation review and interview prep.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Meet Kwaku Section (DARK MODE) */}
+      <section className="relative overflow-hidden bg-[#050D0A] text-white py-24 developer-grid-dark border-b border-emerald-950/40">
         <div className="mx-auto max-w-7xl px-4 grid gap-12 lg:grid-cols-12 items-center">
           <div className="lg:col-span-7 space-y-6">
-            <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Personalized Relocation Guidance</span>
-            <h2 className="text-4xl font-extrabold text-npontu-green tracking-tight">Meet Kwaku</h2>
-            <div className="h-1 w-20 bg-npontu-gold rounded-full" />
-            <p className="text-base text-slate-600 leading-relaxed">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#F3BA00]">Personalized Relocation Guidance</span>
+            <h2 className="text-4xl font-extrabold text-white tracking-tight">Meet Kwaku</h2>
+            <div className="h-1 w-20 bg-[#F3BA00] rounded-full" />
+            <p className="text-base text-emerald-100/70 leading-relaxed">
               Kwaku shares practical guidance from real travel and relocation
               experience, helping you understand each step with clarity before you
               submit.
             </p>
-            <p className="text-base text-slate-600 leading-relaxed">
+            <p className="text-base text-emerald-100/70 leading-relaxed">
               From document readiness checks to interview strategy, every
               consultation is focused on reducing errors and improving confidence.
             </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-emerald-100/80 font-semibold">
+              <li className="flex items-center gap-2">
+                <span className="text-[#F3BA00]">✔</span> Tailored Document Checklists
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#F3BA00]">✔</span> Real Relocation Insights
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#F3BA00]">✔</span> Visa Interview Preparation
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-[#F3BA00]">✔</span> One-on-One Action Plans
+              </li>
+            </ul>
           </div>
 
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative group max-w-sm w-full">
-              {/* Outer decorative borders to look professional */}
-              <div className="absolute -inset-4 rounded-3xl border border-npontu-green/10 pointer-events-none" />
+              <div className="absolute -inset-4 rounded-3xl border border-emerald-500/10 pointer-events-none" />
               <div className="absolute -inset-2 rounded-3xl border border-npontu-gold/20 pointer-events-none group-hover:scale-[1.02] transition duration-300" />
-              <figure className="relative overflow-hidden rounded-2xl border border-[#d8d6cf] bg-white shadow-xl">
+              <figure className="relative overflow-hidden rounded-2xl border border-emerald-900 bg-[#0B1510] shadow-2xl">
                 <Image
                   src={kwakuPortrait}
                   alt="Kwaku portrait"
                   width={640}
                   height={800}
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                  priority
                 />
               </figure>
             </div>
@@ -166,182 +209,69 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Interactive Sliding Destination Showcase */}
-      <section className="mx-auto max-w-7xl px-4 py-12">
-        <div className="mb-8">
-          <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Interactive Showpiece</span>
-          <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">Featured Travel Expeditions</h2>
-          <p className="text-slate-500 text-sm mt-1">Explore real flight bookings, study guides, and visa packages dynamically.</p>
-        </div>
-        <TravelCarousel slides={galleryItems} />
-      </section>
-
-      {/* Redesigned Featured Services Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 border-b border-npontu-green/5">
-        <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Our Core Offerings</span>
-            <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">
-              Featured Services
-            </h2>
-            <p className="mt-2 text-slate-500 max-w-lg">
-              Sleek, transparent, and step-by-step relocation/visa consultation packages.
-            </p>
-          </div>
-          <Link
-            href="/services"
-            className="inline-flex items-center text-sm font-bold text-npontu-green hover:text-npontu-green-light transition duration-150 group"
-          >
-            Explore all services <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
-          </Link>
-        </div>
-        <div className="grid gap-8 md:grid-cols-3">
-          {featuredServices.map((item) => (
-            <PackageCard key={item.id} item={item} />
-          ))}
-        </div>
-      </section>
-
-      {/* Redesigned Gallery Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 border-b border-npontu-green/5">
-        <div className="mb-12 flex items-end justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Visual Highlights</span>
-            <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">Gallery Portfolio</h2>
-            <p className="mt-2 text-slate-500">
-              Snapshots of student orientations, travel arrivals, and client successes.
-            </p>
-          </div>
-          <Link href="/promo" className="inline-flex items-center text-sm font-bold text-npontu-green hover:text-npontu-green-light transition duration-150 group">
-            View full gallery <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
-          </Link>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
-          {galleryItems.map((photo) => (
+      {/* 4. Featured Services Section (LIGHT MODE) */}
+      <section className="bg-[#FAFBF9] mx-auto max-w-none px-4 py-24 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#E8A500]">Our Core Offerings</span>
+              <h2 className="text-3xl font-extrabold text-[#0C3823] tracking-tight mt-1">
+                Featured Services
+              </h2>
+              <p className="mt-2 text-slate-500 max-w-lg">
+                Sleek, transparent, and step-by-step relocation/visa consultation packages.
+              </p>
+            </div>
             <Link
-              key={photo.id}
-              href={`/gallery/${photo.id}`}
-              className="group overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg"
+              href="/services"
+              className="inline-flex items-center text-sm font-bold text-[#1B6B3A] hover:text-[#2A8F52] transition duration-150 group"
             >
-              <div className="overflow-hidden h-52 w-full bg-slate-50 relative">
-                <img
-                  src={photo.url}
-                  alt={photo.alt}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              {photo.caption ? (
-                <div className="p-4 border-t border-slate-100 bg-white">
-                  <p className="text-sm font-bold text-slate-800 group-hover:text-npontu-green transition duration-150 truncate">
-                    {photo.caption}
-                  </p>
-                </div>
-              ) : null}
+              Explore all services <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
             </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Redesigned Blog Section */}
-      <section className="mx-auto max-w-7xl px-4 py-24 border-b border-npontu-green/5">
-        <div className="mb-12 flex items-end justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Insights & Updates</span>
-            <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">Latest Travel News</h2>
-            <p className="mt-2 text-slate-500">
-              Guidance write-ups, visa updates, and documentation requirements.
-            </p>
           </div>
-          <Link href="/blog" className="inline-flex items-center text-sm font-bold text-npontu-green hover:text-npontu-green-light transition duration-150 group">
-            Read all updates <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
-          </Link>
-        </div>
-        <div className="grid gap-8 md:grid-cols-3">
-          {latestPosts.length ? (
-            latestPosts.map((post) => (
-              <Link
-                key={post.id}
-                href={`/blog/${post.slug}`}
-                className="group overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1.5"
-              >
-                {post.imageUrl ? (
-                  <div className="overflow-hidden h-48 w-full bg-slate-50">
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                  </div>
-                ) : null}
-                <div className="p-6">
-                  <span className="text-[10px] font-bold text-npontu-gold-warm uppercase tracking-wider">
-                    {post.publishedAt
-                      ? new Date(post.publishedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-                      : "General Guide"}
-                  </span>
-                  <h3 className="line-clamp-2 font-bold text-lg text-slate-800 group-hover:text-npontu-green transition duration-150 mt-1">{post.title}</h3>
-                  <p className="mt-3 line-clamp-3 text-sm text-slate-500 leading-relaxed">
-                    {getExcerpt(post.content)}
-                  </p>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <p className="text-slate-500 col-span-3 text-center py-6">
-              Published blog posts will appear here shortly.
-            </p>
-          )}
+          <div className="grid gap-8 md:grid-cols-3">
+            {featuredServices.map((item) => (
+              <PackageCard key={item.id} item={item} />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Redesigned Testimonials & Core Stats Section */}
-      <section className="bg-white py-24 border-b border-npontu-green/5">
+      {/* 5. Destination Carousel Showcase (DARK MODE) */}
+      <section className="bg-[#050D0A] max-w-none py-20 border-b border-emerald-950/40 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="mb-8">
+            <span className="text-xs font-bold uppercase tracking-widest text-[#F3BA00]">Interactive Showpiece</span>
+            <h2 className="text-3xl font-extrabold text-white tracking-tight mt-1">Featured Travel Expeditions</h2>
+            <p className="text-emerald-100/60 text-sm mt-1">Explore real flight bookings, study guides, and visa packages dynamically.</p>
+          </div>
+          <TravelCarousel slides={galleryItems} />
+        </div>
+      </section>
+
+      {/* 6. Testimonials Section (LIGHT MODE) */}
+      <section className="bg-white py-24 border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-4">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-xs font-bold uppercase tracking-widest text-npontu-gold-warm">Proven Track Record</span>
-            <h2 className="text-3xl font-extrabold text-npontu-green tracking-tight mt-1">
-              Why People Relocate with Kwaku
+            <span className="text-xs font-bold uppercase tracking-widest text-[#E8A500]">Client Stories</span>
+            <h2 className="text-3xl font-extrabold text-[#0C3823] tracking-tight mt-1">
+              What Relocators Say
             </h2>
-            <div className="h-1 w-16 bg-npontu-gold mx-auto mt-4 rounded-full" />
+            <div className="h-1 w-16 bg-[#F3BA00] mx-auto mt-4 rounded-full" />
           </div>
 
-          <div className="grid gap-8 rounded-3xl border border-slate-150 bg-npontu-surface-light/40 p-8 md:grid-cols-3 shadow-inner">
-            <div className="space-y-2 p-4">
-              <p className="text-4xl font-extrabold text-npontu-green">500+</p>
-              <h4 className="font-bold text-slate-800">Success Consultations</h4>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Consultations and travel guidance sessions completed with direct feedback loops.
-              </p>
-            </div>
-            <div className="space-y-2 p-4 border-t md:border-t-0 md:border-l border-slate-200/60">
-              <p className="text-4xl font-extrabold text-npontu-green">15+</p>
-              <h4 className="font-bold text-slate-800">Supported Countries</h4>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Visa policies and relocation routes supported globally across Europe, Americas & Asia.
-              </p>
-            </div>
-            <div className="space-y-2 p-4 border-t md:border-t-0 md:border-l border-slate-200/60">
-              <p className="text-4xl font-extrabold text-npontu-green">24h</p>
-              <h4 className="font-bold text-slate-800">Response Speed</h4>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Fast first-response window, making sure your documents are processed without delay.
-              </p>
-            </div>
-          </div>
-
-          {/* Testimonial Cards */}
           {reviews.length ? (
-            <div className="mt-16 grid gap-8 md:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-3">
               {reviews.map((review) => (
-                <blockquote key={review.id} className="rounded-2xl border border-slate-150 bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow duration-300">
+                <blockquote key={review.id} className="rounded-2xl border border-slate-200 bg-[#FAFBF9] p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow duration-300">
                   <div>
-                    <div className="text-sm font-bold tracking-[0.18em] text-[#d9a441]" aria-label={`${review.rating} out of 5 stars`}>
+                    <div className="text-sm font-bold tracking-[0.18em] text-[#E8A500]" aria-label={`${review.rating} out of 5 stars`}>
                       {renderStars(review.rating)}
                     </div>
                     <p className="mt-4 text-slate-600 italic text-sm leading-relaxed">“{review.reviewText}”</p>
                   </div>
-                  <footer className="mt-6 border-t border-slate-100 pt-4 flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-npontu-green/10 flex items-center justify-center font-bold text-xs text-npontu-green">
+                  <footer className="mt-6 border-t border-slate-200 pt-4 flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-full bg-[#1B6B3A]/10 flex items-center justify-center font-bold text-xs text-[#1B6B3A]">
                       {review.name[0]}
                     </div>
                     <span className="text-sm font-bold text-slate-700">
@@ -351,12 +281,70 @@ export default async function HomePage() {
                 </blockquote>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <p className="text-slate-500 text-center py-6">Reviews will appear here shortly.</p>
+          )}
+        </div>
+      </section>
 
-          {/* mailing list block */}
-          <div className="mt-20">
-            <MailingList />
+      {/* 7. Latest Insights Blog Section (DARK MODE) */}
+      <section className="bg-[#050D0A] text-white py-24 border-b border-emerald-950/40">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-12 flex items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-widest text-[#F3BA00]">Insights & Updates</span>
+              <h2 className="text-3xl font-extrabold text-white tracking-tight mt-1">Latest Travel News</h2>
+              <p className="mt-2 text-emerald-100/60">
+                Guidance write-ups, visa updates, and documentation requirements.
+              </p>
+            </div>
+            <Link href="/blog" className="inline-flex items-center text-sm font-bold text-[#F3BA00] hover:text-[#F3BA00]/80 transition duration-150 group">
+              Read all updates <span className="ml-1 group-hover:translate-x-1 transition duration-150">&rarr;</span>
+            </Link>
           </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            {latestPosts.length ? (
+              latestPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/blog/${post.slug}`}
+                  className="group overflow-hidden rounded-2xl border border-emerald-900/40 bg-[#0B1510] shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5"
+                >
+                  {post.imageUrl ? (
+                    <div className="overflow-hidden h-48 w-full bg-emerald-950/30">
+                      <img
+                        src={post.imageUrl}
+                        alt={post.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-6 space-y-2">
+                    <span className="text-[10px] font-bold text-[#F3BA00] uppercase tracking-wider">
+                      {post.publishedAt
+                        ? new Date(post.publishedAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                        : "General Guide"}
+                    </span>
+                    <h3 className="line-clamp-2 font-bold text-lg text-white group-hover:text-[#F3BA00] transition duration-150">{post.title}</h3>
+                    <p className="line-clamp-3 text-sm text-emerald-100/60 leading-relaxed">
+                      {getExcerpt(post.content)}
+                    </p>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className="text-emerald-100/60 col-span-3 text-center py-6">
+                Published blog posts will appear here shortly.
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 8. Mailing List Cta Section (LIGHT MODE) */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4">
+          <MailingList />
         </div>
       </section>
     </div>

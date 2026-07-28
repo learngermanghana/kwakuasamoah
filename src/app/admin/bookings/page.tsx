@@ -131,8 +131,8 @@ export default function BookingsManager() {
                   </td>
                   <td className="p-4 font-medium text-slate-800">{b.serviceName}</td>
                   <td className="p-4 text-slate-700">
-                    <div>📅 {b.bookingDate}</div>
-                    <div>🕒 {b.bookingTime}</div>
+                    <div> {b.bookingDate}</div>
+                    <div> {b.bookingTime}</div>
                   </td>
                   <td className="p-4">
                     <span

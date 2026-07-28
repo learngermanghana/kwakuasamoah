@@ -423,7 +423,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           data-cal-modal
           className="flex-1 rounded-2xl border-2 border-npontu-green hover:bg-npontu-green/5 text-npontu-green px-6 py-3.5 font-semibold text-center transition shadow-sm cursor-pointer"
         >
-          📅 Book Now
+           Book Now
         </a>
       </div>
     </form>
