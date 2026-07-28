@@ -136,7 +136,16 @@ export function Header() {
             ))}
           </div>
 
-
+          <div className="border-t border-slate-100 p-4 mt-2">
+            <a
+              href="https://www.sedifex.com/join-customers/e8e4f544fca24533843b88ba"
+              target="_blank"
+              rel="noreferrer"
+              className="flex w-full items-center justify-center rounded-lg bg-[#0d6f73] px-4 py-3 text-sm font-bold text-white shadow-sm hover:bg-[#0a585c] transition"
+            >
+              Join our mailing list
+            </a>
+          </div>
         </nav>
       </div>
     </header>
