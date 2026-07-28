@@ -10,6 +10,7 @@ import type { GalleryItem, ServiceItem } from "@/lib/data";
 import { getReviewData } from "@/lib/reviews";
 import { PackageCard } from "@/components/package-card";
 import { TravelCarousel } from "@/components/travel-carousel";
+import { MailingList } from "@/components/mailing-list";
 import kwakuPortrait from "../../public/image.png";
 
 function getExcerpt(html: string, maxLength = 140) {
@@ -352,6 +353,11 @@ export default async function HomePage() {
               ))}
             </div>
           ) : null}
+
+          {/* mailing list block */}
+          <div className="mt-20">
+            <MailingList />
+          </div>
         </div>
       </section>
     </div>
