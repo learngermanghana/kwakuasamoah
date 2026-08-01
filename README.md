@@ -1,54 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kwaku Lotteryy Travel & Consultation Platform
 
-## Sedifex booking integration.
+A premium, high-performance web application built for Kwaku Lotteryy's travel and relocation consultation business. The platform seamlessly blends rich content delivery with an integrated booking flow and a custom Admin CRM.
 
-The booking page at `/book` pulls service options from Sedifex and submits booking requests through the server-only route at `/api/integration-bookings`.
+---
 
-Required environment variables:
+## 🏗️ Architecture & Tech Stack
 
-```bash
-SEDIFEX_API_BASE_URL=https://us-central1-sedifex-web.cloudfunctions.net
-SEDIFEX_STORE_ID=your_store_id
-SEDIFEX_INTEGRATION_API_KEY=your_store_or_master_integration_key
-```
+This project is built on modern web standards to ensure lightning-fast performance, maintainability, and a premium user experience.
 
-Optional fallback:
+- **Framework:** [Next.js 16 (App Router)](https://nextjs.org/) & React 19.
+- **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) using a custom, high-contrast design system centered around "Npontu Green" and "Npontu Gold."
+- **Data Engine:** A lightweight, localized JSON database (`src/data/db.json`) serving as the source of truth for blogs, services, gallery items, and global settings. Access is fully typed via `src/lib/data.ts`.
+- **Booking Integration:** Native [Cal.com](https://cal.com/) embed integration wrapped in a custom global provider to handle modal triggers anywhere on the site.
+- **Admin CRM:** A built-in, authenticated management dashboard (`/admin`) for tracking bookings, writing blogs, updating packages, and modifying site settings dynamically.
 
-```bash
-BOOKING_DEFAULT_SERVICE_ID=service_id_to_use_when_no_service_is_selected
-```
+---
 
-The Sedifex key is only used inside the Next.js API route. Do not expose it with a `NEXT_PUBLIC_` prefix.
+## 🔍 What Already Existed
 
-## Getting Started
+Before the recent system-wide overhaul, the platform laid down a strong structural foundation:
+- **Core Architecture:** The Next.js 16 App Router configuration and basic page routing (`/about`, `/services`, `/contact`, `/countries`, etc.).
+- **Data Layer:** The initial JSON-backed data models and helper functions to load static content.
+- **Admin Framework:** The foundational layout for the Admin CRM, including basic authentication routing and the dashboard shell.
+- **Base Aesthetics:** The initial brand color palettes and typography rules.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 What Was Done (Recent Upgrades)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the results.
+A comprehensive UX/UI redesign and feature expansion was implemented to elevate the platform to a premium standard, inspired by modern conversion-focused designs (including structural references from the Dionne portfolio).
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Global Cal.com Booking Integration
+- Extracted the Cal.com modal logic and implemented a `CalBookingProvider` across the entire application layout.
+- Any element with the `data-cal-modal` attribute instantly triggers the customized 15-minute consultation booking popup (`/kwakulotteryy/15min`).
 
-## Learn More
+### 2. Premium Footer Redesign
+- Rebuilt the footer from the ground up to feature a sleek, multi-column layout.
+- Introduced an interactive, 4-column Instagram-style image gallery with seamless hover overlays and custom inline SVG social icons.
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Dynamic Admin Settings
+- Upgraded the `/admin/settings` panel to allow non-technical administrators (Kwaku) to easily swap out the footer gallery images and update the Cal.com scheduling link without touching code.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Header & Navigation Refactoring
+- **Submenu System:** Organized a cluttered navigation bar by grouping related links (Countries, Resources, FAQ, Blog) into a clean, interactive "Relocation Info" dropdown.
+- **Mobile Drawer:** Refined the mobile hamburger menu with indented, nested link structures.
+- **Security:** Removed public-facing Admin CRM buttons to ensure the dashboard remains completely stealth and accessible only via direct URL.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 5. Homepage Overhaul
+- Transformed `/page.tsx` into a highly dynamic, alternating light/dark themed landing page.
+- Added a "Meet Kwaku" hero section, engaging trust metrics/statistics, and a new "Supported Destinations" grid to immediately highlight available country guides.
+- Integrated a new interactive Destination Carousel for featured travel expeditions.
 
-## Deploy on Vercel
+### 6. FAQ Page Redesign
+- Upgraded the bare-bones FAQ placeholder into a fully interactive accordion layout, categorized by topics, complete with a branded dark hero header.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 7. Build Stability & Type Safety
+- Resolved Turbopack build constraints by replacing legacy `lucide-react` imports with optimized, inline SVG components.
+- Hardened the database models and TypeScript constraints to ensure zero-error builds in production.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🛠️ Local Development
+
+To run the platform locally:
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+**Admin Access:** Navigate to `/admin/login` to access the CRM. (Ensure your environment variables for authentication are set up if applicable).

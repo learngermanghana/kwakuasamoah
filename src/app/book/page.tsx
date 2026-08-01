@@ -23,33 +23,46 @@ export default async function BookPage({
   }));
 
   return (
-    <section className="bg-[#fffdf8]">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-        <div>
-          <p className="inline-flex rounded-full bg-[#d8f2f1] px-3 py-1 text-sm font-semibold text-[#0d6f73]">
+    <section className="bg-npontu-surface-light developer-grid min-h-[80vh] py-16">
+      <div className="mx-auto grid max-w-7xl gap-12 px-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+        <div className="space-y-6">
+          <p className="inline-flex rounded-full bg-npontu-green/10 border border-npontu-green/20 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-npontu-green">
             Consultation booking
           </p>
-          <h1 className="mt-4 text-4xl font-bold text-[#0b2d4f] md:text-5xl">Book a Consultation</h1>
-          <p className="mt-4 text-lg text-slate-600">
+          <h1 className="text-4xl font-extrabold text-npontu-green md:text-5xl tracking-tight">Book a Consultation</h1>
+          <p className="text-base text-slate-600 leading-relaxed">
             Pick a service, choose your preferred date and time, and submit your request. The team will review your booking for follow-up and confirmation.
           </p>
 
-          <div className="mt-8 rounded-3xl border border-[#d8d6cf] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-[#0b2d4f]">What happens after you submit?</h2>
-            <ol className="mt-4 space-y-3 text-sm text-slate-600">
-              <li className="flex gap-3"><span className="font-bold text-[#0d6f73]">1.</span><span>Your booking request is received by the team.</span></li>
-              <li className="flex gap-3"><span className="font-bold text-[#0d6f73]">2.</span><span>The team reviews your selected service and preferred time.</span></li>
-              <li className="flex gap-3"><span className="font-bold text-[#0d6f73]">3.</span><span>You receive follow-up instructions for confirmation or payment where needed.</span></li>
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h2 className="text-lg font-bold text-slate-800">What happens after you submit?</h2>
+            <div className="h-0.5 w-12 bg-npontu-gold my-3 rounded-full" />
+            <ol className="mt-4 space-y-4 text-sm text-slate-600">
+              <li className="flex gap-3">
+                <span className="font-bold text-npontu-green">1.</span>
+                <span>Your booking request is securely logged in our system.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="font-bold text-npontu-green">2.</span>
+                <span>The team reviews your selected service, notes, and preferred time window.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="font-bold text-npontu-green">3.</span>
+                <span>You receive confirmation instructions and follow-up updates via email/WhatsApp.</span>
+              </li>
             </ol>
           </div>
         </div>
 
-        <div>
-          <BookingForm
-            serviceOptions={serviceOptions}
-            prefilledServiceId={params.serviceId}
-            prefilledServiceName={params.serviceName}
-          />
+        <div className="relative">
+          <div className="absolute -inset-2 bg-gradient-to-tr from-npontu-green to-npontu-gold opacity-10 blur-xl rounded-3xl" />
+          <div className="relative">
+            <BookingForm
+              serviceOptions={serviceOptions}
+              prefilledServiceId={params.serviceId}
+              prefilledServiceName={params.serviceName}
+            />
+          </div>
         </div>
       </div>
     </section>

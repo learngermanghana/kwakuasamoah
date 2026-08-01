@@ -248,7 +248,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             name="customerName"
             value={formState.customerName}
             onChange={(event) => setFormState((previous) => ({ ...previous, customerName: event.target.value }))}
-            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
             autoComplete="name"
             required
             maxLength={80}
@@ -265,7 +265,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             name="customerPhone"
             value={formState.customerPhone}
             onChange={(event) => setFormState((previous) => ({ ...previous, customerPhone: event.target.value }))}
-            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
             autoComplete="tel"
             inputMode="tel"
             required
@@ -286,7 +286,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           type="email"
           value={formState.customerEmail}
           onChange={(event) => setFormState((previous) => ({ ...previous, customerEmail: event.target.value }))}
-          className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+          className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
           autoComplete="email"
           inputMode="email"
           required
@@ -311,7 +311,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
               serviceName: selected?.name || ""
             }));
           }}
-          className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+          className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
         >
           <option value="">Select a service</option>
           {serviceOptions.map((service) => (
@@ -333,7 +333,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             min={minimumDate}
             value={formState.bookingDate}
             onChange={(event) => setFormState((previous) => ({ ...previous, bookingDate: event.target.value }))}
-            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
           />
           {errors.bookingDate ? <p className="text-sm text-red-700">{errors.bookingDate}</p> : null}
         </div>
@@ -344,7 +344,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
             name="bookingTime"
             value={formState.bookingTime}
             onChange={(event) => setFormState((previous) => ({ ...previous, bookingTime: event.target.value }))}
-            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+            className="w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
           >
             <option value="">Select time</option>
             {TIME_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
@@ -360,7 +360,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
           name="notes"
           value={formState.notes}
           onChange={(event) => setFormState((previous) => ({ ...previous, notes: event.target.value }))}
-          className="min-h-36 w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-[#0d6f73] focus:ring-2 focus:ring-[#0d6f73]/20"
+          className="min-h-36 w-full rounded-xl border border-[#d8d6cf] px-4 py-3 outline-none transition focus:border-npontu-green focus:ring-2 focus:ring-npontu-green/20"
           maxLength={1000}
         />
         {errors.notes ? <p className="text-sm text-red-700">{errors.notes}</p> : null}
@@ -410,13 +410,22 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         </p>
       ) : null}
 
-      <button
-        type="submit"
-        className="rounded-2xl bg-[#0d6f73] px-6 py-3 font-semibold text-white transition hover:bg-[#0a5b5f] disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Saving booking..." : "Submit booking request"}
-      </button>
+      <div className="flex flex-col sm:flex-row gap-4 pt-2">
+        <button
+          type="submit"
+          className="flex-1 rounded-2xl bg-npontu-green hover:bg-npontu-green-light text-white px-6 py-3.5 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 shadow-sm"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving booking..." : "Submit booking request"}
+        </button>
+        <a
+          href="https://cal.com/kwakulotteryy/15min"
+          data-cal-modal
+          className="flex-1 rounded-2xl border-2 border-npontu-green hover:bg-npontu-green/5 text-npontu-green px-6 py-3.5 font-semibold text-center transition shadow-sm cursor-pointer"
+        >
+           Book Now
+        </a>
+      </div>
     </form>
   );
 }

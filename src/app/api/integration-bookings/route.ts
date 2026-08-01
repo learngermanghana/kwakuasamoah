@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cleanBookingContact, validateBookingContact } from "@/lib/booking-validation";
+import { readDB, writeDB } from "@/lib/db-client";
 
 type BookingPayload = {
   serviceId?: string;
@@ -324,6 +325,30 @@ export async function POST(req: Request) {
       { ok: false, error: "missing-booking-id", message: "Booking created but booking ID was not returned.", requestId },
       { status: 502 }
     );
+  }
+
+  try {
+    const db = readDB();
+    db.bookings = [
+      {
+        id: bookingId,
+        customerName,
+        customerEmail,
+        customerPhone,
+        serviceId,
+        serviceName,
+        bookingDate,
+        bookingTime,
+        notes: cleanOptionalString(booking.notes),
+        status: "pending",
+        paymentStatus: "checkout_created",
+        createdAt: new Date().toISOString()
+      },
+      ...db.bookings
+    ];
+    writeDB(db);
+  } catch (error) {
+    console.error("Failed to save booking to local DB", error);
   }
 
   const clientOrderId = `BOOKING-${bookingId}`;

@@ -34,39 +34,39 @@ export function PackageCard({ item }: { item: ServiceItem }) {
   const priceLabel = formatPriceLabel(item);
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-150 bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
       <Link href={serviceHref} className="block bg-[#f8f4ea] p-3">
         <img
           src={item.image}
           alt={item.serviceName}
-          className="h-56 w-full rounded-xl object-contain transition duration-300 hover:scale-[1.03]"
+          className="h-56 w-full rounded-xl object-cover transition duration-300 hover:scale-[1.03]"
         />
       </Link>
       <div className="flex flex-1 flex-col p-5">
         {item.category ? (
-          <p className="text-sm font-semibold text-[#0d6f73]">{item.category}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-npontu-gold-warm">{item.category}</p>
         ) : null}
-        <Link href={serviceHref} className="mt-1 text-xl font-bold text-[#0b2d4f] transition hover:text-[#0d6f73]">
+        <Link href={serviceHref} className="mt-1 text-xl font-bold text-slate-800 transition hover:text-npontu-green">
           {item.serviceName}
         </Link>
-        <p className="mt-2 text-sm font-semibold text-[#0d6f73]">{priceLabel}</p>
+        <p className="mt-2 text-sm font-semibold text-npontu-green">{priceLabel}</p>
         {description ? (
-          <p className="mt-2 whitespace-pre-line text-sm text-slate-600">
+          <p className="mt-2 whitespace-pre-line text-sm text-slate-500">
             {shortDescription}
           </p>
         ) : null}
         <div className="mt-auto flex gap-3 pt-4">
           <Link
             href={serviceHref}
-            className="rounded-xl border border-[#0d6f73]/25 bg-[#d8f2f1] px-4 py-2 text-sm font-bold text-[#0d6f73] transition hover:bg-[#c5ebe9]"
+            className="rounded-xl border border-npontu-green/25 bg-npontu-surface-light px-4 py-2 text-sm font-bold text-npontu-green transition hover:bg-npontu-green/5"
           >
-            Open
+            Details
           </Link>
           <Link
             href={bookHref}
-            className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#0a5b5f]"
+            className="rounded-xl bg-npontu-green px-4 py-2 text-sm font-bold text-white transition hover:bg-npontu-green-light"
           >
-            Book
+            Book Now
           </Link>
         </div>
       </div>

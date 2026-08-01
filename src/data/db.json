@@ -1,0 +1,133 @@
+{
+  "settings": {
+    "displayName": "Kwaku Lotteryy",
+    "tagline": "Turning travel dreams into reality.",
+    "businessDescription": "Travel guidance and relocation support worldwide.",
+    "publicPhone": "+44 7424 047530",
+    "whatsappNumber": "447424047530",
+    "publicEmail": "hello@kwakulotteryy.com",
+    "bookingsEmail": "bookings@kwakulotteryy.com",
+    "website": "https://www.kwakulotteryy.com",
+    "instagram": "https://www.instagram.com/kwakulotteryy",
+    "facebook": "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr",
+    "tiktok": "https://www.tiktok.com/@kwakulotteryy/video/7628683868836564244",
+    "youtube": "https://youtube.com/@kwakulotteryy?si=AXD7lXvl7XBvGjvB",
+    "x": "https://x.com/kwakulotteryy",
+    "linkedin": "",
+    "calLink": "https://cal.com/kwakulotteryy/15min",
+    "footerImages": [
+      {
+        "url": "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1200&auto=format&fit=crop",
+        "overlay": "facebook",
+        "link": "https://web.facebook.com/kwakulotteryy?_rdc=1&_rdr"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+        "overlay": "instagram",
+        "link": "https://www.instagram.com/kwakulotteryy"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=1200&auto=format&fit=crop",
+        "overlay": "tiktok",
+        "link": "https://www.tiktok.com/@kwakulotteryy"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=1200&auto=format&fit=crop",
+        "overlay": "youtube",
+        "link": "https://youtube.com/@kwakulotteryy"
+      }
+    ]
+  },
+  "packages": [
+    {
+      "id": "netherlands-study-route",
+      "serviceName": "Netherlands Study Route Guide",
+      "category": "Netherlands",
+      "durationDays": 30,
+      "priceLabel": "GHS 500",
+      "price": 500,
+      "description": "Guidance for students planning to relocate to the Netherlands through studies.",
+      "includes": "Consultation, Document checklist, Application guidance, Travel advice",
+      "image": "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1200&auto=format&fit=crop",
+      "imageAlt": "Netherlands Study Route Guide"
+    },
+    {
+      "id": "schengen-visa-preparation",
+      "serviceName": "Schengen Visa Preparation",
+      "category": "Europe",
+      "durationDays": 14,
+      "priceLabel": "GHS 350",
+      "price": 350,
+      "description": "Step-by-step support for first-time Schengen visa applicants.",
+      "includes": "Visa checklist, Travel plan review, Interview tips, Booking guidance",
+      "image": "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+      "imageAlt": "Schengen Visa Preparation"
+    },
+    {
+      "id": "custom-europe-travel-plan",
+      "serviceName": "Custom Europe Travel Plan",
+      "category": "Europe",
+      "durationDays": 7,
+      "priceLabel": "GHS 300",
+      "price": 300,
+      "description": "Personalized travel planning for holidays, visits, and relocation scouting.",
+      "includes": "Trip consultation, Destination advice, Budget planning, WhatsApp support",
+      "image": "https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=1200&auto=format&fit=crop",
+      "imageAlt": "Custom Europe Travel Plan"
+    }
+  ],
+  "blogs": [
+    {
+      "id": "relocate-netherlands-2026",
+      "title": "How to Relocate to the Netherlands via Study Route in 2026",
+      "slug": "relocate-netherlands-2026",
+      "content": "<p>Studying in the Netherlands is one of the most reliable pathways to relocating to Europe. The country offers highly ranked universities, english-taught programs, and an orientation year (zoekjaar) post-graduation to find a high-skilled job.</p><p>First, choose your course and verify the university entry requirements. Most institutions require academic transcripts and English language proficiency certification. Next, prepare your proof of financial support. You must demonstrate that you have enough funds to cover tuition and living expenses. Once admitted, the university typically handles your student visa application (MVV) with the IND.</p>",
+      "imageUrl": "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1200&auto=format&fit=crop",
+      "publishedAt": "2026-07-28"
+    },
+    {
+      "id": "schengen-visa-mistakes",
+      "title": "Top 5 Schengen Visa Mistakes and How to Avoid Them",
+      "slug": "schengen-visa-mistakes",
+      "content": "<p>Securing a Schengen visa can feel overwhelming. Many applications are rejected due to simple errors. Here is how to keep your application clean:</p><ol><li><strong>Incomplete Travel Itinerary</strong>: Avoid booking flights before your visa is approved. Use flight reservations.</li><li><strong>Insufficient Financial Proof</strong>: Ensure your bank statements are active and cover the required minimum daily spend.</li><li><strong>Unmatching Accommodation Info</strong>: Your hotel booking dates must align precisely with your flight reservations.</li></ol>",
+      "imageUrl": "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+      "publishedAt": "2026-07-20"
+    }
+  ],
+  "gallery": [
+    {
+      "id": "photo-netherlands",
+      "url": "https://images.unsplash.com/photo-1512470876302-972faa2aa9a4?q=80&w=1200&auto=format&fit=crop",
+      "alt": "Netherlands Canals",
+      "caption": "Exploring Netherlands study opportunities"
+    },
+    {
+      "id": "photo-schengen",
+      "url": "https://images.unsplash.com/photo-1526772662000-3f88f10405ff?q=80&w=1200&auto=format&fit=crop",
+      "alt": "Schengen travel",
+      "caption": "Schengen Visa Consultation Success"
+    },
+    {
+      "id": "photo-europe",
+      "url": "https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=1200&auto=format&fit=crop",
+      "alt": "Europe travel planning",
+      "caption": "Custom European travel guidelines ready"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-1",
+      "customerName": "Kwame Mensah",
+      "customerEmail": "kwamemensah@example.com",
+      "customerPhone": "+233 24 123 4567",
+      "serviceId": "schengen-visa-preparation",
+      "serviceName": "Schengen Visa Preparation",
+      "bookingDate": "2026-08-05",
+      "bookingTime": "14:30",
+      "notes": "Need urgent guidance for my first-time visa applications.",
+      "status": "pending",
+      "paymentStatus": "pending",
+      "createdAt": "2026-07-28T18:00:00.000Z"
+    }
+  ]
+}
