@@ -12,7 +12,7 @@ export type TravelPackage = {
 export const packages: TravelPackage[] = [
   {
     slug: "netherlands-study-route",
-    title: "Netherlands Visa Guide",
+    title: "Netherlands Study Route Guide",
     destination: "Netherlands",
     durationDays: 30,
     priceFrom: "GHS 500",
