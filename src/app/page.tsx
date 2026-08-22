@@ -8,6 +8,7 @@ import {
 } from "@/lib/data";
 import type { GalleryItem, ServiceItem } from "@/lib/data";
 import { getReviewData } from "@/lib/reviews";
+import { packages } from "@/data/packages";
 import { PackageCard } from "@/components/package-card";
 import kwakuPortrait from "../../public/image.png";
 
@@ -55,7 +56,10 @@ export default async function HomePage() {
     getReviewData(6),
   ]);
   const featuredServices = removeDuplicateServices(services).slice(0, 3);
-  const galleryItems: GalleryItem[] = gallery;
+  const studyGuide = packages.find((pkg) => pkg.slug === "netherlands-study-route");
+  const galleryItems: GalleryItem[] = gallery.filter(
+    (item) => item.id !== "netherlands-study-route",
+  );
   const latestPosts = posts.slice(0, 3);
   const heroMobileImageUrl = hero.mobileImageUrl || hero.imageUrl;
 
@@ -158,6 +162,47 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
+
+      {studyGuide ? (
+        <section className="mx-auto max-w-7xl px-4 py-16">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold text-[#0b2d4f]">Study Guide</h2>
+              <p className="mt-2 text-slate-600">
+                Practical step-by-step guidance for students planning their study route abroad.
+              </p>
+            </div>
+            <Link
+              href={`/study-guide/${studyGuide.slug}`}
+              className="text-sm font-semibold text-[#0d6f73]"
+            >
+              Open study guide
+            </Link>
+          </div>
+          <Link
+            href={`/study-guide/${studyGuide.slug}`}
+            className="grid overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:shadow-md md:grid-cols-[0.9fr_1.1fr]"
+          >
+            <img
+              src={studyGuide.image}
+              alt={studyGuide.title}
+              className="h-64 w-full object-cover md:h-full"
+            />
+            <div className="flex flex-col justify-center p-6 md:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#0d6f73]">
+                {studyGuide.destination}
+              </p>
+              <h3 className="mt-2 text-2xl font-bold text-[#0b2d4f]">
+                {studyGuide.title}
+              </h3>
+              <p className="mt-3 text-slate-600">{studyGuide.summary}</p>
+              <span className="mt-5 text-sm font-semibold text-[#0d6f73]">
+                Read the full guide →
+              </span>
+            </div>
+          </Link>
+        </section>
+      ) : null}
 
       <section className="mx-auto max-w-7xl px-4 py-16">
         <div className="mb-8 flex items-end justify-between gap-4">
