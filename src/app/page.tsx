@@ -165,8 +165,8 @@ export default async function HomePage() {
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Gallery</h2>
-            <p className="mt-2 text-slate-600">
-              Browse the latest published travel and consultation photos.
+            <p className="mt-2 max-w-4xl text-slate-600">
+              Explore all travel-related information in one place. Get the latest updates and helpful guidance on visas, passports, immigration, study abroad opportunities, scholarships, international travel, and much more. Everything you need to help you plan and prepare for your journey.
             </p>
           </div>
           <Link href="/promo" className="text-sm font-semibold text-[#0d6f73]">
