@@ -21,7 +21,7 @@ const values = [
 const journeyMilestones = [
   "Started by sharing firsthand and adequate information on visa and travel service.",
   "Expanded into consultation support for study, visit, and relocation routes.",
-  "Built a trusted audience across TikTok, YouTube, Instagram, and Facebook,X",
+  "Built a trusted audience across TikTok, YouTube, Instagram, Facebook, and X",
   "Now supports travel planning worldwide"
 ];
 
