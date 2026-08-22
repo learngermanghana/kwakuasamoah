@@ -55,7 +55,9 @@ export default async function HomePage() {
     getReviewData(6),
   ]);
   const featuredServices = removeDuplicateServices(services).slice(0, 3);
-  const galleryItems: GalleryItem[] = gallery;
+  const galleryItems: GalleryItem[] = gallery
+    .filter((photo) => photo.id !== "custom-europe-travel-plan")
+    .slice(0, 2);
   const latestPosts = posts.slice(0, 3);
   const heroMobileImageUrl = hero.mobileImageUrl || hero.imageUrl;
 
@@ -171,7 +173,7 @@ export default async function HomePage() {
             Explore gallery
           </Link>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
           {galleryItems.map((photo) => (
             <Link
               key={photo.id}
@@ -190,6 +192,20 @@ export default async function HomePage() {
               ) : null}
             </Link>
           ))}
+          <Link
+            href="/countries"
+            className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md"
+          >
+            <div className="flex h-48 flex-col items-center justify-center gap-3 bg-slate-50 px-4 text-center">
+              <span aria-hidden="true" className="text-5xl">🌍</span>
+              <p className="text-sm font-medium text-slate-600">
+                USA, Germany, Netherlands and more
+              </p>
+            </div>
+            <p className="px-3 py-3 text-base font-semibold">
+              Read All Country Guides
+            </p>
+          </Link>
         </div>
       </section>
 
