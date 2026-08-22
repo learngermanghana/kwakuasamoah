@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getGalleryData, type GalleryItem } from "@/lib/data";
 
 function getCountryGuideLink(caption: string) {
@@ -20,11 +20,6 @@ function getCountryGuideLink(caption: string) {
 
 export default async function GalleryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-
-  if (id === "netherlands-study-route") {
-    redirect("/study-guide/netherlands-study-route");
-  }
-
   const gallery = await getGalleryData();
   const photo = gallery.find((item: GalleryItem) => item.id === id);
 
