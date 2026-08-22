@@ -196,12 +196,11 @@ export default async function HomePage() {
             href="/countries"
             className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md"
           >
-            <div className="flex h-48 flex-col items-center justify-center gap-3 bg-slate-50 px-4 text-center">
-              <span aria-hidden="true" className="text-5xl">🌍</span>
-              <p className="text-sm font-medium text-slate-600">
-                USA, Germany, Netherlands and more
-              </p>
-            </div>
+            <img
+              src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?q=80&w=1200&auto=format&fit=crop"
+              alt="International travel destinations and country visa guides"
+              className="h-48 w-full bg-slate-50 object-cover"
+            />
             <p className="px-3 py-3 text-base font-semibold">
               Read All Country Guides
             </p>
