@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
 const FALLBACK_BASE_URL = "https://us-central1-sedifex-web.cloudfunctions.net";
+const UPSTREAM_TIMEOUT_MS = 8_000;
+
+export const maxDuration = 15;
 
 function getConfig() {
   return {
@@ -27,28 +30,44 @@ export async function GET(req: Request) {
   }
 
   const endpoint = new URL(`/integration/orders/${encodeURIComponent(reference)}`, baseUrl);
-  const response = await fetch(endpoint, {
-    headers: {
-      "x-api-key": apiKey,
-      "X-Sedifex-Contract-Version": contractVersion,
-      Accept: "application/json"
-    },
-    cache: "no-store"
-  });
 
-  const data = await response.json().catch(() => null);
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        "x-api-key": apiKey,
+        "X-Sedifex-Contract-Version": contractVersion,
+        Accept: "application/json"
+      },
+      cache: "no-store",
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+    });
 
-  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: (data as { error?: string } | null)?.error || "payment-status-fetch-failed",
+          message: (data as { message?: string } | null)?.message || "Could not fetch payment status.",
+          data
+        },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({ ok: true, reference, data });
+  } catch (error) {
+    const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
     return NextResponse.json(
       {
         ok: false,
-        error: (data as { error?: string } | null)?.error || "payment-status-fetch-failed",
-        message: (data as { message?: string } | null)?.message || "Could not fetch payment status.",
-        data
+        error: timedOut ? "payment-status-timeout" : "payment-status-fetch-failed",
+        message: timedOut
+          ? "Payment status is taking too long to respond. Please try again shortly."
+          : "Could not fetch payment status."
       },
-      { status: response.status }
+      { status: 504 }
     );
   }
-
-  return NextResponse.json({ ok: true, reference, data });
 }
