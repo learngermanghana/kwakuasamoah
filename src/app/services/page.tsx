@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getServiceData, type ServiceItem } from "@/lib/data";
+import { getCachedServices } from "@/lib/cached-content";
+import type { ServiceItem } from "@/lib/data";
+
+export const revalidate = 15 * 60;
+export const maxDuration = 10;
 
 function normalizeServiceKey(service: ServiceItem) {
   return service.serviceName
@@ -43,7 +47,7 @@ function formatPriceLabel(service: ServiceItem) {
 }
 
 export default async function ServicesPage() {
-  const services = removeDuplicateServices(await getServiceData());
+  const services = removeDuplicateServices(await getCachedServices());
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-16">
