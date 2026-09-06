@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCachedBlogPosts } from "@/lib/cached-content";
 
-export const revalidate = 60 * 60;
+export const revalidate = 3600;
 export const maxDuration = 10;
 
 function getExcerpt(html: string, maxLength = 180) {
