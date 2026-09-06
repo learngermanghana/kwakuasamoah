@@ -1,7 +1,7 @@
-import { getSocialSettings } from "@/lib/data";
+import { getCachedSocialSettings } from "@/lib/cached-content";
 
 export async function WhatsAppFloat() {
-  const socialSettings = await getSocialSettings();
+  const socialSettings = await getCachedSocialSettings();
   const whatsappNumber = socialSettings.whatsappNumber.replace(/\D/g, "");
 
   if (whatsappNumber) {
