@@ -10,6 +10,8 @@ const API_KEY =
   process.env.SEDIFEX_INTEGRATION_KEY ??
   "";
 const CONTRACT = process.env.SEDIFEX_CONTRACT_VERSION ?? "2026-04-13";
+const CONTENT_REVALIDATE_SECONDS = 30 * 60;
+const UPSTREAM_TIMEOUT_MS = 6_000;
 
 type PromoPayload = {
   storeId: string;
@@ -71,13 +73,11 @@ type PromoAndGallery = {
   gallery: NormalizedGalleryItem[];
 };
 
-export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
-  if (!STORE_ID) {
-    return { promo: { enabled: false }, gallery: [] };
-  }
+const emptyPromo: PromoAndGallery = { promo: { enabled: false }, gallery: [] };
 
-  if (!API_KEY) {
-    return { promo: { enabled: false }, gallery: [] };
+export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
+  if (!STORE_ID || !API_KEY) {
+    return emptyPromo;
   }
 
   const headers = {
@@ -86,24 +86,30 @@ export async function fetchPromoAndGallery(): Promise<PromoAndGallery> {
     Accept: "application/json"
   };
 
-  const [promoRes, galleryRes] = await Promise.all([
-    fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    }),
-    fetch(`${BASE_URL}/integrationGallery?storeId=${encodeURIComponent(STORE_ID)}`, {
-      headers,
-      next: { revalidate: 60 }
-    })
-  ]);
+  try {
+    const [promoRes, galleryRes] = await Promise.all([
+      fetch(`${BASE_URL}/v1IntegrationPromo?storeId=${encodeURIComponent(STORE_ID)}`, {
+        headers,
+        next: { revalidate: CONTENT_REVALIDATE_SECONDS },
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      }),
+      fetch(`${BASE_URL}/integrationGallery?storeId=${encodeURIComponent(STORE_ID)}`, {
+        headers,
+        next: { revalidate: CONTENT_REVALIDATE_SECONDS },
+        signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)
+      })
+    ]);
 
-  if (!promoRes.ok) {
-    return { promo: { enabled: false }, gallery: [] };
+    if (!promoRes.ok) {
+      return emptyPromo;
+    }
+
+    const promoJson = (await promoRes.json()) as PromoPayload;
+    const galleryJson = galleryRes.ok ? (await galleryRes.json()) as GalleryPayload : { storeId: STORE_ID, gallery: [] };
+    const publishedGallery = normalizeIntegrationGallery(galleryJson) as NormalizedGalleryItem[];
+
+    return { promo: promoJson.promo, gallery: publishedGallery };
+  } catch {
+    return emptyPromo;
   }
-
-  const promoJson = (await promoRes.json()) as PromoPayload;
-  const galleryJson = galleryRes.ok ? (await galleryRes.json()) as GalleryPayload : { storeId: STORE_ID, gallery: [] };
-  const publishedGallery = normalizeIntegrationGallery(galleryJson) as NormalizedGalleryItem[];
-
-  return { promo: promoJson.promo, gallery: publishedGallery };
 }
