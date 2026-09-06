@@ -13,6 +13,9 @@ const STORE_ID =
   process.env.NEXT_PUBLIC_SEDIFEX_STORE_ID ||
   "";
 
+const GALLERY_REVALIDATE_SECONDS = 30 * 60;
+const GALLERY_TIMEOUT_MS = 6_000;
+
 type ResponsePayload = {
   albums?: unknown[];
   galleryAlbums?: unknown[];
@@ -32,7 +35,8 @@ export async function getSedifexGallery(limit = 8): Promise<GalleryItem[]> {
 
     const response = await fetch(url.toString(), {
       headers: { Accept: "application/json" },
-      next: { revalidate: 300 },
+      next: { revalidate: GALLERY_REVALIDATE_SECONDS },
+      signal: AbortSignal.timeout(GALLERY_TIMEOUT_MS),
     });
 
     if (!response.ok) return [];
