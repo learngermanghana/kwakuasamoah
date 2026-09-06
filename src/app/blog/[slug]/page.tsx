@@ -1,9 +1,16 @@
 import { notFound } from "next/navigation";
-import { getBlogPosts } from "@/lib/data";
+import { getCachedBlogPosts } from "@/lib/cached-content";
 
 type BlogDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export const revalidate = 3600;
+export const maxDuration = 10;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 function formatBlogContent(content: string) {
   const trimmedContent = content.trim();
@@ -44,7 +51,7 @@ function formatBlogContent(content: string) {
 
 export default async function BlogDetailPage({ params }: BlogDetailPageProps) {
   const { slug } = await params;
-  const posts = await getBlogPosts(slug);
+  const posts = await getCachedBlogPosts(slug);
   const post = posts[0];
 
   if (!post) {

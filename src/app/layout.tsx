@@ -6,6 +6,9 @@ import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { MailingListCta } from "@/components/mailing-list-cta";
 import { siteConfig } from "@/lib/site-config";
 
+export const revalidate = 3600;
+export const maxDuration = 10;
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {

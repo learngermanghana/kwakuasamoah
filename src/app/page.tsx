@@ -1,15 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  getBlogPosts,
-  getGalleryData,
-  getHomeHeroSlide,
-  getServiceData,
-} from "@/lib/data";
 import type { GalleryItem, ServiceItem } from "@/lib/data";
-import { getReviewData } from "@/lib/reviews";
+import {
+  getCachedBlogPosts,
+  getCachedGallery,
+  getCachedHero,
+  getCachedReviews,
+  getCachedServices,
+} from "@/lib/cached-content";
 import { PackageCard } from "@/components/package-card";
 import kwakuPortrait from "../../public/image.png";
+
+export const revalidate = 900;
+export const maxDuration = 10;
 
 function getExcerpt(html: string, maxLength = 140) {
   const plainText = html
@@ -48,11 +51,11 @@ function removeDuplicateServices(services: ServiceItem[]) {
 
 export default async function HomePage() {
   const [services, gallery, posts, hero, reviews] = await Promise.all([
-    getServiceData(),
-    getGalleryData(),
-    getBlogPosts(),
-    getHomeHeroSlide(),
-    getReviewData(6),
+    getCachedServices(),
+    getCachedGallery(),
+    getCachedBlogPosts(),
+    getCachedHero(),
+    getCachedReviews(),
   ]);
   const featuredServices = removeDuplicateServices(services).slice(0, 3);
   const galleryItems: GalleryItem[] = gallery

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSocialSettings } from "@/lib/data";
+import { getCachedSocialSettings } from "@/lib/cached-content";
 
 function ContactLink({ href, label }: { href: string; label: string }) {
   if (!href) return null;
@@ -12,7 +12,7 @@ function ContactLink({ href, label }: { href: string; label: string }) {
 }
 
 export async function Footer() {
-  const socialSettings = await getSocialSettings();
+  const socialSettings = await getCachedSocialSettings();
   const contactItems = [
     socialSettings.publicPhone
       ? {

@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getServiceData, type ServiceItem } from "@/lib/data";
+import { getCachedServices } from "@/lib/cached-content";
+import type { ServiceItem } from "@/lib/data";
 
 type ServiceDetailPageProps = {
   params: Promise<{ id: string }>;
 };
+
+export const revalidate = 900;
+export const maxDuration = 10;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 function findServiceById(services: ServiceItem[], id: string) {
   return services.find(
@@ -210,7 +218,7 @@ function FormattedDescription({ description }: { description?: string }) {
 
 export async function generateMetadata({ params }: ServiceDetailPageProps) {
   const { id } = await params;
-  const services = await getServiceData();
+  const services = await getCachedServices();
   const service = findServiceById(services, id);
 
   if (!service) {
@@ -227,7 +235,7 @@ export async function generateMetadata({ params }: ServiceDetailPageProps) {
 
 export default async function ServiceDetailPage({ params }: ServiceDetailPageProps) {
   const { id } = await params;
-  const services = await getServiceData();
+  const services = await getCachedServices();
   const service = findServiceById(services, id);
 
   if (!service) {

@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getGalleryData, type GalleryItem } from "@/lib/data";
+import { getCachedGallery } from "@/lib/cached-content";
+import type { GalleryItem } from "@/lib/data";
+
+export const revalidate = 1800;
+export const maxDuration = 10;
+
+export async function generateStaticParams() {
+  return [];
+}
 
 function getCountryGuideLink(caption: string) {
   const text = caption.toLowerCase();
@@ -20,7 +28,7 @@ function getCountryGuideLink(caption: string) {
 
 export default async function GalleryDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const gallery = await getGalleryData();
+  const gallery = await getCachedGallery();
   const photo = gallery.find((item: GalleryItem) => item.id === id);
 
   if (!photo) {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { BookingForm } from "@/components/booking-form";
-import { getServiceData } from "@/lib/data";
+import { getCachedServices } from "@/lib/cached-content";
+
+export const maxDuration = 10;
 
 export const metadata: Metadata = {
   title: "Book a Consultation",
@@ -13,7 +15,7 @@ export default async function BookPage({
   searchParams: Promise<{ serviceId?: string; serviceName?: string }>;
 }) {
   const params = await searchParams;
-  const services = await getServiceData();
+  const services = await getCachedServices();
   const serviceOptions = services.map((service) => ({
     id: service.id,
     name: service.serviceName,

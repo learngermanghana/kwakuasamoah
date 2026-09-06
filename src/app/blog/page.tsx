@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { getBlogPosts } from "@/lib/data";
+import { getCachedBlogPosts } from "@/lib/cached-content";
+
+export const revalidate = 3600;
+export const maxDuration = 10;
 
 function getExcerpt(html: string, maxLength = 180) {
   const plainText = html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -8,7 +11,7 @@ function getExcerpt(html: string, maxLength = 180) {
 }
 
 export default async function BlogPage() {
-  const posts = await getBlogPosts();
+  const posts = await getCachedBlogPosts();
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-16">
