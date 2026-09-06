@@ -1,6 +1,6 @@
 import { fetchPromoAndGallery } from "@/lib/sedifexPromo";
 
-export const revalidate = 30 * 60;
+export const revalidate = 1800;
 export const maxDuration = 10;
 
 export default async function PromoPage() {
