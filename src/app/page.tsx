@@ -11,7 +11,7 @@ import {
 import { PackageCard } from "@/components/package-card";
 import kwakuPortrait from "../../public/image.png";
 
-export const revalidate = 15 * 60;
+export const revalidate = 900;
 export const maxDuration = 10;
 
 function getExcerpt(html: string, maxLength = 140) {
