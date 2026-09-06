@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCachedGallery } from "@/lib/cached-content";
 import type { GalleryItem } from "@/lib/data";
 
-export const revalidate = 30 * 60;
+export const revalidate = 1800;
 export const maxDuration = 10;
 
 export async function generateStaticParams() {
