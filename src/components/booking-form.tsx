@@ -8,6 +8,10 @@ type ServiceOption = {
   name: string;
   priceLabel?: string;
   price?: number;
+  currency?: "GHS" | "USD";
+  priceGhs?: number;
+  priceUsd?: number;
+  exchangeRateUpdatedAt?: string;
   category?: string;
 };
 
@@ -113,7 +117,36 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
 
 
   const selectedService = getSelectedService(serviceOptions, formState.serviceId);
-  const selectedPrice = typeof selectedService?.price === "number" && selectedService.price > 0 ? selectedService.price : undefined;
+  const selectedPriceLabel = useMemo(() => {
+    if (!selectedService) return "Price will be confirmed before checkout";
+
+    if (typeof selectedService.priceGhs === "number" && typeof selectedService.priceUsd === "number") {
+      const ghs = new Intl.NumberFormat("en", {
+        style: "currency",
+        currency: "GHS",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(selectedService.priceGhs);
+      const usd = new Intl.NumberFormat("en", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(selectedService.priceUsd);
+      return `${ghs} · ${usd}`;
+    }
+
+    if (typeof selectedService.price === "number") {
+      return new Intl.NumberFormat("en", {
+        style: "currency",
+        currency: selectedService.currency || "GHS",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(selectedService.price);
+    }
+
+    return selectedService.priceLabel || "Price will be confirmed before checkout";
+  }, [selectedService]);
 
   const minimumDate = useMemo(() => {
     const date = new Date();
@@ -153,7 +186,6 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
       customerPhone: contact.customerPhone,
       serviceId: formState.serviceId,
       serviceName: selectedService?.name || formState.serviceName,
-      paymentAmount: selectedPrice,
       bookingDate: formState.bookingDate,
       bookingTime: formState.bookingTime,
       notes: formState.notes,
@@ -166,8 +198,7 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         sourceLabel: "Client website",
         pageUrl: window.location.href,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        locale: navigator.language,
-        paymentAmount: selectedPrice
+        locale: navigator.language
       }
     };
 
@@ -231,8 +262,11 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Selected service price</p>
           <p className="mt-1 text-lg font-semibold text-[#0b2d4f]">
-            {selectedPrice ? `GHS ${selectedPrice.toFixed(2)}` : selectedService?.priceLabel || "Price will be confirmed before checkout"}
+            {selectedPriceLabel}
           </p>
+          {selectedService?.exchangeRateUpdatedAt && typeof selectedService.priceGhs === "number" && typeof selectedService.priceUsd === "number" ? (
+            <p className="mt-1 text-xs text-slate-500">Currency conversion supplied by Sedifex.</p>
+          ) : null}
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Payment method</p>
