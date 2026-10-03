@@ -121,28 +121,22 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
     if (!selectedService) return "Price will be confirmed before checkout";
 
     if (typeof selectedService.priceGhs === "number" && typeof selectedService.priceUsd === "number") {
-      const ghs = new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: "GHS",
+      const ghs = selectedService.priceGhs.toLocaleString("en", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(selectedService.priceGhs);
-      const usd = new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: "USD",
+      });
+      const usd = selectedService.priceUsd.toLocaleString("en", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(selectedService.priceUsd);
-      return `${ghs} · ${usd}`;
+      });
+      return `GHS ${ghs} · USD ${usd}`;
     }
 
     if (typeof selectedService.price === "number") {
-      return new Intl.NumberFormat("en", {
-        style: "currency",
-        currency: selectedService.currency || "GHS",
+      return `${selectedService.currency || "GHS"} ${selectedService.price.toLocaleString("en", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
-      }).format(selectedService.price);
+      })}`;
     }
 
     return selectedService.priceLabel || "Price will be confirmed before checkout";
