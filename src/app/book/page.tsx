@@ -21,6 +21,10 @@ export default async function BookPage({
     name: service.serviceName,
     priceLabel: service.priceLabel,
     price: service.price,
+    currency: service.currency,
+    priceGhs: service.priceGhs,
+    priceUsd: service.priceUsd,
+    exchangeRateUpdatedAt: service.exchangeRateUpdatedAt,
     category: service.category
   }));
 
