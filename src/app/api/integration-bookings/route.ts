@@ -146,7 +146,15 @@ function resolveTrackingFields(data: Record<string, unknown>) {
   };
 }
 
-async function resolveServiceAmount(config: SedifexConfig, serviceId: string, serviceName?: string) {
+type ServicePricing = {
+  amount: number;
+  currency: "GHS" | "USD";
+  priceGhs?: number;
+  priceUsd?: number;
+  exchangeRateUpdatedAt?: string;
+};
+
+async function resolveServicePricing(config: SedifexConfig, serviceId: string, serviceName?: string): Promise<ServicePricing | undefined> {
   const endpoint = new URL("/v1IntegrationProducts", config.baseUrl);
   endpoint.searchParams.set("storeId", config.storeId || "");
 
@@ -183,7 +191,20 @@ async function resolveServiceAmount(config: SedifexConfig, serviceId: string, se
 
   if (!match) return undefined;
 
-  return toPositiveNumber(match.price ?? match.unitPrice ?? match.amount);
+  const amount = toPositiveNumber(match.price ?? match.unitPrice ?? match.amount);
+  if (!amount) return undefined;
+
+  const currency = cleanString(match.currency).toUpperCase() === "USD" ? "USD" : "GHS";
+  const priceGhs = toPositiveNumber(match.priceGhs) || (currency === "GHS" ? amount : undefined);
+  const priceUsd = toPositiveNumber(match.priceUsd) || (currency === "USD" ? amount : undefined);
+
+  return {
+    amount,
+    currency,
+    priceGhs,
+    priceUsd,
+    exchangeRateUpdatedAt: cleanOptionalString(match.exchangeRateUpdatedAt)
+  };
 }
 
 export async function POST(req: Request) {
@@ -229,18 +250,28 @@ export async function POST(req: Request) {
 
   const pageUrl = cleanOptionalString(asRecord(booking.attributes).pageUrl) || req.headers.get("referer") || undefined;
 
-  let amount = toPositiveNumber(booking.paymentAmount);
-  if (!amount) {
-    amount = await resolveServiceAmount(config, serviceId, serviceName);
-  }
+  const pricing = await resolveServicePricing(config, serviceId, serviceName);
 
-  if (!amount) {
+  if (!pricing) {
     return NextResponse.json(
-      { ok: false, error: "missing-price", message: "Service price is required before Paystack checkout can open." },
+      { ok: false, error: "missing-price", message: "Service price could not be confirmed from Sedifex before checkout." },
       { status: 400 }
     );
   }
 
+  if (pricing.currency === "USD" && !pricing.priceGhs) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "currency-conversion-unavailable",
+        message: "The USD service price is available, but its GHS checkout conversion is not ready yet. Please try again shortly."
+      },
+      { status: 503 }
+    );
+  }
+
+  const amount = pricing.priceGhs || pricing.amount;
+  const checkoutCurrency = pricing.priceGhs ? "GHS" : pricing.currency;
   const syncRequestedAt = new Date().toISOString();
   const bookingPayload = {
     serviceId,
@@ -276,6 +307,11 @@ export async function POST(req: Request) {
       payment_method: paymentMethod,
       paymentAmount: amount,
       depositAmount: amount,
+      listedAmount: pricing.amount,
+      listedCurrency: pricing.currency,
+      priceGhs: pricing.priceGhs,
+      priceUsd: pricing.priceUsd,
+      exchangeRateUpdatedAt: pricing.exchangeRateUpdatedAt,
       paymentStatus: "checkout_created",
       paymentCollectionMode: "online_checkout",
       syncStatus: "pending",
@@ -336,12 +372,39 @@ export async function POST(req: Request) {
     client_order_id: clientOrderId,
     orderType: "service",
     order_type: "service",
-    currency: "GHS",
+    currency: checkoutCurrency,
     amount,
     customer: { name: customerName, email: customerEmail, phone: customerPhone },
     returnUrl: config.checkoutReturnUrl,
-    items: [{ id: serviceId, item_id: serviceId, serviceId, name: serviceName, serviceName, unitPrice: amount, price: amount, qty: 1, quantity: 1, type: "SERVICE", item_type: "service" }],
-    metadata: { bookingId, clientOrderId, channel: "client-website", sourceChannel: "client_website", source: "kwaku_website_booking_form", bookingDate, bookingTime, serviceName },
+    items: [{
+      id: serviceId,
+      item_id: serviceId,
+      serviceId,
+      name: serviceName,
+      serviceName,
+      unitPrice: pricing.amount,
+      price: pricing.amount,
+      currency: pricing.currency,
+      qty: 1,
+      quantity: 1,
+      type: "SERVICE",
+      item_type: "service"
+    }],
+    metadata: {
+      bookingId,
+      clientOrderId,
+      channel: "client-website",
+      sourceChannel: "client_website",
+      source: "kwaku_website_booking_form",
+      bookingDate,
+      bookingTime,
+      serviceName,
+      listedAmount: pricing.amount,
+      listedCurrency: pricing.currency,
+      priceGhs: pricing.priceGhs,
+      priceUsd: pricing.priceUsd,
+      exchangeRateUpdatedAt: pricing.exchangeRateUpdatedAt
+    },
     syncStatus: "pending",
     syncRequestedAt
   };

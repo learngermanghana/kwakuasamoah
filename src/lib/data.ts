@@ -17,6 +17,10 @@ type SedifexItem = {
   category?: string;
   description?: string;
   price?: number;
+  currency?: string;
+  priceGhs?: number | null;
+  priceUsd?: number | null;
+  exchangeRateUpdatedAt?: string | null;
   itemType?: string;
   sortOrder?: number;
   order?: number;
@@ -164,6 +168,10 @@ export type ServiceItem = {
   description?: string;
   priceLabel?: string;
   price?: number;
+  currency?: "GHS" | "USD";
+  priceGhs?: number;
+  priceUsd?: number;
+  exchangeRateUpdatedAt?: string;
   image: string;
   imageAlt: string;
 };
@@ -432,6 +440,21 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
 
   const normalizedDescription = normalizeServiceDescription(item.description);
 
+  const normalizedCurrency = item.currency?.toUpperCase() === "USD" ? "USD" : "GHS";
+  const price = typeof item.price === "number" ? item.price : undefined;
+  const priceGhs =
+    typeof item.priceGhs === "number"
+      ? item.priceGhs
+      : normalizedCurrency === "GHS"
+        ? price
+        : undefined;
+  const priceUsd =
+    typeof item.priceUsd === "number"
+      ? item.priceUsd
+      : normalizedCurrency === "USD"
+        ? price
+        : undefined;
+
   return {
     id: item.id,
     serviceName: item.name,
@@ -440,10 +463,16 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
       normalizedDescription ||
       "Professional support tailored to your travel and relocation goals.",
     priceLabel:
-      typeof item.price === "number"
-        ? `Price ${item.price} GHC`
-        : "Contact for price",
-    price: typeof item.price === "number" ? item.price : undefined,
+      typeof priceGhs === "number" && typeof priceUsd === "number"
+        ? `GHS ${priceGhs.toFixed(2)} · USD ${priceUsd.toFixed(2)}`
+        : typeof price === "number"
+          ? `${normalizedCurrency} ${price.toFixed(2)}`
+          : "Contact for price",
+    price,
+    currency: normalizedCurrency,
+    priceGhs,
+    priceUsd,
+    exchangeRateUpdatedAt: item.exchangeRateUpdatedAt || undefined,
     image:
       item.imageUrl ||
       item.imageUrls?.[0] ||

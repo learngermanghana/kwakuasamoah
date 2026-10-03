@@ -34,13 +34,25 @@ function normalizePriceLabel(label: string) {
     .replace(/^service\s+(price|fee)\s*:?\s*/i, "");
 }
 
+
+function formatMoney(amount: number, currency: "GHS" | "USD") {
+  return `${currency} ${amount.toLocaleString("en", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+}
+
 function formatPriceLabel(service: ServiceItem) {
-  if (service.priceLabel?.trim()) {
-    return `Service price: ${normalizePriceLabel(service.priceLabel)}`;
+  if (typeof service.priceGhs === "number" && typeof service.priceUsd === "number") {
+    return `Service price: ${formatMoney(service.priceGhs, "GHS")} · ${formatMoney(service.priceUsd, "USD")}`;
   }
 
   if (typeof service.price === "number") {
-    return `Service price: GHS ${service.price.toLocaleString()}`;
+    return `Service price: ${formatMoney(service.price, service.currency || "GHS")}`;
+  }
+
+  if (service.priceLabel?.trim()) {
+    return `Service price: ${normalizePriceLabel(service.priceLabel)}`;
   }
 
   return "Service price confirmed after review";
