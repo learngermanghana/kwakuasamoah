@@ -36,12 +36,10 @@ function normalizePriceLabel(label: string) {
 
 
 function formatMoney(amount: number, currency: "GHS" | "USD") {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
+  return `${currency} ${amount.toLocaleString("en", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
-  }).format(amount);
+  })}`;
 }
 
 function formatPriceLabel(service: ServiceItem) {
