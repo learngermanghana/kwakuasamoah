@@ -453,13 +453,26 @@ function mapSedifexItem(item: SedifexItem): ServiceItem {
 }
 
 const preferredServiceOrder = [
-  "schenegen travel assistance",
-  "interview preparation",
-  "document review service",
-  "visa application filling",
-  "us america lottery",
-  "flight and hotel",
-  "study abroad",
+  ["consultation booking"],
+  [
+    "schenegen visa application support",
+    "schengen visa application support",
+    "schenegen travel assistance",
+    "schengen travel assistance",
+  ],
+  [
+    "visa application filling and guidance",
+    "visa application filling",
+    "application filling",
+  ],
+  ["document review service", "document review"],
+  ["interview preparation"],
+  [
+    "usa america dv lottery visa application and interview guidance",
+    "usa america lottery",
+    "us america lottery",
+    "dv lottery",
+  ],
 ] as const;
 
 function normalizeServiceNameForSort(name?: string) {
@@ -473,9 +486,13 @@ function getPreferredServiceIndex(name?: string) {
   const normalizedName = normalizeServiceNameForSort(name);
 
   for (let i = 0; i < preferredServiceOrder.length; i += 1) {
-    const preferredName = preferredServiceOrder[i];
+    const preferredNames = preferredServiceOrder[i];
 
-    if (normalizedName.includes(preferredName)) {
+    if (
+      preferredNames.some((preferredName) =>
+        normalizedName.includes(preferredName),
+      )
+    ) {
       return i;
     }
   }
