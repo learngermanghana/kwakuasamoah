@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { BookingForm } from "@/components/booking-form";
 import { getCachedServices } from "@/lib/cached-content";
 
-export const revalidate = 6 * 60 * 60;
+export const revalidate = 21600;
 export const maxDuration = 10;
 
 export const metadata: Metadata = {
