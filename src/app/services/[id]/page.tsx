@@ -297,6 +297,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               href={bookHref}
+              prefetch={false}
               className="rounded-2xl bg-[#0d6f73] px-6 py-3 text-sm font-black text-white shadow-lg shadow-[#0d6f73]/20 transition hover:bg-[#0a585c]"
             >
               Book this service
@@ -332,6 +333,7 @@ export default async function ServiceDetailPage({ params }: ServiceDetailPagePro
           </div>
           <Link
             href={bookHref}
+            prefetch={false}
             className="mt-5 inline-flex rounded-2xl bg-[#0d6f73] px-6 py-3 text-sm font-black text-white transition hover:bg-[#0a585c] md:mt-0"
           >
             Book Consultation
