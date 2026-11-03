@@ -84,7 +84,7 @@ export default async function ServicesPage() {
               key={service.id}
               className="flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-[#d8d6cf] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
             >
-              <Link href={serviceHref} className="block bg-[#f8f4ea] p-4">
+              <Link href={serviceHref} prefetch={false} className="block bg-[#f8f4ea] p-4">
                 <div className="rounded-[1.25rem] bg-white p-3 shadow-sm">
                   <img
                     src={service.image}
@@ -112,6 +112,7 @@ export default async function ServicesPage() {
                 <div className="mt-auto pt-6">
                   <Link
                     href={serviceHref}
+                    prefetch={false}
                     className="inline-flex w-full justify-center rounded-2xl bg-[#0d6f73] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a585c]"
                   >
                     Open
