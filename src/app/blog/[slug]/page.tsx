@@ -6,7 +6,7 @@ type BlogDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 10;
 
 export async function generateStaticParams() {
