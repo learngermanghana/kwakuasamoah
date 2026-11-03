@@ -7,7 +7,7 @@ type ServiceDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export const revalidate = 900;
+export const revalidate = 21600;
 export const maxDuration = 10;
 
 export async function generateStaticParams() {
