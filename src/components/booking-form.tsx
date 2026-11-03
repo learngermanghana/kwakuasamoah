@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { cleanBookingContact, validateBookingContact } from "@/lib/booking-validation";
 
 type ServiceOption = {
@@ -17,8 +18,6 @@ type ServiceOption = {
 
 type BookingFormProps = {
   serviceOptions: ServiceOption[];
-  prefilledServiceId?: string;
-  prefilledServiceName?: string;
 };
 
 type PaymentMethod = "paystack";
@@ -94,7 +93,11 @@ function getCheckoutUrl(data: BookingApiResponse | null) {
   );
 }
 
-export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServiceName }: BookingFormProps) {
+export function BookingForm({ serviceOptions }: BookingFormProps) {
+  // Keep query-string service selection on the client so /book can be cached by the CDN.
+  const searchParams = useSearchParams();
+  const prefilledServiceId = searchParams.get("serviceId") ?? undefined;
+  const prefilledServiceName = searchParams.get("serviceName") ?? undefined;
   const preselectedService = getInitialService(serviceOptions, prefilledServiceId, prefilledServiceName);
 
   const [formState, setFormState] = useState<FormState>({
@@ -115,6 +118,18 @@ export function BookingForm({ serviceOptions, prefilledServiceId, prefilledServi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultMessage, setResultMessage] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
+  // A client-side transition from one service to another should update the selection.
+  // Don't reset form fields when the visitor simply edits their booking details.
+  useEffect(() => {
+    if (!prefilledServiceId && !prefilledServiceName) return;
+    const service = getInitialService(serviceOptions, prefilledServiceId, prefilledServiceName);
+    if (!service) return;
+    setFormState((current) =>
+      current.serviceId === service.id
+        ? current
+        : { ...current, serviceId: service.id, serviceName: service.name }
+    );
+  }, [prefilledServiceId, prefilledServiceName, serviceOptions]);
 
   const selectedService = getSelectedService(serviceOptions, formState.serviceId);
   const selectedPriceLabel = useMemo(() => {
