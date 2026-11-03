@@ -172,7 +172,7 @@ export default async function HomePage() {
               Explore all travel-related information in one place. Get the latest updates and helpful guidance on visas, passports, immigration, study abroad opportunities, scholarships, international travel, and much more. Everything you need to help you plan and prepare for your journey.
             </p>
           </div>
-          <Link href="/promo" className="text-sm font-semibold text-[#0d6f73]">
+          <Link href="/promo" prefetch={false} className="text-sm font-semibold text-[#0d6f73]">
             Explore gallery
           </Link>
         </div>
@@ -181,6 +181,7 @@ export default async function HomePage() {
             <Link
               key={photo.id}
               href={`/gallery/${photo.id}`}
+              prefetch={false}
               className="overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md"
             >
               <img
@@ -219,7 +220,7 @@ export default async function HomePage() {
               Read the newest published travel and relocation updates.
             </p>
           </div>
-          <Link href="/blog" className="text-sm font-semibold text-[#0d6f73]">
+          <Link href="/blog" prefetch={false} className="text-sm font-semibold text-[#0d6f73]">
             View more
           </Link>
         </div>
@@ -229,6 +230,7 @@ export default async function HomePage() {
               <Link
                 key={post.id}
                 href={`/blog/${post.slug}`}
+                prefetch={false}
                 className="overflow-hidden rounded-2xl border bg-white shadow-sm"
               >
                 {post.imageUrl ? (
