@@ -55,43 +55,43 @@ async function withTimeout<T>(work: Promise<T>, fallback: T, timeoutMs = CONTENT
 const cachedServices = unstable_cache(
   () => withTimeout(getServiceData(), fallbackServices),
   ["kwaku-content-services-v2"],
-  { revalidate: 15 * 60 },
+  { revalidate: 6 * 60 * 60 },
 );
 
 const cachedGallery = unstable_cache(
   () => withTimeout(getGalleryData(), fallbackGallery),
   ["kwaku-content-gallery-v2"],
-  { revalidate: 30 * 60 },
+  { revalidate: 12 * 60 * 60 },
 );
 
 const cachedHero = unstable_cache(
   () => withTimeout(getHomeHeroSlide(), defaultHeroSlide),
   ["kwaku-content-home-hero-v2"],
-  { revalidate: 60 * 60 },
+  { revalidate: 6 * 60 * 60 },
 );
 
 const cachedSocialSettings = unstable_cache(
   () => withTimeout(getSocialSettings(), defaultSocialSettings),
   ["kwaku-content-social-settings-v2"],
-  { revalidate: 60 * 60 },
+  { revalidate: 24 * 60 * 60 },
 );
 
 const cachedReviews = unstable_cache(
   () => withTimeout(getReviewData(6), [] as ReviewItem[]),
   ["kwaku-content-reviews-v2"],
-  { revalidate: 60 * 60 },
+  { revalidate: 24 * 60 * 60 },
 );
 
 const cachedBlogIndex = unstable_cache(
   () => withTimeout(getBlogPosts(), [] as BlogPost[]),
   ["kwaku-content-blog-index-v2"],
-  { revalidate: 60 * 60 },
+  { revalidate: 24 * 60 * 60 },
 );
 
 const cachedBlogDetail = unstable_cache(
   (slug: string) => withTimeout(getBlogPosts(slug), [] as BlogPost[]),
   ["kwaku-content-blog-detail-v2"],
-  { revalidate: 60 * 60 },
+  { revalidate: 24 * 60 * 60 },
 );
 
 export function getCachedServices(): Promise<ServiceItem[]> {
