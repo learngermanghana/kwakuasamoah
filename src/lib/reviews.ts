@@ -10,7 +10,7 @@ export type ReviewItem = {
 const REVIEWS_SHEET_CSV_URL =
   process.env.REVIEWS_SHEET_CSV_URL ||
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSeF3VLsI7UJ8lLcFgCGlAWOKGcAYS0sCXebnk0w61SN4uCGigdEZaHPXMaXs87vu4bSYETP9FOOKSz/pub?output=csv";
-const REVIEWS_REVALIDATE_SECONDS = 60 * 60;
+const REVIEWS_REVALIDATE_SECONDS = 24 * 60 * 60;
 const REVIEWS_TIMEOUT_MS = 6_000;
 
 function parseCsv(csv: string) {
