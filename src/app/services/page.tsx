@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCachedServices } from "@/lib/cached-content";
 import type { ServiceItem } from "@/lib/data";
 
-export const revalidate = 900;
+export const revalidate = 21600;
 export const maxDuration = 10;
 
 function normalizeServiceKey(service: ServiceItem) {
