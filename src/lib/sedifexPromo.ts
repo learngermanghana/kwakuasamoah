@@ -10,7 +10,7 @@ const API_KEY =
   process.env.SEDIFEX_INTEGRATION_KEY ??
   "";
 const CONTRACT = process.env.SEDIFEX_CONTRACT_VERSION ?? "2026-04-13";
-const CONTENT_REVALIDATE_SECONDS = 30 * 60;
+const CONTENT_REVALIDATE_SECONDS = 12 * 60 * 60;
 const UPSTREAM_TIMEOUT_MS = 6_000;
 
 type PromoPayload = {
