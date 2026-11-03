@@ -35,7 +35,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm">
-      <Link href={serviceHref} className="block bg-[#f8f4ea] p-3">
+      <Link href={serviceHref} prefetch={false} className="block bg-[#f8f4ea] p-3">
         <img
           src={item.image}
           alt={item.serviceName}
@@ -46,7 +46,7 @@ export function PackageCard({ item }: { item: ServiceItem }) {
         {item.category ? (
           <p className="text-sm font-semibold text-[#0d6f73]">{item.category}</p>
         ) : null}
-        <Link href={serviceHref} className="mt-1 text-xl font-bold text-[#0b2d4f] transition hover:text-[#0d6f73]">
+        <Link href={serviceHref} prefetch={false} className="mt-1 text-xl font-bold text-[#0b2d4f] transition hover:text-[#0d6f73]">
           {item.serviceName}
         </Link>
         <p className="mt-2 text-sm font-semibold text-[#0d6f73]">{priceLabel}</p>
@@ -58,12 +58,14 @@ export function PackageCard({ item }: { item: ServiceItem }) {
         <div className="mt-auto flex gap-3 pt-4">
           <Link
             href={serviceHref}
+            prefetch={false}
             className="rounded-xl border border-[#0d6f73]/25 bg-[#d8f2f1] px-4 py-2 text-sm font-bold text-[#0d6f73] transition hover:bg-[#c5ebe9]"
           >
             Open
           </Link>
           <Link
             href={bookHref}
+            prefetch={false}
             className="rounded-xl bg-[#0d6f73] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#0a5b5f]"
           >
             Book

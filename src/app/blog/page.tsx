@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCachedBlogPosts } from "@/lib/cached-content";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 export const maxDuration = 10;
 
 function getExcerpt(html: string, maxLength = 180) {
@@ -27,7 +27,7 @@ export default async function BlogPage() {
                 <h2 className="text-lg font-semibold">{post.title}</h2>
                 <p className="mt-2 text-sm text-slate-600">{getExcerpt(post.content)}</p>
                 <p className="mt-3 text-xs text-slate-500">{post.publishedAt ? new Date(post.publishedAt).toLocaleDateString() : ""}</p>
-                <Link href={`/blog/${post.slug}`} className="mt-4 inline-block text-sm font-semibold text-[#0d6f73]">
+                <Link href={`/blog/${post.slug}`} prefetch={false} className="mt-4 inline-block text-sm font-semibold text-[#0d6f73]">
                   Read post
                 </Link>
               </div>

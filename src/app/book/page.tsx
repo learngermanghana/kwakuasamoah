@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { BookingForm } from "@/components/booking-form";
 import { getCachedServices } from "@/lib/cached-content";
 
+export const revalidate = 21600;
 export const maxDuration = 10;
 
 export const metadata: Metadata = {
@@ -9,12 +11,7 @@ export const metadata: Metadata = {
   description: "Choose a service and submit your travel or relocation booking request."
 };
 
-export default async function BookPage({
-  searchParams
-}: {
-  searchParams: Promise<{ serviceId?: string; serviceName?: string }>;
-}) {
-  const params = await searchParams;
+export default async function BookPage() {
   const services = await getCachedServices();
   const serviceOptions = services.map((service) => ({
     id: service.id,
@@ -51,11 +48,9 @@ export default async function BookPage({
         </div>
 
         <div>
-          <BookingForm
-            serviceOptions={serviceOptions}
-            prefilledServiceId={params.serviceId}
-            prefilledServiceName={params.serviceName}
-          />
+          <Suspense fallback={<p className="text-sm text-slate-600">Loading booking form...</p>}>
+            <BookingForm serviceOptions={serviceOptions} />
+          </Suspense>
         </div>
       </div>
     </section>

@@ -72,11 +72,11 @@ export async function Footer() {
         <div>
           <h4 className="font-semibold">Quick Links</h4>
           <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
-            <Link href="/about">About</Link>
-            <Link href="/services">Services</Link>
-            <Link href="/contact">Contact</Link>
-            <Link href="/terms">Terms</Link>
-            <Link href="/privacy">Privacy</Link>
+            <Link href="/about" prefetch={false}>About</Link>
+            <Link href="/services" prefetch={false}>Services</Link>
+            <Link href="/contact" prefetch={false}>Contact</Link>
+            <Link href="/terms" prefetch={false}>Terms</Link>
+            <Link href="/privacy" prefetch={false}>Privacy</Link>
           </div>
         </div>
         <div>
